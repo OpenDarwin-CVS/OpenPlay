@@ -187,6 +187,9 @@
 		#ifndef __EVENTS__
 		#include <Events.h>
 		#endif
+		#ifndef __MENUS__
+		#include <Menus.h>
+		#endif
 		#ifndef __OPENTRANSPORT__
 		#include <OpenTransport.h>
 		#endif
@@ -199,9 +202,15 @@
 		/* Platform independent data references */
 		typedef	EventRecord			NMEvent;
 		typedef	Rect				NMRect;
-		typedef	DialogPtr			NMDialogPtr;
-		typedef	WindowRef			NMWindowRef;
+		#if TARGET_API_MAC_CARBON
 		typedef MenuRef				NMMenuRef;
+		typedef	WindowRef			NMWindowRef;
+		typedef	DialogRef			NMDialogPtr;
+		#else
+		typedef MenuHandle			NMMenuRef;
+		typedef	WindowPtr			NMWindowRef;
+		typedef	DialogPtr			NMDialogPtr;
+		#endif
 
 		typedef	NumVersion			NMNumVersion;
 
@@ -220,7 +229,7 @@
 		typedef HWND				NMDialogPtr;
 		typedef HWND				NMWindowRef;
 		typedef RECT				NMRect;
-		typedef MENU				NMMenuRef;
+		typedef HMENU				NMMenuRef;
 
 		struct NMNumVersion {
 												/* Numeric version part of 'vers' resource */
