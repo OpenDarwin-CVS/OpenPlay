@@ -26,8 +26,15 @@
  */
 
 #ifndef __OPENPLAY__
+#if (macho_build)
+	#if (project_builder)
+		#include <CoreServices/CoreServices.h>
+	#endif
+#endif
 #include "OpenPlay.h"
 #endif
+
+
 #include "OPUtils.h"
 #include "portable_files.h"
 #include "find_files.h"
@@ -65,14 +72,28 @@
 
 /* -------- Protocol Management Layer */
 
+
+ //doxygen instruction:
+/** @addtogroup Configuration
+ * @{
+ */
+
 //----------------------------------------------------------------------------------------
 // GetIndexedProtocol
 //----------------------------------------------------------------------------------------
-
+/**
+	Retrieve info about available OpenPlay protocols.
+	@brief Retrieve info about available OpenPlay protocols.
+	@param index The number of the protocol to return.  The first protocol has an index of 0.
+	@param protocol The \ref NMProtocolStruct to be filled in with the protocol's info.
+	@return \ref kNMNoError on success. \n
+	\ref kNMNoMoreNetModulesErr if there is no protocol at the provided index.
+	\n\n\n\n
+ */
 /* Find the folder with the protocols, find all the protocols, and return the index'd name. */
 NMErr GetIndexedProtocol(
 	NMSInt16 index,
-	NMProtocol *protocol)
+	NMProtocolStruct *protocol)
 {
 	NMErr err;
 
@@ -107,16 +128,16 @@ NMErr GetIndexedProtocol(
 					machine_copy_data(&gOp_globals.modules[index].module, protocol, sizeof(NMProtocol));
 					err= kNMNoError; /* no error */
 				} else {
-					err= errParamErr;
+					err= kNMParameterErr;
 				}
 			} else {
-				err= errNoMoreNetModules;
+				err= kNMNoMoreNetModulesErr;
 			}
 		} else {
-			err= errParamErr;
+			err= kNMParameterErr;
 		}
 	} else {
-		err= errBadVersion;
+		err= kNMBadVersionErr;
 	}
 
 	return err;
@@ -125,7 +146,20 @@ NMErr GetIndexedProtocol(
 //----------------------------------------------------------------------------------------
 // ProtocolCreateConfig
 //----------------------------------------------------------------------------------------
-
+/**
+	Creates a new \ref PConfigRef of the given type using either default values or a configuration string.
+	@brief Create a new \ref PConfigRef using default values or a configuration string.
+	@param type The type of protocol to create.
+	@param game_id The game's type, used to locate fellow games on the network when enumerating.
+	@param game_name The game's name.
+	@param enum_data Custom enumeration data, to be passed to enumeration callbacks, or NULL if not needed.
+	@param enum_data_len Length of the enumeration data.  The data is copied and stored in its entirety in the \ref PConfigRef.
+	@param configuration_string A configuration string to use when creating the \ref PConfigRef, or NULL if default values are desired.
+	@param inConfig Pointer to a \ref PConfigRef, to be filled in by the function.
+	@return \ref kNMNoError if the function succeeds.\n
+	Otherwise, returns an error code.
+	\n\n\n\n
+ */
 /*
 	Binds to the protocol_names library, mallocs a structure (which specifies 
 	the FSSpec of the library), calls its internal Config(char *), and assigns 
@@ -226,10 +260,10 @@ NMErr ProtocolCreateConfig(
 			DEBUG_PRINT("Didn't find module type: 0x%x (%c%c%c%c) Count: %d", type, (type >> 24) & 0xFF, (type >> 16) & 0xFF,
 			(type >> 8) & 0xFF, type & 0xFF, gOp_globals.module_count);
 
-			err= errModuleNotFound;	
+			err= kNMModuleNotFoundErr;	
 		}
 	} else {
-		err= errNoMemory;
+		err= kNMOutOfMemoryErr;
 	}
 	
 	return err;
@@ -238,7 +272,14 @@ NMErr ProtocolCreateConfig(
 //----------------------------------------------------------------------------------------
 // ProtocolDisposeConfig
 //----------------------------------------------------------------------------------------
-
+/**
+	Dispose of a \ref PConfigRef
+	@brief Dispose of a \ref PConfigRef
+	@param config the \ref PConfigRef to dispose of.
+	@return \ref kNMNoError if the function succeeds.\n
+	Otherwise, returns an error code.
+	\n\n\n\n
+ */
 /*
 	Rebinds, calls the protocol DisposeConfig, frees internal structures, and returns
 */
@@ -267,7 +308,13 @@ NMErr ProtocolDisposeConfig(
 //----------------------------------------------------------------------------------------
 // ProtocolGetConfigType
 //----------------------------------------------------------------------------------------
-
+/**
+	Utility function to return the type of a \ref PConfigRef.
+	@brief Utility function to return the type of a \ref PConfigRef.
+	@param config The config to return the type of.
+	@return The config's type.
+	\n\n\n\n
+ */
 NMType ProtocolGetConfigType( PConfigRef config )
 {
 	if( config )
@@ -279,7 +326,16 @@ NMType ProtocolGetConfigType( PConfigRef config )
 //----------------------------------------------------------------------------------------
 // ProtocolGetConfigString
 //----------------------------------------------------------------------------------------
-
+/**
+	Extracts a configuration string from a \ref PConfigRef.
+	@brief Extracts a configuration string from a \ref PConfigRef.
+	@param config the \ref PConfigRef to extract a configuration string from.
+	@param config_string The buffer where the configuration string should be placed.
+	@param max_length The length of the provided buffer.
+	@return \ref kNMNoError if the function succeeds.\n
+	Otherwise, returns an error code.
+	\n\n\n\n
+ */
 /*
 	get the configuration string.
 	(if you call it with a config_string of NULL, it will put the length into max_length for you..)
@@ -297,10 +353,10 @@ NMErr ProtocolGetConfigString(
 		{
 			err= config->NMGetConfig((NMProtocolConfigPriv*)config->configuration_data, config_string, &max_length);
 		} else {
-			err= errFunctionNotBound;
+			err= kNMFunctionNotBoundErr;
 		}
 	} else {
-		err= errBadConfig;
+		err= kNMInvalidConfigErr;
 	}
 	
 	return err;
@@ -309,6 +365,15 @@ NMErr ProtocolGetConfigString(
 //----------------------------------------------------------------------------------------
 // ProtocolGetConfigStringLen
 //----------------------------------------------------------------------------------------
+/**
+	Get the required length for a \ref PConfigRef 's configuration string.
+	@brief Get the required length for a \ref PConfigRef 's configuration string.
+	@param config The \ref PConfigRef whose configuration string length is to be extracted.
+	@param length Pointer to a value which is filled in with the configuration string's length.
+	@return \ref kNMNoError if the function succeeds.\n
+	Otherwise, returns an error code.
+	\n\n\n\n
+ */
 
 /*
 	get the configuration string.
@@ -326,10 +391,10 @@ NMErr ProtocolGetConfigStringLen(
 		{
 			*length= config->NMGetConfigLen((NMProtocolConfigPriv*)config->configuration_data);
 		} else {
-			err= errFunctionNotBound;
+			err= kNMFunctionNotBoundErr;
 		}
 	} else {
-		err= errBadConfig;
+		err= kNMInvalidConfigErr;
 	}
 	
 	return err;
@@ -338,6 +403,18 @@ NMErr ProtocolGetConfigStringLen(
 //----------------------------------------------------------------------------------------
 // ProtocolConfigPassThrough
 //----------------------------------------------------------------------------------------
+/**
+	Access NetModule-specific functionality for a \ref PConfigRef.
+	@brief Access NetModule-specific functionality for a \ref PConfigRef.
+	@param config The \ref PConfigRef on which the supplementary function acts.
+	@param inSelector An index that tells the NetModule which custom operation is to be done.
+	@param inParamBlock data to pass to the NetModule for the function.
+	@return \ref kNMNoError if the function succeeds.\n
+	\ref kNMUnknownPassThrough if the NetModule does not recognize the value of \e inSelector. \n
+	Otherwise, returns an error code.
+	\n\n\n\n
+ 
+ */
 
 NMErr ProtocolConfigPassThrough(
 	PConfigRef config, 
@@ -353,15 +430,16 @@ NMErr ProtocolConfigPassThrough(
 		{
 			err= config->NMFunctionPassThrough(NULL, inSelector, inParamBlock);
 		} else {
-			err= errFunctionNotBound;
+			err= kNMFunctionNotBoundErr;
 		}
 	} else {
-		err= errParamErr;
+		err= kNMParameterErr;
 	}
 
 	return err;
 }
 
+/** @}*/
 /* --------- local code */
 
 //----------------------------------------------------------------------------------------
@@ -452,7 +530,67 @@ static void build_find_protocol_search_start(
 	strcat(search_start->name, subfolder_name);
 
 #elif defined(posix_build)
-/*----------------------------------Linux Section-----------------------------*/
+/*----------------------------------Posix Section-----------------------------*/
+
+	// for the project-builder build, we load netmodules from bundles contained as
+	// resources within the openplay framework.  for all other posix builds,
+	// we load plugins from disk based on an absolute location specified
+	// by an environment variable (or a default location if not set)
+	#if (project_builder)
+	{
+		search_start->bundle = CFBundleGetBundleWithIdentifier(CFSTR("com.apple.OpenPlay"));
+		op_assert(search_start->bundle);
+		
+		/*CFBundleRef requestedBundle;
+		DEBUG_PRINT("gonna look for bundle");
+		requestedBundle = CFBundleGetBundleWithIdentifier(CFSTR("com.apple.OpenPlay"));
+		DEBUG_PRINT("looked for bundle - result 0x%X",requestedBundle);
+	
+		CFArrayRef moduleURLs;
+		moduleURLs = CFBundleCopyResourceURLsOfType(requestedBundle,CFSTR("netmodule"),CFSTR("OpenPlay Modules"));
+		long count = CFArrayGetCount(moduleURLs);
+		DEBUG_PRINT("%d values",count);
+		
+		{
+			Boolean didLoad = false;
+			CFBundleRef moduleBundle = NULL;
+			void *function;
+			long counter;
+			CFURLRef theURL;
+			char buffer[256];
+			
+			for (counter = 0;counter < count;counter++){
+				theURL = (CFURLRef)CFArrayGetValueAtIndex(moduleURLs,counter);
+				if (theURL){
+					if (CFURLGetFileSystemRepresentation(theURL,true,(UInt8*)buffer,sizeof(buffer)))
+						DEBUG_PRINT("got it.. %s",buffer);
+					else
+						DEBUG_PRINT("didnt get it");
+				}	
+				else
+					DEBUG_PRINT("couldnt get array value");
+				moduleBundle = CFBundleCreate(kCFAllocatorDefault,theURL);
+				if (moduleBundle){
+					//Try to load the executable from the bundle.
+					didLoad = CFBundleLoadExecutable(moduleBundle);
+					if (didLoad){
+						DEBUG_PRINT("loaded!");
+						function = (void*)CFBundleGetFunctionPointerForName(moduleBundle,CFSTR("_init"));
+						DEBUG_PRINT("our function: 0X%X",function);
+					}
+					else
+						DEBUG_PRINT("couldn't load");
+					CFRelease(moduleBundle);
+				}
+			}
+		}
+		
+		CFRelease(requestedBundle);
+		CFRelease(moduleURLs);
+		*/
+	}
+	//#endif
+	#else
   char *env_ptr;
 
   env_ptr = getenv("OPENPLAY_LIB");
@@ -470,7 +608,8 @@ static void build_find_protocol_search_start(
   }
   else
     strcpy(search_start->name, d_OPENPLAY_LIB_LOCATION);
-  
+#endif
+
 /*----------------------------------------------------------------------------*/
 
 #else
@@ -492,6 +631,12 @@ static NMBoolean find_protocol_callback(
 
       /* Fill in what we got.. */
       new_module.module_spec= *file;
+      
+      //keep the temporary bundle from being disposed 
+      #if (project_builder)
+		CFRetain(new_module.module_spec.bundle);
+      #endif
+      
       new_module.module.version= CURRENT_OPENPLAY_VERSION;
 
       /* Get the type and the name from the fragment. */
@@ -543,6 +688,8 @@ UNUSED_PARAMETER(file);
   WIN32_FIND_DATA *pb= (WIN32_FIND_DATA *) data;
   char *last_period;
 
+  UNUSED_PARAMETER(file);
+
   last_period = strrchr(pb->cFileName, '.');
   if(last_period)
   {
@@ -553,6 +700,10 @@ UNUSED_PARAMETER(file);
 #elif defined(posix_build)
 /*----------------------------------Posix Section-----------------------------*/
 
+#if (project_builder)
+	valid_protocol_module = true;
+#else
+	
   NMSInt32 namelen;
   NMSInt32 dirlen;
 
@@ -593,6 +744,7 @@ UNUSED_PARAMETER(file);
   }
 
 	//DEBUG_PRINT("Checked module \"%s\" return = %d\n", file->name, valid_protocol_module);
+#endif
 
 #else
 /*----------------------------------------------------------------------------*/

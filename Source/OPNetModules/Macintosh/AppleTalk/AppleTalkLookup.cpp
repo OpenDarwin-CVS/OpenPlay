@@ -51,7 +51,7 @@ enum NBPConstants
 //	notifier for asynchronous LookupName.  this method simply calls the AppleTalkLookup::Notify method,
 //	passing the appropriate arguments.
 
-static pascal void AppleTalkLookupNotifierProc(void* contextPtr, OTEventCode code, OSStatus theErr, void* cookie);
+static pascal void AppleTalkLookupNotifierProc(void* contextPtr, OTEventCode code, NMErr theErr, void* cookie);
 static void CreateLookup(char* lookup, StringPtr entityName, StringPtr nbpType, StringPtr theZone);
 
 //	------------------------------	Private Variables
@@ -129,10 +129,10 @@ AppleTalkLookup::~AppleTalkLookup()
 // AppleTalkLookup::Init
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 AppleTalkLookup::Init(OTNotifyUPP notifier, void* contextPtr)
 {
-OSStatus	status = kNMNoError;	
+NMErr	status = kNMNoError;	
 	
 	fNotifier 			= notifier;
 	fNotifierContext 	= contextPtr;	
@@ -183,10 +183,10 @@ OSStatus	status = kNMNoError;
 // AppleTalkLookup::StartLookup
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 AppleTalkLookup::StartLookup(Str32 name, Str32 type, Str32 zone)
 {
-OSStatus	status = kNMNoError;
+NMErr	status = kNMNoError;
 	
 	do
 	{
@@ -258,10 +258,10 @@ OSStatus	status = kNMNoError;
 // AppleTalkLookup::StartSearch
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 AppleTalkLookup::StartSearch(Str32 name, Str32 type)
 {
-OSStatus	err;
+NMErr	err;
 	
 	doCopyPStr(name, fSearchName);
 	doCopyPStr(type, fSearchType);
@@ -283,7 +283,7 @@ OSStatus	err;
 void
 AppleTalkLookup::SearchNextZones()
 {
-OSStatus	err			= kNMNoError;
+NMErr	err			= kNMNoError;
 Str32		zoneName;
 Str32		myZone;
 	
@@ -340,7 +340,7 @@ AppleTalkLookup::Reset()
 // AppleTalkLookup::GetFreeLookup
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 AppleTalkLookup::GetFreeLookup(TLookupRequest** request, TMyLookupReply** reply)
 {
 	*request	= NULL;
@@ -377,7 +377,7 @@ AppleTalkLookup::GetFreeLookup(TLookupRequest** request, TMyLookupReply** reply)
 // AppleTalkLookup::GetCount
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 AppleTalkLookup::GetCount(NMUInt32* count, NMBoolean* done)
 {
 	*done = HasPendingLookups() == false && (fZonesEnumerator == NULL || fLookingForZones == false);
@@ -390,10 +390,10 @@ AppleTalkLookup::GetCount(NMUInt32* count, NMBoolean* done)
 // AppleTalkLookup::GetIndexedItem
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 AppleTalkLookup::GetIndexedItem(OneBasedIndex index, Str32 name, Str32 type, Str32 zone, DDPAddress* address)
 {
-OSStatus	err = kNMNoError;
+NMErr	err = kNMNoError;
 	
 	if (index < 1 || index >  fRepliesCount)
 	{
@@ -460,7 +460,7 @@ AppleTalkLookup::CancelLookup()
 //----------------------------------------------------------------------------------------
 
 void
-AppleTalkLookup::Notify(OTEventCode event, OSStatus theErr, void* cookie)
+AppleTalkLookup::Notify(OTEventCode event, NMErr theErr, void* cookie)
 {
 	//	if there was no data returned from the lookup
 	//	we just turn it into a lookup complete event.
@@ -653,10 +653,10 @@ AppleTalkLookup::Notify(OTEventCode event, OSStatus theErr, void* cookie)
 // AppleTalkLookup::OpenMapper
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 AppleTalkLookup::OpenMapper()
 {
-OSStatus	status = kNMNoError;
+NMErr	status = kNMNoError;
 	
 	if (fMapper != NULL)
 	{
@@ -725,7 +725,7 @@ AppleTalkLookup::Sort()
 //----------------------------------------------------------------------------------------
 
 static pascal void
-AppleTalkLookupNotifierProc(void* contextPtr, OTEventCode code, OSStatus theErr, void* cookie)
+AppleTalkLookupNotifierProc(void* contextPtr, OTEventCode code, NMErr theErr, void* cookie)
 {
 AppleTalkLookup	*theLookup = (AppleTalkLookup *) contextPtr;
 	
@@ -774,10 +774,10 @@ CreateLookup(char* lookup, StringPtr entityName, StringPtr nbpType, StringPtr th
 // AppleTalkLookup::CreateIndexList
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 AppleTalkLookup::CreateIndexList()
 {
-OSStatus	err = kNMNoError;
+NMErr	err = kNMNoError;
 	
 	fIndexList = (NMUInt8 **) InterruptSafe_alloc(kIndexListChunkSize * sizeof (NMUInt8 *));
 	
@@ -809,10 +809,10 @@ AppleTalkLookup::DeleteIndexList()
 // AppleTalkLookup::GrowIndexList
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 AppleTalkLookup::GrowIndexList(NMSInt16 growBy)
 {
-OSStatus	err = kNMNoError;
+NMErr	err = kNMNoError;
 	
 	if (fRepliesCount + growBy - 1 >= fIndexListSize)
 	{
@@ -844,10 +844,10 @@ OSStatus	err = kNMNoError;
 // AppleTalkLookup::CreateRepliesList
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 AppleTalkLookup::CreateRepliesList()
 {
-OSStatus	err = kNMNoError;
+NMErr	err = kNMNoError;
 	
 	fRepliesList = (NMUInt8 *) InterruptSafe_alloc(kRepliesListChunkSize);
 	
@@ -894,10 +894,10 @@ NMUInt8	*buffer = fRepliesList;
 // AppleTalkLookup::GrowRepliesList
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 AppleTalkLookup::GrowRepliesList(NMSInt16 growBy)
 {
-OSStatus	err = kNMNoError;
+NMErr	err = kNMNoError;
 	
 	if (fNextReplyPtr + growBy >= fRepliesListEndPtr)
 	{

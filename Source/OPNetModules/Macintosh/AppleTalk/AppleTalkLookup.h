@@ -72,13 +72,13 @@
 							//	frees all memory and deletes all items in the lookup list.
 			
 			
-			OSStatus		Init(OTNotifyUPP notifier, void* contextPtr);
+			NMErr		Init(OTNotifyUPP notifier, void* contextPtr);
 			//	initializes the AppleTalk lookup.  the notifier is called when data is available,
 			//	when the lookup is complete, and when a error occurs.  contextPtr will be passed
 			//	as the contextPtr parameter when the notifier is called.
 			
 
-			OSStatus		StartLookup(Str32 name, Str32 type, Str32 zone);
+			NMErr		StartLookup(Str32 name, Str32 type, Str32 zone);
 			//	begins an AppleTalk lookup.
 			//	name may be a fully specified name, a partial name, or an empty name
 			//	a partial name must contain the 'Å' character.
@@ -86,7 +86,7 @@
 			
 			
 			
-			OSStatus		StartSearch(Str32 name, Str32 type);
+			NMErr		StartSearch(Str32 name, Str32 type);
 			//	begins anAppleTalk lookup.
 			//	name may be a fully specified name, a partial name, or an empty name
 			//	a partial name must contain the 'Å' character.
@@ -94,13 +94,13 @@
 			
 			
 			
-			OSStatus		GetCount(NMUInt32* count, NMBoolean* done);
+			NMErr		GetCount(NMUInt32* count, NMBoolean* done);
 			//	returns the number of entities found so far.  if the lookup
 			//	has completed, then done will be set to true, otherwise it will
 			//	be set to false.
 			
 			
-			OSStatus		GetIndexedItem(OneBasedIndex index, Str32 name, Str32 type, Str32 zone, DDPAddress* address);
+			NMErr		GetIndexedItem(OneBasedIndex index, Str32 name, Str32 type, Str32 zone, DDPAddress* address);
 			//	returns the indexth item in the list.
 			
 			
@@ -117,7 +117,7 @@
 			//	sorts the list.		
 			
 
-			void			Notify(OTEventCode event, OSStatus theErr, void* cookie);
+			void			Notify(OTEventCode event, NMErr theErr, void* cookie);
 			//	this method is called by the OpenTransport notifier.  do not call this method.
 			
 			
@@ -129,24 +129,24 @@
 			
 		private:
 
-			OSStatus		OpenMapper();
+			NMErr		OpenMapper();
 			//	opens the mapper, making it ready for a lookup to start
 			 
 			void 			CloseMapper();
 			//	closes the Mapper
 
-			OSStatus		GetFreeLookup(TLookupRequest** request, TMyLookupReply** reply);
+			NMErr		GetFreeLookup(TLookupRequest** request, TMyLookupReply** reply);
 			// returns a free lookup request, returns NULL if none avaialble
 			
 			inline NMBoolean		HasPendingLookups() { return fPendingLookups > 0; }
 			// returns true if some lookups are still pending
 			
-			OSStatus		CreateIndexList();
-			OSStatus		GrowIndexList(NMSInt16 growBy);
+			NMErr		CreateIndexList();
+			NMErr		GrowIndexList(NMSInt16 growBy);
 			void			DeleteIndexList();
 			
-			OSStatus		CreateRepliesList();
-			OSStatus		GrowRepliesList(NMSInt16 growBy);
+			NMErr		CreateRepliesList();
+			NMErr		GrowRepliesList(NMSInt16 growBy);
 			void			DeleteRepliesList();
 			
 			NMBoolean		HasMoreZonesToSearch();
@@ -158,7 +158,7 @@
 				kConcurrentLookups	= 32
 			};
 			
-			OSStatus				fErr;
+			NMErr				fErr;
 			DDPAddress				fDDPAddress;
 			TLookupRequest			fRequest[kConcurrentLookups];
 			TMyLookupReply			fReply[kConcurrentLookups];

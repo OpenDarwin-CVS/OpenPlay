@@ -45,25 +45,25 @@
 		~NSpGameSlave();
 
 	//	Method for joining
-				OSStatus	Join(ConstStr31Param inPlayerName, ConstStr31Param inPassword, NSpPlayerType inType,
+				NMErr	Join(NMConstStr31Param inPlayerName, NMConstStr31Param inPassword, NSpPlayerType inType,
 									void *inCustomData, NMUInt32 inCustomDataLen,  NSpAddressReference inAddress);
 		
 	//	Methods for handling events
 
 		virtual void		HandleNewEvent(ERObject *inERObject, CEndpoint *inEndpoint, void *inCookie);
 						
-				OSStatus 	SendJoinRequest(ConstStr31Param inPlayerName, ConstStr31Param inPassword, 
+				NMErr 	SendJoinRequest(NMConstStr31Param inPlayerName, NMConstStr31Param inPassword, 
 											NSpPlayerType inType, void *inCustomData, NMUInt32 inCustomDataLen);
-		virtual OSStatus	SendUserMessage(NSpMessageHeader *inMessage, NSpFlags inFlags);
-		virtual OSStatus	SendTo(NSpPlayerID inTo, NMSInt32 inWhat, void *inData, NMUInt32 inLen, NSpFlags inFlags);
-		virtual OSStatus	PrepareForDeletion(NSpFlags inFlags);
+		virtual NMErr	SendUserMessage(NSpMessageHeader *inMessage, NSpFlags inFlags);
+		virtual NMErr	SendTo(NSpPlayerID inTo, NMSInt32 inWhat, void *inData, NMUInt32 inLen, NSpFlags inFlags);
+		virtual NMErr	PrepareForDeletion(NSpFlags inFlags);
 		
-		virtual	OSStatus	HandleEndpointDisconnected(CEndpoint *inEndpoint);
+		virtual	NMErr	HandleEndpointDisconnected(CEndpoint *inEndpoint);
 		virtual void		IdleEndpoints(void);
 
 	protected:
 		virtual	NMBoolean	RemovePlayer(NSpPlayerID inPlayer, NMBoolean inDisconnect);
-				OSStatus	MakeGroupListFromJoinApprovedMessage(NSpGroupInfoPtr inGroups, NMUInt32 inCount);	
+				NMErr		MakeGroupListFromJoinApprovedMessage(NSpGroupInfoPtr *inGroups, NMUInt32 inCount);	
 				NMBoolean	HandleJoinApproved(TJoinApprovedMessagePrivate *inMessage, NMUInt32 inTimeReceived);		
 				NMBoolean	HandleJoinDenied(NSpJoinDeniedMessage *inMessage);	
 				NMBoolean	HandlePlayerJoined(NSpPlayerJoinedMessage *inMessage);

@@ -102,7 +102,7 @@ EndpointHander::~EndpointHander()
 // EndpointHander::DoIt
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 EndpointHander::DoIt(void)
 {
 	DEBUG_ENTRY_EXIT("EndpointHander::DoIt");
@@ -142,7 +142,7 @@ EndpointHander::DoIt(void)
 // EndpointHander::GetStreamEP
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 EndpointHander::GetStreamEP(void)
 {
 	DEBUG_ENTRY_EXIT("EndpointHander::GetStreamEP");
@@ -203,7 +203,7 @@ EndpointHander::GetStreamEP(void)
 // EndpointHander::GetDatagramEP
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 EndpointHander::GetDatagramEP(void)
 {
 	DEBUG_ENTRY_EXIT("EndpointHander::GetDatagramEP");
@@ -290,12 +290,12 @@ EndpointHander::GetDatagramEP(void)
 // EndpointHander::Finish
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 EndpointHander::Finish(void)
 {
 	DEBUG_ENTRY_EXIT("EndpointHander::Finish");
 
-OSStatus	status;
+NMErr	status;
 		
 	OTRemoveNotifier(mNewEP->mStreamEndpoint->mEP);
 	OTInstallNotifier(mNewEP->mStreamEndpoint->mEP, mNewEP->mNotifier.fUPP, mNewEP->mStreamEndpoint);
@@ -340,9 +340,11 @@ EndpointHander::Notifier(
 	OTResult	result,
 	void		*cookie)
 {
-	OSStatus status;
+	NMErr status;
 	DEBUG_ENTRY_EXIT("EndpointHander::Notifier");
 	EndpointHander *epHander = (EndpointHander *) contextPtr;
+
+	UNUSED_PARAMETER(result);
 
 	switch (code)
 	{

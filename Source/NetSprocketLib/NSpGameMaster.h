@@ -53,40 +53,41 @@
 		enum { class_ID = 'Mstr' };
 		enum { kLowPriorityPollFrequency = 10};
 		
-					NSpGameMaster(NMUInt32 inMaxPlayers, ConstStr31Param inGameName, ConstStr31Param inPassword, 
+					NSpGameMaster(NMUInt32 inMaxPlayers, NMConstStr31Param inGameName, NMConstStr31Param inPassword, 
 									NSpTopology inTopology, NSpFlags inFlags);
 					
 		virtual		~NSpGameMaster();
 
 	//	Methods for advertising and unadvertising
-				OSStatus		HostAT(NSpProtocolPriv *inProt);
-				OSStatus		HostIP(NSpProtocolPriv *inProt);
-				OSStatus		UnHostAT(void);
-				OSStatus		UnHostIP(void);
+				NMErr		HostAT(NSpProtocolPriv *inProt);
+				NMErr		HostIP(NSpProtocolPriv *inProt);
+				NMErr		UnHostAT(void);
+				NMErr		UnHostIP(void);
 
-				OSStatus		AddLocalPlayer(ConstStr31Param inPlayerName, NSpPlayerType inPlayerType, NSpProtocolPriv *theProt);
-				OSStatus		GetPlayerIPAddress(const NSpPlayerID inPlayerID, char *outAddress);
+				NMErr		AddLocalPlayer(NMConstStr31Param inPlayerName, NSpPlayerType inPlayerType, NSpProtocolPriv *theProt);
+				NMErr		FreePlayerAddress(void **outAddress);
+				NMErr		GetPlayerIPAddress(const NSpPlayerID inPlayerID, char **outAddress);
 
 	#if macintosh_build
-				OSStatus		GetPlayerAddress(const NSpPlayerID inPlayerID, OTAddress **outAddress);
+				NMErr		GetPlayerAddress(const NSpPlayerID inPlayerID, OTAddress **outAddress);
 	#endif	/*	macintosh_build	*/
 
-				OSStatus		ChangePlayerType(const NSpPlayerID inPlayerID, const NSpPlayerType inNewType);
-				OSStatus		ForceRemovePlayer(const NSpPlayerID inPlayerID);
+				NMErr		ChangePlayerType(const NSpPlayerID inPlayerID, const NSpPlayerType inNewType);
+				NMErr		ForceRemovePlayer(const NSpPlayerID inPlayerID);
 				
 	//	Methods for handling events
-				OSStatus		InstallJoinRequestHandler(NSpJoinRequestHandlerProcPtr inHandler, void *inContext);
-		virtual	OSStatus		HandleEndpointDisconnected(CEndpoint *inEndpoint);
+				NMErr		InstallJoinRequestHandler(NSpJoinRequestHandlerProcPtr inHandler, void *inContext);
+		virtual	NMErr		HandleEndpointDisconnected(CEndpoint *inEndpoint);
 		virtual void			IdleEndpoints(void);
 		
 	//	Methods for sending data
-		virtual OSStatus		SendUserMessage(NSpMessageHeader *inMessage, NSpFlags inFlags);
-		virtual OSStatus		SendSystemMessage(NSpMessageHeader *inMessage, NSpFlags inFlags);
-		virtual OSStatus		SendTo(NSpPlayerID inTo, NMSInt32 inWhat, void *inData, NMUInt32 inLen, NSpFlags inFlags);
+		virtual NMErr		SendUserMessage(NSpMessageHeader *inMessage, NSpFlags inFlags);
+		virtual NMErr		SendSystemMessage(NSpMessageHeader *inMessage, NSpFlags inFlags);
+		virtual NMErr		SendTo(NSpPlayerID inTo, NMSInt32 inWhat, void *inData, NMUInt32 inLen, NSpFlags inFlags);
 		
 	//	Methods for handing incoming data
 		virtual	void			HandleNewEvent(ERObject *inERObject, CEndpoint *inEndpoint, void *inCookie);
-		virtual OSStatus		PrepareForDeletion(NSpFlags inFlags);
+		virtual NMErr		PrepareForDeletion(NSpFlags inFlags);
 
 	//	Accessors
 		inline	void			SetMaxRTT(NMUInt32 inMaxRTT) { mMaxRTT = inMaxRTT;}
@@ -100,18 +101,18 @@
 		virtual	NMBoolean	RemovePlayer(NSpPlayerID inPlayer, NMBoolean inDisconnect);
 				NMBoolean 	ProcessSystemMessage(NSpMessageHeader *inMessage, NMBoolean *doForward);
 				NMBoolean	HandleJoinRequest(NSpJoinRequestMessage *inMessage, CEndpoint *inEndpoint, void *inCookie, NMUInt32 inReceivedTime);	
-				OSStatus	MakeJoinApprovedMessage(TJoinApprovedMessagePrivate **theMessage, NSpPlayerEnumerationPtr thePlayers,
+				NMErr		MakeJoinApprovedMessage(TJoinApprovedMessagePrivate **theMessage, NSpPlayerEnumerationPtr thePlayers,
 													NSpGroupEnumerationPtr theGroups, NSpPlayerID inPlayer, NMUInt32 inReceivedTime);
 				NMBoolean	IsCorrectPassword(const NMUInt8 *inPassword);
-				OSStatus	SendJoinApproved(CEndpoint *inEndpoint, NSpPlayerID inID, NMUInt32 inReceivedTime);
-				OSStatus	SendJoinDenied(CEndpoint *inEndpoint, void *inCookie, const NMUInt8 *inMessage);		
-				OSStatus	SendPauseGame(void);
-				OSStatus	SendBecomeHostRequest(void);
-				OSStatus	NotifyPlayerJoined(NSpPlayerInfo *info);
-				OSStatus	ForwardMessage(NSpMessageHeader *inMessage);
-				OSStatus	RouteMessage(NSpMessageHeader *inHeader, NMUInt8 *inBody, NSpFlags inFlags);
+				NMErr		SendJoinApproved(CEndpoint *inEndpoint, NSpPlayerID inID, NMUInt32 inReceivedTime);
+				NMErr		SendJoinDenied(CEndpoint *inEndpoint, void *inCookie, const NMUInt8 *inMessage);		
+				NMErr		SendPauseGame(void);
+				NMErr		SendBecomeHostRequest(void);
+				NMErr		NotifyPlayerJoined(NSpPlayerInfo *info);
+				NMErr		ForwardMessage(NSpMessageHeader *inMessage);
+				NMErr		RouteMessage(NSpMessageHeader *inHeader, NMUInt8 *inBody, NSpFlags inFlags);
 				NMBoolean	NegotiateNewHost(void);	
-				OSStatus	SendJoinRequest(ConstStr31Param inPlayerName, NSpPlayerType inType);
+				NMErr		SendJoinRequest(NMConstStr31Param inPlayerName, NSpPlayerType inType);
 
 		NSpPlayerID		mNextAvailablePlayerNumber;
 		NSpGroupID		mNextPlayersGroupStartRange;

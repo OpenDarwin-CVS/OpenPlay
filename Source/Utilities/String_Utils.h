@@ -52,6 +52,11 @@ extern "C" {
 		#define c2pstr(aStr) (c2pstrcpy((StringPtr)aStr, aStr) , (StringPtr) aStr)
 	#endif // carbon_build
 
+	//utils for manipulating config string items
+	NMBoolean 	doGetConfigSubString(char *configStr, char *itemName, char *buffer, long bufferLen);
+	
+	// appends a name/value pair to a config string or, if already there, modifies it
+	void		doSetConfigSubString(char *configStr, char *itemName, char *itemValue);
 #ifdef __cplusplus
 }
 #endif // __cplusplus

@@ -154,8 +154,62 @@ NMBoolean doComparePStr(const NMUInt8 *stringOne, const NMUInt8 *stringTwo)
 
 
 
+//----------------------------------------------------------------------------------------
+// doGetConfigSubString
+//----------------------------------------------------------------------------------------
+//obtain the value of an item within a config string
+NMBoolean 	doGetConfigSubString(char *configStr, char *itemName, char *buffer, long bufferLen)
+{
+	char *value = strstr(configStr,itemName);
+	if (value == NULL){
+		return false;
+	}
+	value += strlen(itemName) + 1;
+	
+	while ((bufferLen > 1) && (*value != '\n') && (*value != '\r') && (*value != '\0') && (*value != '\t')){
+		*buffer++ = *value++;
+		bufferLen--;
+	}
+	if (bufferLen > 0)
+		*buffer++ = 0;
+		
+	return true;
+}
 
 
+//----------------------------------------------------------------------------------------
+// doSetConfigSubString
+//----------------------------------------------------------------------------------------
+
+//set the value of an item within a config string, or append it if it does not exist
+
+void		doSetConfigSubString(char *configStr, char *itemName, char *itemValue)
+{
+	char buffer[256];
+	char *nameStart;
+	
+	//copy all to buffer first
+	strcpy(buffer,configStr);
+	
+	nameStart = strstr(buffer, itemName);
+
+	//if its not in the string, just append it at the end
+	if (nameStart == NULL){
+		sprintf(configStr,"%s\t%s=%s",buffer,itemName,itemValue);
+		return;
+	}	
+
+	//replace first char of namestart with a term char so the first part is its own string
+	*nameStart = 0;
+	nameStart++;
+	
+	//now move past the current contents till we hit a space, tab, or end
+	while ((*nameStart != ' ') && (*nameStart != 0) && (*nameStart != 0x09)){
+		nameStart++;
+	}	
+	sprintf(configStr,"%s%s=%s%s",buffer,itemName,itemValue,nameStart);
+
+}
 
 
 

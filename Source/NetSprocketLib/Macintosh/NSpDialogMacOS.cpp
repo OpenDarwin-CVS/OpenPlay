@@ -213,6 +213,8 @@ NSpDoModalJoinDialog( const unsigned char  inGameType[ kNSpStr32Len ],
 	unsigned char     gameNameStr[ kNSpStr32Len ] = "";
 	NMBoolean  success;
 		
+	UNUSED_PARAMETER(inEntityListLabel);
+
 	success = NSpDoModalDialog( kNSpJoinDialog, 
 	                           gameNameStr, 
 	                           ioName, 
@@ -269,6 +271,8 @@ NSpDoModalDialog( eDialogMode mode,
 //	unsigned char   passwdPStr[ kNSpStr32Len ];
 	NMBoolean       status = true;
 	NMBoolean		aCloseResourceFile = false;
+	
+	UNUSED_PARAMETER(inEventProcPtr);
 	
 	machine_mem_zero( gIPAddressStr, kNSpIPAddrStrSize );
 	machine_mem_zero( gIPPortStr, kNSpStr32Len );

@@ -48,6 +48,7 @@
 
 #if (macintosh_build)
 	#if (!macho_build)
+		#include <OpenTransport.h>
 		#include <Dialogs.h>
 	#endif
 #elif (windows_build)
@@ -106,31 +107,31 @@ static void doP2CStr(char *str)
 
 //we don't use \p formatted strings cuz they're not always supported
 //we just set them to normal c strings and convert at runtime...
-/*Str31  NBPName = "\pDogCow";
-Str31  NBPType = "\pNSpT";		// Must be a 4 character string.  CRT, July 2, 2000
-Str31  kConstPlayerName = "\pClarus";
-Str31  kGameName = "\pDogCow";
-Str31  kPlayerName = "\pClarus";
-Str31  kMyPassword = "\pMoof";*/
+/*NMStr31  NBPName = "\pDogCow";
+NMStr31  NBPType = "\pNSpT";		// Must be a 4 character string.  CRT, July 2, 2000
+NMStr31  kConstPlayerName = "\pClarus";
+NMStr31  kGameName = "\pDogCow";
+NMStr31  kPlayerName = "\pClarus";
+NMStr31  kMyPassword = "\pMoof";*/
 
-Str31  NBPName = "DogCow";
-Str31  NBPType = "NSpT";
-Str31  kConstPlayerName = "Clarus";
-Str31  kGameName = "DogCow";
-Str31  kPlayerName = "Clarus";
-Str31  kMyPassword = "Moof";
+NMStr31  NBPName = "DogCow";
+NMStr31  NBPType = "NSpT";
+NMStr31  kConstPlayerName = "Clarus";
+NMStr31  kGameName = "DogCow";
+NMStr31  kPlayerName = "Clarus";
+NMStr31  kMyPassword = "Moof";
 
 NSpPlayerType    kPlayerType = 1;
 NSpPlayerID      kPlayerID = 0;
 
-const InetPort  kTCP_Port = 25710;
+const NMInetPort  kTCP_Port = 25710;
 const NMUInt32  kMaxPlayers = 16;
 
 NSpPlayerID			ourNSpID = 12345;
 
 /* --------------  Function Prototypes  -------------- */
 
-void  Check_Error( const char* errMessage, OSStatus error );
+void  Check_Error( const char* errMessage, NMErr error );
 void  Init_NetSprocket( void );
 
     /* --------------  Dialog Functions  -------------- */
@@ -209,10 +210,9 @@ void  Enable_Advertising( NMBoolean state,
                           NSpGameReference gGameObject, 
                           NSpProtocolReference gProtocolRef );
                         
-NumVersion  Get_Version( void );    // Kind of silly - Should just do it in place....
+NMNumVersion  Get_Version( void );    // Kind of silly - Should just do it in place....
 void        Set_Connect_Timeout( NMUInt32 seconds );    // Same here....
 NMUInt32    Get_Current_TimeStamp( NSpGameReference  gGameObject );
-NMUInt32    Get_Player_IP( NSpGameReference  gGameObject, NSpPlayerID whichPlayer, char *theAddress);
 
 
     /* --------------  Asynchronous Routines -------------- */
@@ -368,7 +368,7 @@ main( void )
 
 
 void
-Check_Error( const char* errMessage, OSStatus error )
+Check_Error( const char* errMessage, NMErr error )
 {
 	if ( error != kNMNoError ) {
 		cerr << errMessage << endl;
@@ -380,7 +380,7 @@ Check_Error( const char* errMessage, OSStatus error )
 void 
 Init_NetSprocket( void )
 {
-	OSStatus error = NSpInitialize( 0, 0, 0, d_GAME_ID, 0 );
+	NMErr error = NSpInitialize( 0, 0, 0, d_GAME_ID, 0 );
 
 	Check_Error( "Error: Init_NetSprocket(), initing NSp.", error );
 
@@ -724,6 +724,9 @@ Do_Utilities( NSpGameReference gGameObject )
 		cout << "\t 3) Get Current Timestamp" << endl;
 		cout << "\t 4) Set Connect Timeout..." << endl;
 		cout << "\t 5) Get Player IP Address..." << endl;
+#if mac_cfm_build
+		cout << "\t 6) Get Player OT Address..." << endl;
+#endif
 		cout << "\t b) Back to Main Menu" << endl << endl;
 		cout << "Command: " ;
 		cin >> command;
@@ -736,7 +739,7 @@ Do_Utilities( NSpGameReference gGameObject )
 			}	
 			case '2':
 			{
-				NumVersion  v = Get_Version();
+				NMNumVersion  v = Get_Version();
 				cout << endl << "Version (see NSpTypes.h):  " 
 				     << hex << (short) v.majorRev << " "
 				     << hex << (short) v.minorAndBugRev << " "
@@ -763,20 +766,57 @@ Do_Utilities( NSpGameReference gGameObject )
 			case '5':
 			{
 				NSpPlayerID  	whichPlayer;
-				char			theAddress[16];
-				OSStatus		error;
+				char			*theAddress;
+				NMErr			error;
 				
 				cout << "Enter player ID: ";
 				cin >> whichPlayer;
-				error = NSpPlayer_GetIPAddress( gGameObject, whichPlayer, theAddress );	
+				error = NSpPlayer_GetIPAddress( gGameObject, whichPlayer, &theAddress );	
 				
-				Check_Error( "Error: Get_Player_IP(), getting address.", error );
+				Check_Error( "Error: NSpPlayer_GetIPAddress(), getting address.", error );
 				
 				if (error == kNMNoError)
-					cout << "Player's IP Address is:" << theAddress << endl;
-				
+				{
+					cout << "Player's IP Address is: " << theAddress << endl;
+					NSpPlayer_FreeAddress( gGameObject, (void **)&theAddress );
+				}				
 				break;
-			}	
+			}
+#if mac_cfm_build
+			case '6':
+			{
+				NSpPlayerID  	whichPlayer;
+				OTAddress 		*theAddress;
+				NMErr		error;
+				
+				cout << "Enter player ID: ";
+				cin >> whichPlayer;
+				error = NSpPlayer_GetOTAddress( gGameObject, whichPlayer, &theAddress );	
+				
+				Check_Error( "Error: NSpPlayer_GetIPAddress(), getting address.", error );
+				
+				if (error == kNMNoError)
+				{
+					switch( theAddress->fAddressType )
+					{
+						case AF_INET:
+							cout << "AF_INET Address type, Host: " <<
+									((((InetAddress *)theAddress)->fHost & 0xFF000000) >> 24) << "." <<
+									((((InetAddress *)theAddress)->fHost & 0x00FF0000) >> 16) << "." <<
+									((((InetAddress *)theAddress)->fHost & 0x0000FF00) >>  8) << "." <<
+									((((InetAddress *)theAddress)->fHost & 0x000000FF) >>  0) <<
+									" Port: " << ((InetAddress *)theAddress)->fPort << endl;
+							break;
+
+						case AF_DNS:
+							cout << "AF_DNS Address type, Host Name: " << ((DNSAddress *)theAddress)->fName << endl;
+							break;
+					}
+					NSpPlayer_FreeAddress( gGameObject, (void **)&theAddress );
+				}				
+				break;
+			}
+#endif
 			case 'b':
 			{
 				done = true; break;
@@ -925,7 +965,7 @@ Enable_Advertising( NMBoolean state, NSpGameReference  gGameObject, NSpProtocolR
 		return;
 	}
 
-	OSStatus error = NSpGame_EnableAdvertising( gGameObject, 
+	NMErr error = NSpGame_EnableAdvertising( gGameObject, 
 	                                            gProtocolRef, 
 	                                            state
 	                                          );
@@ -944,7 +984,7 @@ Host_Game( NSpGameReference  &gGameObject, NSpProtocolListReference  gProtocolLi
 		return;
 	}
 
-	OSStatus error = NSpGame_Host( &gGameObject, 
+	NMErr error = NSpGame_Host( &gGameObject, 
 	                               gProtocolListRef, 
 	                               kMaxPlayers, 
 	                               kGameName,
@@ -971,7 +1011,7 @@ Join_Game( NSpGameReference  &gGameObject, NSpAddressReference  addressRef)
 	char					denyReason[64]="Error from NSpGame_Join().\0";
 	NSpAddressReference		newAddressReference = NULL;
 //	char					testConfigString[256];
-//	OSStatus				theStatus;
+//	NMErr				theStatus;
 		
 	if ( addressRef == NULL ) {
 	    
@@ -1025,7 +1065,7 @@ Join_Game( NSpGameReference  &gGameObject, NSpAddressReference  addressRef)
 	if (theStatus == kNMNoError)
 		cout << testConfigString << endl;
 */
-	OSStatus error = NSpGame_Join( &gGameObject, 
+	NMErr error = NSpGame_Join( &gGameObject, 
 	                               addressRef, 
 	                               kPlayerName, 
 	                               kMyPassword,
@@ -1106,7 +1146,7 @@ Join_Game_IP( NSpGameReference  &gGameObject)
 NSpAddressReference  	addressRef;
 char					theIPAddress[16];
 //char					testConfigString[256];
-//OSStatus				theStatus;
+//NMErr				theStatus;
 
 	cout << "Enter host IP address:";
 	cin >> theIPAddress;
@@ -1216,7 +1256,7 @@ Dispose_Game( NSpGameReference  &gGameObject )
 		return;
 	}
 
-	OSStatus error = NSpGame_Dispose( gGameObject, 
+	NMErr error = NSpGame_Dispose( gGameObject, 
 	                                  kNSpGameFlag_ForceTerminateGame
 	                                );
 
@@ -1239,7 +1279,7 @@ Get_Game_Info( NSpGameReference  gGameObject )
 		return;
 	}
 
-	OSStatus error = NSpGame_GetInfo( gGameObject, &gameInfo);
+	NMErr error = NSpGame_GetInfo( gGameObject, &gameInfo);
 
 	Check_Error( "Error: Get_Game_Info(), getting game info.", error );
 	
@@ -1296,7 +1336,7 @@ Send_Message( NSpGameReference  gGameObject, int messageType )
 										strlen(gDataToSend->dataStr) + 1;
 	
 	
-	OSStatus error = NSpMessage_Send(gGameObject, &gDataToSend->header, messageType);
+	NMErr error = NSpMessage_Send(gGameObject, &gDataToSend->header, messageType);
 	                                
 	Check_Error( "Error: Send_Message(), sending message.", error );
 }
@@ -1323,7 +1363,7 @@ Send_Message_To( NSpGameReference  gGameObject )
 	
 	dataSize = strlen(data) + 1;
 	                                
-	OSStatus error = NSpMessage_SendTo( gGameObject, 
+	NMErr error = NSpMessage_SendTo( gGameObject, 
 	                                    whichPlayer,
 	                                    kMyMessageType,
 	                                    data,
@@ -1486,7 +1526,7 @@ Get_Player_Info( NSpGameReference  gGameObject )
 	NSpPlayerInfo		*playerInfoPtr;
 	NSpPlayerID			whichPlayer;
 	int					groupIndex;
-	OSStatus 			error;
+	NMErr 			error;
 	
 	
 	
@@ -1552,7 +1592,7 @@ Change_Player_Type( NSpGameReference  gGameObject )
 {
 	NSpPlayerID			whichPlayer;
 	NSpPlayerType		whichType;
-	OSStatus			error;
+	NMErr			error;
 	
 	
 	if ( gGameObject == NULL ) {
@@ -1579,7 +1619,7 @@ void
 Remove_Player( NSpGameReference  gGameObject )
 {
 	NSpPlayerID			whichPlayer;
-	OSStatus			error;
+	NMErr			error;
 
 	if ( gGameObject == NULL ) {
 	    
@@ -1603,7 +1643,7 @@ Remove_Player( NSpGameReference  gGameObject )
 void
 Enumerate_Players( NSpGameReference  gGameObject )
 {
-	OSStatus					error;
+	NMErr					error;
 	NSpPlayerInfoPtr			playerInfoPtr;
 	NSpPlayerEnumerationPtr		playerEnumPtr;
 	int							playerIndex;
@@ -1657,7 +1697,7 @@ Get_Group_Info( NSpGameReference  gGameObject )
 	NSpGroupInfo		*groupInfoPtr;
 	NSpGroupID			whichGroup;
 	int					playerIndex;
-	OSStatus 			error;
+	NMErr 			error;
 	
 
 	if ( gGameObject == NULL ) {
@@ -1693,7 +1733,7 @@ Add_Player_Group( NSpGameReference  gGameObject )
 {
 	NSpPlayerID		whichPlayer;
 	NSpGroupID		whichGroup;
-	OSStatus		error;
+	NMErr		error;
 	
 	if ( gGameObject == NULL ) {
 	    
@@ -1720,7 +1760,7 @@ Remove_Player_Group( NSpGameReference  gGameObject )
 {
 	NSpPlayerID		whichPlayer;
 	NSpGroupID		whichGroup;
-	OSStatus		error;
+	NMErr		error;
 	
 	if ( gGameObject == NULL ) {
 	    
@@ -1745,7 +1785,7 @@ Remove_Player_Group( NSpGameReference  gGameObject )
 void
 Enumerate_Groups( NSpGameReference  gGameObject )
 {
-	OSStatus					error;
+	NMErr					error;
 	NSpGroupInfoPtr				groupInfoPtr;
 	NSpGroupEnumerationPtr		groupEnumPtr;
 	int							playerIndex;
@@ -1791,7 +1831,7 @@ void
 Create_New_Group( NSpGameReference  gGameObject )
 {
 	NSpGroupID		newGroup;
-	OSStatus		error;
+	NMErr		error;
 	
 	if ( gGameObject == NULL ) {
 	    
@@ -1812,7 +1852,7 @@ void
 Delete_Group( NSpGameReference  gGameObject )
 {
 	NSpGroupID		whichGroup;
-	OSStatus		error;
+	NMErr		error;
 	
 	if ( gGameObject == NULL ) {
 	    
@@ -1842,7 +1882,7 @@ Create_Empty_Protocol_List( NSpProtocolListReference  &gProtocolListRef )
 		cerr << "Warning: Create_Empty_Protocol_List(), overwriting existing protocol list." << endl;
 	}
 	
-	OSStatus  error = NSpProtocolList_New( NULL, &gProtocolListRef );
+	NMErr  error = NSpProtocolList_New( NULL, &gProtocolListRef );
 	
 	Check_Error( "Error: Create_Empty_Protocol_List(), creating list.", error );
 }
@@ -1859,7 +1899,7 @@ Append_To_Protocol_List( NSpProtocolListReference  gProtocolListRef,
 		return;
 	}
 
-	OSStatus  error = NSpProtocolList_Append( gProtocolListRef, gProtocolRef );
+	NMErr  error = NSpProtocolList_Append( gProtocolListRef, gProtocolRef );
 	
 	Check_Error( "Error: Append_To_Protocol_List(), appending to list.", error );
 }
@@ -1876,7 +1916,7 @@ Remove_From_Protocol_List( NSpProtocolListReference  gProtocolListRef,
 		return;
 	}
 
-	OSStatus  error = NSpProtocolList_Remove( gProtocolListRef, gProtocolRef );
+	NMErr  error = NSpProtocolList_Remove( gProtocolListRef, gProtocolRef );
 	
 	Check_Error( "Error: Remove_From_Protocol_List(), removing from list.", error );
 }
@@ -1893,7 +1933,7 @@ Remove_Indexed_From_Protocol_List( NSpProtocolListReference  gProtocolListRef,
 		return;
 	}
 
-	OSStatus  error = NSpProtocolList_RemoveIndexed( gProtocolListRef, index );
+	NMErr  error = NSpProtocolList_RemoveIndexed( gProtocolListRef, index );
 	
 	Check_Error( "Error: Remove_Indexed_From_Protocol_List(), removing from list.", error );
 }
@@ -1948,7 +1988,7 @@ Get_Indexed_Protocol_From_List( NSpProtocolListReference  gProtocolListRef,
 void
 Get_Protocol_String( NSpProtocolReference  protocolRef, char *definitionString)
 {
-	OSStatus					status;
+	NMErr					status;
 	
 	
 	if ( protocolRef == NULL ) {
@@ -1972,7 +2012,7 @@ Get_Protocol_String( NSpProtocolReference  protocolRef, char *definitionString)
 
 void Protocol_Create_From_String(NSpProtocolReference &gProtocolRef, char *definitionString )
 {
-	OSStatus	status;
+	NMErr	status;
 	
 	if ( gProtocolRef != NULL )
 	{
@@ -1998,7 +2038,7 @@ void Protocol_Create_From_String(NSpProtocolReference &gProtocolRef, char *defin
 
 
 
-NumVersion
+NMNumVersion
 Get_Version( void )
 {
 

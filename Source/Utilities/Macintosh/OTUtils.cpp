@@ -186,10 +186,10 @@ OTUtils::StartOpenTransport( OTProtocolTest inProtocolTest, long reserveMemory, 
 
 		//we only use reserve-memory if not in OS-X
 		checkMacOSVersion();
-		if (!runningOSX)
+		if (!gRunningOSX)
 		{
 			long reserveChunkCount = ceil((float)reserveMemory/reserveChunkSize);
-			OSStatus err = ::InitOTMemoryReserve(131072,reserveChunkSize,1,reserveChunkCount);
+			NMErr err = ::InitOTMemoryReserve(131072,reserveChunkSize,1,reserveChunkCount);
 			#if DEBUG
 			//	OTMemoryReserveTest();
 			#endif //DEBUG

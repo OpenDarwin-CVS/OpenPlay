@@ -103,33 +103,33 @@ extern "C" {
 	// 
 	// OTCreateZonesEnumerator: creates an enumerator for the zones. Accepts an optional notifier
 	// 
-	extern OSStatus	ATCreateZonesEnumerator(ATPortRef port, OTNotifyUPP notifier, void* contextPtr, ATZonesEnumeratorRef* ref);
+	extern NMErr	ATCreateZonesEnumerator(ATPortRef port, OTNotifyUPP notifier, void* contextPtr, ATZonesEnumeratorRef* ref);
 
 	//
 	//	OTGetZonesCount: returns the number of zones found so far. Indicates if all zones have been found
 	//
-	extern OSStatus	ATGetZonesCount(ATZonesEnumeratorRef ref, NMBoolean* allFound, NMUInt32* count);
+	extern NMErr	ATGetZonesCount(ATZonesEnumeratorRef ref, NMBoolean* allFound, NMUInt32* count);
 
 	//
 	//	OTGetIndexedZone: returns the name of zones by index
 	//
-	extern OSStatus	ATGetIndexedZone(ATZonesEnumeratorRef ref, OneBasedIndex index, StringPtr zoneName);
+	extern NMErr	ATGetIndexedZone(ATZonesEnumeratorRef ref, OneBasedIndex index, StringPtr zoneName);
 
 	//
 	//	OTSortZones: sorts the list of zones by alphabetical order
 	//
-	extern OSStatus	ATSortZones(ATZonesEnumeratorRef ref);
+	extern NMErr	ATSortZones(ATZonesEnumeratorRef ref);
 
 	//
 	//	OTGetMachineZone returns the name of the zone in which the machine is located
 	//
-	extern OSStatus	ATGetMachineZone(ATZonesEnumeratorRef ref, StringPtr zoneName);
+	extern NMErr	ATGetMachineZone(ATZonesEnumeratorRef ref, StringPtr zoneName);
 
 	// 
 	// OTDeleteZonesEnumerator: deletes the enumerator
 	// 
 
-	extern OSStatus	ATDeleteZonesEnumerator(ATZonesEnumeratorRef* ref);
+	extern NMErr	ATDeleteZonesEnumerator(ATZonesEnumeratorRef* ref);
 
 //-----------------------------------------------------------------------------
 //	Enumerating NBP entities
@@ -149,7 +149,7 @@ extern "C" {
 //	upon exit, ref will contain a pointer to an ATNBPEntitiesEnumeratorRef.  this reference must be passed to all other functions
 //	which take an ATNBPEntitiesEnumeratorRef
 
-	extern OSStatus	ATCreateNBPEntitiesEnumerator(ATPortRef port, OTNotifyUPP notifier, void* contextPtr, ATNBPEntitiesEnumeratorRef* ref);
+	extern NMErr	ATCreateNBPEntitiesEnumerator(ATPortRef port, OTNotifyUPP notifier, void* contextPtr, ATNBPEntitiesEnumeratorRef* ref);
 
 //
 // OTStartNBPEntitiesLookup: starts looking for entities if the specified type and optionally prefix in the specified zone
@@ -170,37 +170,37 @@ extern "C" {
 // the user explicitely chooses to do so.
 //
 
-	extern OSStatus	ATStartNBPEntitiesLookup(ATNBPEntitiesEnumeratorRef ref, Str32 zone, Str32 type, Str32 prefix, NMBoolean clearPreviousResults);
+	extern NMErr	ATStartNBPEntitiesLookup(ATNBPEntitiesEnumeratorRef ref, Str32 zone, Str32 type, Str32 prefix, NMBoolean clearPreviousResults);
 
 //
 // OTGetNBPEntitiesCount: returns the number of objects found so far. Indicates if all have been found.
 //
 
-	extern OSStatus	ATGetNBPEntitiesCount(ATNBPEntitiesEnumeratorRef ref, NMBoolean* allFound, NMUInt32* count);
+	extern NMErr	ATGetNBPEntitiesCount(ATNBPEntitiesEnumeratorRef ref, NMBoolean* allFound, NMUInt32* count);
 
 //
 // OTGetIndexedNBPEntity: returns objects by index
 //
 
-	extern OSStatus	ATGetIndexedNBPEntity(ATNBPEntitiesEnumeratorRef ref, OneBasedIndex index, StringPtr zone, StringPtr type, StringPtr name, ATAddress* address);
+	extern NMErr	ATGetIndexedNBPEntity(ATNBPEntitiesEnumeratorRef ref, OneBasedIndex index, StringPtr zone, StringPtr type, StringPtr name, ATAddress* address);
 
 //
 // OTSortNBPEntities: sorts objects fgound so far by name
 //
 
-	extern OSStatus	ATSortNBPEntities(ATNBPEntitiesEnumeratorRef ref);
+	extern NMErr	ATSortNBPEntities(ATNBPEntitiesEnumeratorRef ref);
 
 //
 // OTCancelNBPEntitiesLookup: cancels ongoing lookups (all of them)
 //
 
-	extern OSStatus	ATCancelNBPEntitiesLookup(ATNBPEntitiesEnumeratorRef ref);
+	extern NMErr	ATCancelNBPEntitiesLookup(ATNBPEntitiesEnumeratorRef ref);
 
 //
 // OTDeleteNBPEntitiesEnumerator: deletes the enumerator
 //
 
-	extern OSStatus	ATDeleteNBPEntitiesEnumerator(ATNBPEntitiesEnumeratorRef* ref);
+	extern NMErr	ATDeleteNBPEntitiesEnumerator(ATNBPEntitiesEnumeratorRef* ref);
 
 
 #if __cplusplus

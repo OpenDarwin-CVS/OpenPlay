@@ -34,13 +34,16 @@
 	#include "NetModulePrivate.h"
 
 //	------------------------------	Public Types
-
-#if defined(macintosh_build)
+#if (posix_build)
+	#if (project_builder)
+		typedef CFBundleRef		ConnectionRef;
+	#else
+		typedef NMSInt32		ConnectionRef;
+	#endif
+#elif (macintosh_build)
 	typedef CFragConnectionID	ConnectionRef;
 #elif defined(windows_build)
 	typedef	HINSTANCE		ConnectionRef; /* unknown for now */
-#elif defined(posix_build)
-	typedef NMSInt32		ConnectionRef;
 #else
 	#error "Porting Error - need ConnectionRef type."
 #endif
@@ -133,6 +136,8 @@
 		
 		NMSetTimeoutPtr				NMSetTimeout;
 		NMIsAlivePtr				NMIsAlive;
+		NMFreeAddressPtr			NMFreeAddress;
+		NMGetAddressPtr				NMGetAddress;
 		NMFunctionPassThroughPtr	NMFunctionPassThrough;
 		NMIdlePtr					NMIdle;
 

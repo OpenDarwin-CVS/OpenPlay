@@ -7,11 +7,6 @@
  *------------------------------------------------------------- 
  *   Author: Kevin Holbrook
  *  Created: June 23, 1999
- *
- * Modified: $Date$
- * Revision: $Id$
- *
- *-------------------------------------------------------------
  */
 
 
@@ -142,7 +137,7 @@ static NMErr _handle_packets(NMConfigRef Config)
 	while (!done)
 	{
 		//op_errno = 0;
-		bytes_read = recvfrom(Config->enumeration_socket, Config->buffer, MAXIMUM_CONFIG_LENGTH,
+		bytes_read = recvfrom(Config->enumeration_socket, Config->buffer, (unsigned long)MAXIMUM_CONFIG_LENGTH,
 		0, (sockaddr*)&source_address, &source_address_len);
 
 		DEBUG_PRINT("read %d bytes",bytes_read);
@@ -251,44 +246,38 @@ static void _send_game_request_packet(NMConfigRef Config)
  *--------------------------------------------------------------------
  */
 
-NMErr NMBindEnumerationItemToConfig(NMConfigRef Config, NMHostID Host_ID)
+NMErr NMBindEnumerationItemToConfig(NMConfigRef inConfig, NMHostID inID)
 {
-	DEBUG_ENTRY_EXIT("NMBindEnumerationtoConfig");
+	
+	NMErr 		err= kNMNoError;
 
-	if (module_inited == false)
-		return kNMInternalErr;
-
-	int index;
-
-	if (!Config)
-		return(kNMParameterErr);
-
-	if (Config->cookie != config_cookie)
-		return(kNMInvalidConfigErr);
-
-	if (Config->enumerating)
+	op_assert(inConfig->cookie==config_cookie);
+	if(inConfig->enumerating)
 	{
-		for (index = 0; index < Config->game_count; ++index)
+		NMSInt16	index;
+
+		for(index= 0; index<inConfig->game_count; ++index)
 		{
-			if (Config->games[index].host == Host_ID)
-			{
-				Config->hostAddr.sin_family = AF_INET;
-
-				Config->hostAddr.sin_addr.s_addr = Config->games[index].host;
-				Config->hostAddr.sin_port = Config->games[index].port;
-				Config->host_name[0] = '\0';
+			if((NMHostID)(inConfig->games[index].host)==inID)
+	    	{
+				inConfig->hostAddr.sin_family = AF_INET;
+				/* sjb 19990330 should these be converted to network byte order? */
+				inConfig->hostAddr.sin_addr.s_addr = htonl(inConfig->games[index].host);	/* [Edmark/PBE] 11/12/99 added SWAP4 */
+				inConfig->hostAddr.sin_port = htons(inConfig->games[index].port);				/* [Edmark/PBE] 11/12/99 added SWAP2 */
+				/*	      inConfig->host_name[0] = '\0'; */
+				strcpy(inConfig->host_name, inet_ntoa(inConfig->hostAddr.sin_addr));	/* [Edmark/PBE] 11/12/99 added */
 				break;
-			}
+		    }
 		}
+		
+		if	(index==inConfig->game_count)
+	  		err= kNMInvalidConfigErr;
 
-		if(index == Config->game_count)
-			return(kNMInvalidConfigErr);
-	}
-	else
-	{
-		return(kNMNotEnumeratingErr);
-	}
-	return(kNMNoError);
+	} else
+		err= kNMNotEnumeratingErr;
+
+	return err;	
+	
 
 } /* NMBindEnumerationtoConfig */
 
@@ -316,7 +305,7 @@ NMErr NMStartEnumeration(NMConfigRef Config, NMEnumerationCallbackPtr Callback, 
 
 	DEBUG_ENTRY_EXIT("NMStartEnumeration");
 
-	if (module_inited == false)
+	if (module_inited < 1)
 		return kNMInternalErr;
 
 	int status;
@@ -424,7 +413,7 @@ NMErr NMIdleEnumeration(NMConfigRef Config)
 
 	//DEBUG_ENTRY_EXIT("NMIdleEnumeration");
 
-	if (module_inited == false)
+	if (module_inited < 1)
 		return kNMInternalErr;
 
 	NMErr  err;
@@ -582,7 +571,7 @@ NMErr NMEndEnumeration(NMConfigRef Config)
 
 	DEBUG_ENTRY_EXIT("NMEndEnumeration");
 
-	if (module_inited == false)
+	if (module_inited < 1)
 		return kNMInternalErr;
 
 	int status;

@@ -96,14 +96,14 @@
 #if (macintosh_build)
 //call checkMacOSVersion somewhere in your code 
 //before you use this (at non-interrupt time)
-extern NMBoolean runningOSX; 
+extern NMBoolean gRunningOSX; 
 
 #endif //macintosh_build
 
 //	------------------------------	Public Functions
 
 #if (macintosh_build)
-void checkMacOSVersion();
+	void checkMacOSVersion();
 #endif //macintosh_build
 
 #ifdef __cplusplus
@@ -141,7 +141,7 @@ extern "C" {
 		#define DEBUG_PRINTonERR(format,err)	if(err) dprintf(format,err);
 		
 		#if macintosh_build
-			void dprintf_oterr(EndpointRef endpoint, char *message, OSStatus err, char *file, NMSInt32 line);
+			void dprintf_oterr(EndpointRef endpoint, char *message, NMErr err, char *file, NMSInt32 line);
 			#define DEBUG_NETWORK_API(endpoint, message, err)	if (err != kNMNoError) dprintf_oterr(endpoint, message, err, __FILE__, __LINE__)
 		#elif windows_build
 				NMErr dprintf_winsockerr( char	*message, NMErr	err, char *file,NMSInt32	line);
@@ -215,7 +215,7 @@ extern "C" {
 			#define  dispose_pointer(x)  	if (x != NULL) {DisposePtr((char*)x);}
 	
 			/////////////////////////Quinn's memory allocation functions//////////////////////////
-			extern OSStatus InitOTMemoryReserve(ByteCount freeHeapSpaceRequired, ByteCount chunkSize, 
+			extern NMErr InitOTMemoryReserve(ByteCount freeHeapSpaceRequired, ByteCount chunkSize, 
 											ItemCount minChunks, ItemCount maxChunks);
 			// Initialises the module.  Creates an OT memory reserve using 
 			// chunkSize chunks.  At least minChunks will be allocated.  At most 
@@ -255,7 +255,7 @@ extern "C" {
 			//   OTAllocMemInContext won’t allocate memory from the application heap 
 			//   and thus your 
 			
-			extern OSStatus UpkeepOTMemoryReserve(void);
+			extern NMErr UpkeepOTMemoryReserve(void);
 			//refills the module - if your reserve has been used and then
 			//freed, OT may not keep the memory available - call this periodically
 			//to ensure you always have it.

@@ -48,7 +48,7 @@
 		EndpointDisposer(OTEndpoint *inEP, NMBoolean inNotifyUser);
 		~EndpointDisposer();
 
-		OSStatus	DoIt(void);
+		NMErr	DoIt(void);
 
 		static		NMBoolean sLastChance;	// flag telling us the module is about to be unloaded
 
@@ -77,11 +77,11 @@
 			kReceivedDisconnect = 8
 		};
 		
-		OSStatus	Finish(void);
-		OSStatus	PrepForClose(PrivateEndpoint *inPrivEP);
-		OSStatus	Process();
-		OSStatus	TransitionEP(PrivateEndpoint *inEP);
-		OSStatus	DoDisconnect(NMBoolean inOrderly);
+		NMErr	Finish(void);
+		NMErr	PrepForClose(PrivateEndpoint *inPrivEP);
+		NMErr	Process();
+		NMErr	TransitionEP(PrivateEndpoint *inEP);
+		NMErr	DoDisconnect(NMBoolean inOrderly);
 
 		static NetNotifierUPP	mNotifier;
 		static pascal void		Notifier(void* contextPtr, OTEventCode code, OTResult result, void* cookie);

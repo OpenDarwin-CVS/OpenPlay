@@ -182,10 +182,10 @@ resource 'DLOG' (2500, purgeable)
 
 resource 'vers' (1) {
 		0x02, 
-		0x00, 
+		0x02, 
 		development, 
 		0x03,
 		verUS,
-		"2.1",
-		"2.1, Apple Open Source."
+		"2.2",
+		"2.2d3, Apple Open Source."
 	};

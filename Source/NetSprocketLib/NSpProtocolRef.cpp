@@ -29,10 +29,10 @@
 #include "NSpProtocolRef.h"
 #include <string.h>
 
-#if TARGET_OS_MAC
+#if (macintosh_build)
 	#include <OpenTptAppleTalk.h>
 	#include <OpenTptInternet.h>
-#endif	//	TARGET_OS_MAC
+#endif	//	macintosh_build
 
 
 #include <stdio.h>
@@ -66,9 +66,9 @@ NSpProtocolPriv::~NSpProtocolPriv()
 // NSpProtocolPriv::CreateConfiguration 
 //----------------------------------------------------------------------------------------
 
-OSStatus NSpProtocolPriv::CreateConfiguration(const char *inConfiguration)
+NMErr NSpProtocolPriv::CreateConfiguration(const char *inConfiguration)
 {
-	OSStatus	status;
+	NMErr	status;
 	
 	strcpy(mConfigString, inConfiguration);
 	
@@ -81,9 +81,9 @@ OSStatus NSpProtocolPriv::CreateConfiguration(const char *inConfiguration)
 // NSpProtocolPriv::ParseConfigString 
 //----------------------------------------------------------------------------------------
 
-OSStatus NSpProtocolPriv::ParseConfigString(const char *inConfiguration)
+NMErr NSpProtocolPriv::ParseConfigString(const char *inConfiguration)
 {
-	OSStatus	status = kNMNoError;
+	NMErr	status = kNMNoError;
 	const char	*p = inConfiguration;
 	const char 	*endOfString = p + kNSpMaxDefinitionStringLen;
 
@@ -151,7 +151,7 @@ OSStatus NSpProtocolPriv::ParseConfigString(const char *inConfiguration)
 			p += 4;
 			
 			sscanf(p, "%d\n%d\n%d\n", &mMaxRTT, &mMinThruput, &cruft);
-			info->port = (InetPort) cruft;
+			info->port = (NMInetPort) cruft;
 			
 			mCustomData = info;
 		}
@@ -170,9 +170,9 @@ OSStatus NSpProtocolPriv::ParseConfigString(const char *inConfiguration)
 // NSpProtocolPriv::GetConfigString 
 //----------------------------------------------------------------------------------------
 
-OSStatus NSpProtocolPriv::GetConfigString(char *outConfigString)
+NMErr NSpProtocolPriv::GetConfigString(char *outConfigString)
 {
-	OSStatus status = kNMNoError;
+	NMErr status = kNMNoError;
 	strcpy(outConfigString, mConfigString);
 	
 	return status;
@@ -220,7 +220,7 @@ NSpProtocolPriv *NSpProtocolListPriv::GetIndexedItem(NMUInt32	inIndex)
 // NSpProtocolListPriv::Append 
 //----------------------------------------------------------------------------------------
 
-OSStatus NSpProtocolListPriv::Append(NSpProtocolPriv *inProtocol)
+NMErr NSpProtocolListPriv::Append(NSpProtocolPriv *inProtocol)
 {
 	return	mList->AddItem(inProtocol);
 }
@@ -229,9 +229,9 @@ OSStatus NSpProtocolListPriv::Append(NSpProtocolPriv *inProtocol)
 // NSpProtocolListPriv::Remove 
 //----------------------------------------------------------------------------------------
 
-OSStatus NSpProtocolListPriv::Remove(NSpProtocolPriv *inProtocol)
+NMErr NSpProtocolListPriv::Remove(NSpProtocolPriv *inProtocol)
 {
-	OSStatus	status;
+	NMErr	status;
 	
 	if (mList->RemoveItem(inProtocol))
 		status = kNMNoError;
@@ -245,9 +245,9 @@ OSStatus NSpProtocolListPriv::Remove(NSpProtocolPriv *inProtocol)
 // NSpProtocolListPriv::RemoveIndexedItem 
 //----------------------------------------------------------------------------------------
 
-OSStatus NSpProtocolListPriv::RemoveIndexedItem(NMUInt32	inIndex)
+NMErr NSpProtocolListPriv::RemoveIndexedItem(NMUInt32	inIndex)
 {
-	OSStatus status;
+	NMErr status;
 	
 	if (mList->RemoveItemByIndex(inIndex))
 		status = kNMNoError;

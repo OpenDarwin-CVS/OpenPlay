@@ -211,7 +211,7 @@ OTIPEnumerator::StartEnumeration(void)
 NMErr
 OTIPEnumerator::IdleEnumeration(void)
 {
-OSStatus	status = kNMNoError;
+NMErr	status = kNMNoError;
 NMUInt32		timeSinceLastIdle;
 	
 	if (! bActive)
@@ -251,7 +251,7 @@ NMUInt32		timeSinceLastIdle;
 NMErr
 OTIPEnumerator::EndEnumeration(void)
 {
-OSStatus	status;
+NMErr	status;
 	
 	if (! bActive)
 		return kNMNoError;
@@ -290,6 +290,9 @@ OTIPEnumerator::Notifier(
 {
 OTIPEnumerator	*theEnumerator = (OTIPEnumerator *) contextPtr;
 	
+	UNUSED_PARAMETER(result);
+	UNUSED_PARAMETER(cookie);
+
 	switch (code)
 	{
 		case T_DATA:
@@ -381,7 +384,7 @@ OTIPEnumerator::HandleLookErr(void)
 	DEBUG_ENTRY_EXIT("IPEnumerator::HandleLookErr");
 
 OTResult	result;
-OSStatus	status;
+NMErr	status;
 TUDErr		udErr;
 InetAddress	addr;
 	

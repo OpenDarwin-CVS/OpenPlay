@@ -28,6 +28,10 @@
 #ifndef __MODULE_MANAGEMENT__
 #define __MODULE_MANAGEMENT__
 
+//  ------------------------------  Public Definitions
+
+	#define MAXIMUM_NETMODULES			(64)
+
 //	------------------------------	Public Functions
 
 	extern NMErr 		bind_to_protocol(NMType protocol, FileDesc *spec, ConnectionRef *connection);

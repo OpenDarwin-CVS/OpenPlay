@@ -158,7 +158,7 @@ static void initialize_application(
 	check_menu_item(mSpecial, iActiveEnumeration, active_enumeration);
 	
 	//install apple event handler for quitting
-	AEInstallEventHandler(kCoreEventClass,kAEQuitApplication,NewAEEventHandlerUPP(do_quit_apple_event),0L,false);
+	AEInstallEventHandler(kCoreEventClass,kAEQuitApplication,NewAEEventHandlerUPP((AEEventHandlerProcPtr)do_quit_apple_event),0L,false);
 	
 	return;
 }
@@ -526,7 +526,7 @@ NMBoolean select_protocol(
 			append_item_to_popup(dialog, iPROTOCOL_LIST, protocol.name);
 			module_types[count++]= protocol.type;
 		} else {
-			if(err != errNoMoreNetModules) DEBUG_PRINTonERR("Err %d in GetIndexedProtocol...", err);
+			if(err != kNMNoMoreNetModulesErr) DEBUG_PRINTonERR("Err %d in GetIndexedProtocol...", err);
 		}
 	}
 	ShowWindow(GetDialogWindow(dialog));

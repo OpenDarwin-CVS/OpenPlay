@@ -244,7 +244,6 @@ OTEndpoint::BindDatagramEndpoint(NMBoolean inUseConfigAddr)
 			{
 				status = kNMTimeoutErr;
 				goto error;
-				//Throw_(kNMTimeoutErr);
 			}
 		};
 				
@@ -279,24 +278,20 @@ OTEndpoint::BindDatagramEndpoint(NMBoolean inUseConfigAddr)
 
 		status = OTSetSynchronous(mDatagramEndpoint->mEP);
 		DEBUG_NETWORK_API(mDatagramEndpoint->mEP, "OTSetSynchronous", status);					
-		//ThrowIfOSErr_(status);
 		if (status)
 			goto error;
 
 		OTSetBlocking(mDatagramEndpoint->mEP);
 
 		status = DoBind(mDatagramEndpoint, &request, &returned);
-		//ThrowIfOSErr_(status);
 		if (status)
 			goto error;
 
 		status = OTSetAsynchronous(mDatagramEndpoint->mEP);
 		DEBUG_NETWORK_API(mDatagramEndpoint->mEP, "OTSetAsynchronous", status);					
-		//ThrowIfOSErr_(status);	
 		if (status)
 			goto error;
 	}
-	//Catch_(code)
 	error:
 	if (status)
 	{
@@ -317,7 +312,6 @@ OTEndpoint::BindStreamEndpoint(OTQLen inQLen)
 {
 	DEBUG_ENTRY_EXIT("OTEndpoint::BindStreamEndpoint");
 
-	//NMErr			err = kNMNoError;
 	TBind			request, returned;
 	TEndpointInfo	info;
 	const char		*OTConfigString;
@@ -337,7 +331,6 @@ OTEndpoint::BindStreamEndpoint(OTQLen inQLen)
 			status = OTAsyncOpenEndpoint(OTCreateConfiguration(OTConfigString), 
 						0, &info, mNotifier.fUPP, mStreamEndpoint);
 			DEBUG_NETWORK_API(0, "OTAsyncOpenEndpoint", status);					
-			//ThrowIfOSErr_(status);
 			if (status)
 				goto error;
 
@@ -355,7 +348,6 @@ OTEndpoint::BindStreamEndpoint(OTQLen inQLen)
 				{
 					status = kNMTimeoutErr;
 					goto error;
-					//Throw_(kNMTimeoutErr);
 				}
 			}
 			
@@ -377,7 +369,6 @@ OTEndpoint::BindStreamEndpoint(OTQLen inQLen)
 			
 			status = OTSetSynchronous(mStreamEndpoint->mEP);
 			DEBUG_NETWORK_API(mStreamEndpoint->mEP, "OTSetSynchronous", status);					
-			//ThrowIfOSErr_(status);
 			if (status)
 				goto error;
 
@@ -385,18 +376,16 @@ OTEndpoint::BindStreamEndpoint(OTQLen inQLen)
 
 			//	Bind it
 			status = DoBind(mStreamEndpoint, &request, &returned);
-			//ThrowIfOSErr_(status);
 			if (status)
 				goto error;
 
 			status = OTSetAsynchronous(mStreamEndpoint->mEP);
 			DEBUG_NETWORK_API(mStreamEndpoint->mEP, "OTSetAsynchronous", status);					
-			//ThrowIfOSErr_(status);
 			if (status)
 				goto error;
+			
 		}
 	}
-	//Catch_(code)
 	error:
 	if (status)
 	{
@@ -451,6 +440,8 @@ OTEndpoint::DoBind(
 NMErr
 OTEndpoint::Abort(NMBoolean inWaitForCompletion)
 {
+	UNUSED_PARAMETER(inWaitForCompletion);
+
 	mState = kAborting;
 
 	Close();
@@ -564,7 +555,6 @@ OTEndpoint::Listen(void)
 		if (mMode & kNMStreamMode)
 		{
 			status = BindStreamEndpoint(1);		// binds an endpoint that listens for connections
-			//ThrowIfOSErr_(status);
 			if (status)
 				goto error;
 		}	
@@ -572,7 +562,6 @@ OTEndpoint::Listen(void)
 		if (mMode & kNMDatagramMode)
 		{
 			status = BindDatagramEndpoint(true);
-			//ThrowIfOSErr_(status);
 			if (status)
 				goto error;
 		}
@@ -585,7 +574,6 @@ OTEndpoint::Listen(void)
 			MakeEnumerationResponse();	// Fill in the response packet
 		}
 	}
-	//Catch_(code)
 	error:
 	if (status)
 	{
@@ -621,7 +609,6 @@ OTEndpoint::Connect(void)
 		{
 			//	bind the stream endpoint that doesn't accept connections
 			status = BindStreamEndpoint(0);
-			//ThrowIfOSErr_(status);
 			if (status)
 				goto error;
 
@@ -634,7 +621,6 @@ OTEndpoint::Connect(void)
 		{
 			status = BindDatagramEndpoint(false);
 				
-			//ThrowIfOSErr_(status);
 			if (status)
 				goto error;
 			
@@ -704,7 +690,6 @@ OTEndpoint::Connect(void)
 				}
 			}
 		}
-		//ThrowIfOSErr_(status);
 		if (status)
 			goto error;
 
@@ -725,13 +710,11 @@ OTEndpoint::Connect(void)
 		}
 
 		state = OTGetEndpointState(mStreamEndpoint->mEP);
-		//ThrowIfNot_(state == T_DATAXFER);
 		if (state != T_DATAXFER){
 			status = err_AssertFailed;
 			goto error;
 		}
 		
-		//ThrowIfNot_(mState == kOpening);
 		if (mState != kOpening){
 			status = err_AssertFailed;
 			goto error;
@@ -740,20 +723,20 @@ OTEndpoint::Connect(void)
 		if (mMode == kNMNormalMode)
 		{	
 			//	Now block, waiting for the listener to send us the open confirmation
+			//	or for our stream to finish opening if we're not using confirmations 
+			//	(nspmode or stream mode)
 
-//			if (!gInNetSprocketMode) 
+			status = WaitForOpenConfirmation();
+			if (status)
+				goto error;
+
 			if (!mNetSprocketMode) 
 			{				
-				status = WaitForOpenConfirmation();
-				//ThrowIfOSErr_(status);
-				if (status)
-					goto error;
 				
 			//	Send the confirmation down the stream endpoint.  This differs from protocol to protocol
-			//	This is the very first thing expected for normal mode connections
+			//	This is the very first thing expected for normal mode, non NetSprocketMode connections
 				status = SendOpenConfirmation();
 				op_warn(status == kNMNoError);
-				//ThrowIfOSErr_(status);
 				if (status)
 					goto error;
 			}	
@@ -761,7 +744,6 @@ OTEndpoint::Connect(void)
 
 		return status;
 	}
-	//Catch_(code)
 	error:
 	if (status)
 	{
@@ -771,6 +753,95 @@ OTEndpoint::Connect(void)
 		return kNMOpenFailedErr;
 	}
 	return status;
+}
+
+//----------------------------------------------------------------------------------------
+// OTEndpoint::FreeAddress
+//----------------------------------------------------------------------------------------
+
+NMBoolean
+OTEndpoint::FreeAddress(void **outAddress)
+{
+	DEBUG_ENTRY_EXIT("OTEndpoint:FreeAddress");
+
+	/* sanity check */
+	if( !outAddress || !*outAddress )
+		return( kNMParameterErr );
+
+	free( *outAddress );	/* free memory, then mark as NULL for safety */
+	*outAddress = NULL;
+
+	return( kNMNoError );
+}
+
+//----------------------------------------------------------------------------------------
+// OTEndpoint::GetAddress
+//----------------------------------------------------------------------------------------
+
+NMBoolean
+OTEndpoint::GetAddress(NMAddressType addressType, void **outAddress)
+{
+	DEBUG_ENTRY_EXIT("OTEndpoint::GetAddress");
+
+	NMErr status = kNMNoError;
+
+	//Way down low in the bowels of the C++ layers is the real code.
+
+	switch( addressType )
+	{
+		case kNMIPAddressType:	//¥ IP address (string of format "127.0.0.1:80")
+			OTAddress *addr;
+			addr = (OTAddress *)(mStreamEndpoint->mRemoteAddress.buf);
+			if( AF_INET == addr->fAddressType )
+			{
+				InetAddress *iaddr = (InetAddress *)addr;
+				char addrStr[256];
+				int size;
+
+				/* Create IP String */
+				sprintf( addrStr, "%d.%d.%d.%d:%d",
+									(int)((UInt8)(iaddr->fHost >> 24)), (int)((UInt8)(iaddr->fHost >> 16)),
+									(int)((UInt8)(iaddr->fHost >> 8)), (int)((UInt8)(iaddr->fHost)),			iaddr->fPort);
+				size = strlen( addrStr );
+
+				/* Create output buffer for string */
+				*outAddress = malloc( size + 1 );
+				if (NULL == *outAddress)
+					return (kNMOutOfMemoryErr);
+
+				/* Send string to user */
+				strcpy( (char *)*outAddress, addrStr );
+			}
+			else if( AF_DNS == addr->fAddressType )
+			{
+				int size = mStreamEndpoint->mRemoteAddress.len - sizeof(OTAddressType);
+
+				/* Create output buffer for string */
+				*outAddress = malloc( size );
+				if (NULL == *outAddress)
+					return (kNMOutOfMemoryErr);
+
+				/* Send string to user */
+				BlockMoveData( ((DNSAddress *)addr)->fName, *outAddress, size );
+			}
+			else
+				status = kNMParameterErr;
+			break;
+
+		case kNMOTAddressType:	//¥	OT address (of unknown type)
+			*outAddress = malloc(mStreamEndpoint->mRemoteAddress.len);
+			if (NULL == *outAddress)
+				return (kNMOutOfMemoryErr);
+
+			/* copy the InetAddress (or other format of OTAddress) to user's buffer */
+			BlockMoveData(mStreamEndpoint->mRemoteAddress.buf, *outAddress, mStreamEndpoint->mRemoteAddress.len);
+			break;
+
+		default:
+			status = kNMParameterErr;
+			break;
+	}
+	return( status );	
 }
 
 //----------------------------------------------------------------------------------------
@@ -816,6 +887,9 @@ OTEndpoint::FunctionPassThrough(NMType inSelector, void *inParamBlock)
 	DEBUG_ENTRY_EXIT("OTEndpoint::FunctionPassThrough");
 
 NMErr	err = kNMNoError;
+		
+	UNUSED_PARAMETER(inSelector);
+	UNUSED_PARAMETER(inParamBlock);
 		
 	return err;
 }
@@ -1037,7 +1111,7 @@ NMBoolean	finished;
 // OTEndpoint::DoLook
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 OTEndpoint::DoLook(PrivateEndpoint *inEP)
 {
 	DEBUG_ENTRY_EXIT("OTEndpoint::DoLook");
@@ -1083,7 +1157,7 @@ OTEndpoint::HandleQuery(void)
 	DEBUG_ENTRY_EXIT("OTEndpoint::HandleQuery");
 
 TUnitData	udata;
-OSStatus	status;
+NMErr	status;
 
 	udata.addr = mRcvUData.addr;
 	udata.udata.buf = mEnumerationResponseData;
@@ -1170,7 +1244,9 @@ OTEndpoint::Notifier(
 	
 PrivateEndpoint 	*epStuff = (PrivateEndpoint *) contextPtr;
 OTEndpoint			*ep = epStuff->mOwnerEndpoint;
-OSStatus			status;
+NMErr				status;
+
+	UNUSED_PARAMETER(result);
 
 	epStuff->mInNotifier++;
 	
@@ -1195,14 +1271,14 @@ OSStatus			status;
 			DEBUG_NETWORK_API(epStuff->mEP, "OTRcvConnect", status);	
 
 			// For NetSprocket mode, this is a good place to set the remote datagram address...
-//			if (status == kNMNoError && gInNetSprocketMode)
 			if (status == kNMNoError && ep->mNetSprocketMode)
 			{
 				OTUtils::CopyNetbuf(&ep->mRcvCall.addr, &ep->mDatagramEndpoint->mRemoteAddress);
 				ep->ResetAddressForUnreliableTransport((OTAddress *) ep->mDatagramEndpoint->mRemoteAddress.buf);
 			}
 			
-			if (status == kNMNoError && ep->mMode == kNMStreamMode)
+			//ecf in NSpMode, we need to wait for the stream to get up and running.
+			if (status == kNMNoError && ((ep->mNetSprocketMode) || (ep->mMode == kNMStreamMode)))
 				ep->bConnectionConfirmed = true;				
 			break;
 
@@ -1322,7 +1398,6 @@ NMBoolean		flowCount = 0;
 			{
 				OTInitBufferInfo(&inEPStuff->mBufferInfo, inEPStuff->mBuffer);
 
-//				if ((mMode == kNMNormalMode && !gInNetSprocketMode) && (mState == kHandingOff || !bConnectionConfirmed) )
 				if ((mMode == kNMNormalMode && !mNetSprocketMode) && (mState == kHandingOff || !bConnectionConfirmed) )
 				{				
 					result = HandleAsyncOpenConfirmation();
@@ -1482,7 +1557,7 @@ OTEndpoint::HandleDisconnect(PrivateEndpoint *inEPStuff)
 {
 	DEBUG_ENTRY_EXIT("OTEndpoint::HandleDisconnect");
 
-OSStatus	status;
+NMErr	status;
 	
 	status = OTRcvDisconnect(inEPStuff->mEP, NULL);
 	DEBUG_NETWORK_API(inEPStuff->mEP, "OTRcvDisconnect", status);	
@@ -1502,7 +1577,7 @@ OTEndpoint::HandleOrdRel(PrivateEndpoint *inEPStuff)
 {
 	DEBUG_ENTRY_EXIT("OTEndpoint::HandleOrdRel");
 
-OSStatus	status;
+NMErr	status;
 	
 	status = OTRcvOrderlyDisconnect(inEPStuff->mEP);
 
@@ -1561,7 +1636,7 @@ OTEndpoint::HandlePassConnComplete(PrivateEndpoint *inEPStuff)
 {
 	DEBUG_ENTRY_EXIT("OTEndpoint::HandlePassConnComplete");
 
-OSStatus	status;
+NMErr	status;
 	
 //	if ( (mMode == kNMNormalMode) && (!gInNetSprocketMode) )
 	if ( (mMode == kNMNormalMode) && (!mNetSprocketMode) )
@@ -1601,7 +1676,7 @@ OSStatus	status;
 void
 OTEndpoint::ServiceEPCaches()
 {
-	OSStatus	status;
+	NMErr	status;
 
 	if (sStreamEPCache.otConfigStr != NULL && sStreamEPCache.totalCount < sDesiredCacheSize)
 	{
@@ -1618,10 +1693,10 @@ OTEndpoint::ServiceEPCaches()
 // OTEndpoint::FillEPCache
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 OTEndpoint::FillEPCache(EPCache *inCache)
 {
-OSStatus	status = kNMNoError;
+NMErr	status = kNMNoError;
 CachedEP	*ep;
 	
 	if (gTerminating)
@@ -1678,7 +1753,7 @@ OTEndpoint::CacheNotifier(
 {
 	DEBUG_ENTRY_EXIT("OTEndpoint::CacheNotifier");
 
-OSStatus	status;
+NMErr	status;
 CachedEP 	*cachedEP = (CachedEP *) contextPtr;
 	
 	op_warn(cachedEP != NULL);

@@ -32,10 +32,10 @@
 	// The following corresponds to 2.1.0d7...
 
 	#define __NSpVersionMajor__			2
-	#define __NSpVersionMinor__			1
+	#define __NSpVersionMinor__			2
 	#define __NSpVersionBugFix__		0
 	#define __NSpReleaseStage__			48			// (development)
-	#define __NSpNonRelRev__			7
+	#define __NSpNonRelRev__			3
 
 #endif // __NSPVERSION__
 

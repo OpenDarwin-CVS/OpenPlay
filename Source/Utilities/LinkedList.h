@@ -126,6 +126,8 @@ class OSCriticalSection
 							{
 								while (true) {if (theLock.acquire()) break;}						
 								OTLink *origHead = fHead;
+								if (fHead) /* check for empty list */
+									fHead = fHead->fNext;
 								fHead = fHead->fNext;
 								theLock.release();									
 								return origHead;
@@ -264,9 +266,35 @@ class OSCriticalSection
 	};
 	
 	
-//FIXME!!  this is a recursive function and will crash and burn on large lists
+//ecf 020619 changed to a non-recursive method so large lists won't cause problems.
+
+static void NewReverseOTLink(OTLink **object)
+{
+	OTLink *oldNext;
+	OTLink *newNext = NULL;
+
+	if (object == NULL)
+		return;
+	if (*object == NULL)
+		return;
+	oldNext = (OTLink*)(*object)->fNext;
+	
+	while (oldNext)
+	{
+		(*object)->fNext = newNext;
+		newNext = *object;
+		*object = oldNext;
+		oldNext = (OTLink*)(*object)->fNext;
+	}
+	(*object)->fNext = newNext;
+}
 static OTLink* OTReverseList(OTLink *headRef)
 {
+
+	NewReverseOTLink(&headRef);
+	return headRef;
+	
+	/*
 	OTLink	*first;
 	OTLink	*rest;
 
@@ -283,6 +311,7 @@ static OTLink* OTReverseList(OTLink *headRef)
 	first->fNext = NULL;
 	
 	return rest;
+	*/
 }
 	
 

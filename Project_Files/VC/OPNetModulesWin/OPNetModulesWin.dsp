@@ -92,43 +92,43 @@ LINK32=link.exe
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 # Begin Source File
 
-SOURCE=\Documents\Programming\OpenPlay\OpenPlay\Source\OPNetModules\Common\configuration.c
+SOURCE=..\..\..\Source\OPNetModules\Common\configuration.c
 # End Source File
 # Begin Source File
 
-SOURCE=\Documents\Programming\OpenPlay\OpenPlay\Source\OPNetModules\Common\ip_enumeration.c
+SOURCE=..\..\..\Source\OPNetModules\Common\ip_enumeration.c
 # End Source File
 # Begin Source File
 
-SOURCE=\Documents\Programming\OpenPlay\OpenPlay\Source\Utilities\machine_lock.cpp
+SOURCE=..\..\..\Source\Utilities\machine_lock.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=\Documents\Programming\OpenPlay\OpenPlay\Source\Utilities\OPUtils.cpp
+SOURCE=..\..\..\Source\Utilities\OPUtils.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=\Documents\Programming\OpenPlay\OpenPlay\Source\Utilities\String_Utils.cpp
+SOURCE=..\..\..\Source\Utilities\String_Utils.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=\Documents\Programming\OpenPlay\OpenPlay\Source\OPNetModules\posix\TCP_IP\tcp_module_communication.cpp
+SOURCE=..\..\..\Source\OPNetModules\posix\TCP_IP\tcp_module_communication.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=\Documents\Programming\OpenPlay\OpenPlay\Source\OPNetModules\posix\TCP_IP\tcp_module_config.cpp
+SOURCE=..\..\..\Source\OPNetModules\posix\TCP_IP\tcp_module_config.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=\Documents\Programming\OpenPlay\OpenPlay\Source\OPNetModules\posix\TCP_IP\tcp_module_enumeration.cpp
+SOURCE=..\..\..\Source\OPNetModules\posix\TCP_IP\tcp_module_enumeration.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=\Documents\Programming\OpenPlay\OpenPlay\Source\OPNetModules\posix\TCP_IP\tcp_module_gui_win.cpp
+SOURCE=..\..\..\Source\OPNetModules\posix\TCP_IP\tcp_module_gui_win.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=\Documents\Programming\OpenPlay\OpenPlay\Source\OPNetModules\posix\TCP_IP\tcp_module_main.cpp
+SOURCE=..\..\..\Source\OPNetModules\posix\TCP_IP\tcp_module_main.cpp
 # End Source File
 # End Group
 # Begin Group "Header Files"

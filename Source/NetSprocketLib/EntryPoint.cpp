@@ -54,11 +54,11 @@
 		DWORD fdwReason,
 		LPVOID lpvReserved)
 	{
+	UNUSED_PARAMETER(hInst)
+	UNUSED_PARAMETER(lpvReserved)
+
 	  NMBoolean      success = false; /* ignored on everything but process attach */
 	//  FileDesc  file;
-
-		UNUSED_PARAMETER(lpvReserved)
-
 		
 	  switch(fdwReason)
 	  {

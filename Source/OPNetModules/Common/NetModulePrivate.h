@@ -48,6 +48,8 @@
 		kNMRejectConnection,
 
 		kNMIsAlive,
+		kNMFreeAddress,
+		kNMGetAddress,
 		kNMSetTimeout,
 
 		kNMCreateConfig,
@@ -97,6 +99,8 @@
 			"NMRejectConnection",
 
 			"NMIsAlive",
+			"NMFreeAddress",
+			"NMGetAddress",
 			"NMSetTimeout",
 
 			"NMCreateConfig",
@@ -148,6 +152,10 @@ extern "C" {
 	typedef NMErr		(*NMRejectConnectionPtr)(NMEndpointRef inEndpoint, void *inCookie);
 
 	typedef NMBoolean	(*NMIsAlivePtr)(NMEndpointRef inEndpoint);
+
+	typedef NMErr		(*NMFreeAddressPtr)(NMEndpointRef inEndpoint, void **outAddress);
+	typedef NMErr		(*NMGetAddressPtr)(NMEndpointRef inEndpoint, NMAddressType addressType, void **outAddress);
+
 	typedef NMErr		(*NMSetTimeoutPtr)(NMEndpointRef inEndpoint, NMUInt32 inTimeout);	/* in milliseconds */
 
 	typedef NMErr		(*NMCreateConfigPtr)(char *inConfigStr, NMType inGameID, const char *inGameName, const void *inEnumData, NMUInt32 inEnumDataLen, NMConfigRef *outConfig);
@@ -155,7 +163,7 @@ extern "C" {
 	typedef NMErr		(*NMGetConfigPtr)(NMConfigRef inConfig, char *outConfigStr, NMSInt16 *ioConfigStrLen);
 	typedef NMErr		(*NMDeleteConfigPtr)(NMConfigRef inConfig);
 
-	typedef NMErr		(*NMBindEnumerationItemToConfigPtr)(NMConfigRef inConfig, NMHostID inID);
+	typedef NMErr		(*NMBindEnumerationItemToConfigPtr)(NMConfigRef inConfig, NMType inID);
 	typedef NMErr		(*NMStartEnumerationPtr)(NMConfigRef inConfig, NMEnumerationCallbackPtr inCallback, void *inContext, NMBoolean inActive);
 	typedef NMErr		(*NMIdleEnumerationPtr)(NMConfigRef inConfig);
 	typedef NMErr		(*NMEndEnumerationPtr)(NMConfigRef inConfig);

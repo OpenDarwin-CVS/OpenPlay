@@ -61,7 +61,7 @@ IPEnumerationItemPriv::IPEnumerationItemPriv(IPEnumerationResponsePacket *inPack
 	
 	//	Fill in the user's part of the structure
 	userEnum.customEnumDataLen = packet.customEnumDataLen;		
-	userEnum.id = (NMHostID) this;
+	userEnum.id = (NMType) this;
 	userEnum.name = packet.name;
 }
 
@@ -117,6 +117,8 @@ IPEnumerator::HandleReply(
 IPEnumerationResponsePacket	*thePacket = (IPEnumerationResponsePacket *) inData;
 IPEnumerationItemPriv		*theItem;
 	
+	UNUSED_PARAMETER(inLen);
+
 	//	Step 1.  Find out if this is really a lookup reply
 	if (thePacket->responseCode != kReplyFlag)
 		return;

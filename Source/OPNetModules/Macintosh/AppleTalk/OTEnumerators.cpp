@@ -69,7 +69,7 @@ pascal void
 COTZonesEnumerator::ZonesListNotifier(
 	void		*contextPtr,
 	ATEventCode	code,
-	OSStatus	result,
+	NMErr	result,
 	void		*cookie)
 {
 COTZonesEnumerator	*enumerator = (COTZonesEnumerator *) contextPtr;
@@ -98,7 +98,7 @@ COTZonesEnumerator	*enumerator = (COTZonesEnumerator *) contextPtr;
 // COTZonesEnumerator::Initialize
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 COTZonesEnumerator::Initialize(
 	ATPortRef		portRef,
 	OTNotifyUPP		notifier,
@@ -107,7 +107,7 @@ COTZonesEnumerator::Initialize(
 OTPortRef		port	= (OTPortRef)portRef;
 OTPortRecord	portRec;
 TZoneList*		scanner = NULL;
-OSStatus		err		= kNMNoError;
+NMErr		err		= kNMNoError;
 	
 	if (port == kATAppleTalkDefaultPortRef || OTFindPortByRef(&portRec, port))
 	{
@@ -154,10 +154,10 @@ OSStatus		err		= kNMNoError;
 // COTZonesEnumerator::GetCount
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 COTZonesEnumerator::GetCount(NMBoolean* done, NMUInt32* count)
 {
-OSStatus	err = kNMNoError;
+NMErr	err = kNMNoError;
 	
 	*done	= fZonesList->ScanComplete();
 	*count	= fZonesList->Count();
@@ -169,10 +169,10 @@ OSStatus	err = kNMNoError;
 // COTZonesEnumerator::GetMachineZone
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 COTZonesEnumerator::GetMachineZone(StringPtr zoneName)
 {
-OSStatus	err = kNMNoError;
+NMErr	err = kNMNoError;
 	
 	fZonesList->GetLocalZone((char*)zoneName);
 	
@@ -183,10 +183,10 @@ OSStatus	err = kNMNoError;
 // COTZonesEnumerator::GetIndexedZone
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 COTZonesEnumerator::GetIndexedZone(OneBasedIndex index, StringPtr zoneName)
 {
-OSStatus	err = kNMNoError;
+NMErr	err = kNMNoError;
 
 	fZonesList->GetIndexedZone(index - 1, (char*)zoneName);
 	
@@ -197,10 +197,10 @@ OSStatus	err = kNMNoError;
 // COTZonesEnumerator::Sort
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 COTZonesEnumerator::Sort()
 {
-OSStatus	err = kNMNoError;
+NMErr	err = kNMNoError;
 
 	fZonesList->SortList();
 	
@@ -229,7 +229,7 @@ COTEntitiesEnumerator::~COTEntitiesEnumerator()
 // COTZonesEnumerator::Initialize
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 COTEntitiesEnumerator::Initialize(
 	ATPortRef		portRef,
 	OTNotifyUPP		notifier,
@@ -237,7 +237,7 @@ COTEntitiesEnumerator::Initialize(
 { 
 OTPortRef			port		= (OTPortRef)portRef;
 OTPortRecord 		portRec;
-OSStatus 			err 		= kNMNoError;
+NMErr 			err 		= kNMNoError;
 		
 	do
 	{
@@ -274,14 +274,14 @@ OSStatus 			err 		= kNMNoError;
 // COTEntitiesEnumerator::StartLookup
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 COTEntitiesEnumerator::StartLookup(
 	Str32	theZone,
 	Str32	theType,
 	Str32	thePrefix,
 	NMBoolean	clearPreviousResults)
 {
-OSStatus 	err		= kNMNoError;
+NMErr 	err		= kNMNoError;
 Str32		prefix;
 Str32		type;
 			
@@ -339,10 +339,10 @@ Str32		type;
 // COTEntitiesEnumerator::GetCount
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 COTEntitiesEnumerator::GetCount(NMBoolean* allFound, NMUInt32* count)
 {
-OSStatus	err = kNMNoError;
+NMErr	err = kNMNoError;
 	
 	err = fLookup->GetCount(count, allFound);
 	
@@ -353,7 +353,7 @@ OSStatus	err = kNMNoError;
 // COTEntitiesEnumerator::GetIndexedEntity
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 COTEntitiesEnumerator::GetIndexedEntity(
 	OneBasedIndex	index,
 	StringPtr		zone,
@@ -361,7 +361,7 @@ COTEntitiesEnumerator::GetIndexedEntity(
 	StringPtr		name,
 	ATAddress		*address)
 {
-OSStatus	err = kNMNoError;
+NMErr	err = kNMNoError;
 DDPAddress	ddpAddress;
 	
 	err = fLookup->GetIndexedItem(index, name, type, zone, &ddpAddress);
@@ -385,10 +385,10 @@ DDPAddress	ddpAddress;
 // COTEntitiesEnumerator::Sort
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 COTEntitiesEnumerator::Sort()
 {
-OSStatus err = kNMNoError;
+NMErr err = kNMNoError;
 	
 	fLookup->Sort();
 	
@@ -399,10 +399,10 @@ OSStatus err = kNMNoError;
 // COTEntitiesEnumerator::CancelLookup
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 COTEntitiesEnumerator::CancelLookup()
 {
-	OSStatus err = kNMNoError;
+	NMErr err = kNMNoError;
 	
 	fLookup->CancelLookup();
 	

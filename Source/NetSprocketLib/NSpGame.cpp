@@ -48,8 +48,8 @@ NMUInt32	kQGrowthSize = 20;
 
 NSpGame::NSpGame(
 		NMUInt32		inMaxPlayers,
-		ConstStr31Param	inGameName,
-		ConstStr31Param	inPassword,
+		NMConstStr31Param	inGameName,
+		NMConstStr31Param	inPassword,
 		NSpTopology		inTopology,
 		NSpFlags		inFlags)
 {
@@ -398,10 +398,10 @@ ERObject	*theObject;
 // NSpGame::NSpPlayer_GetInfo
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 NSpGame::NSpPlayer_GetInfo(NSpPlayerID inID, NSpPlayerInfoPtr *outInfo)
 {
-	OSStatus					status = kNMNoError;
+	NMErr					status = kNMNoError;
 	NSp_InterruptSafeListIterator	iter(*mPlayerList);
 	NSp_InterruptSafeListMember	*theItem;
 	PlayerListItem				*thePlayer = NULL;
@@ -498,7 +498,7 @@ NSpGame::NSpPlayer_ReleaseInfo(NSpPlayerInfoPtr inInfo)
 // NSpGame::NSpPlayer_GetEnumeration
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 NSpGame::NSpPlayer_GetEnumeration(NSpPlayerEnumerationPtr *outPlayers)
 {
 	NMErr					status = kNMNoError;
@@ -747,7 +747,7 @@ NMBoolean						handled = true;
 // NSpGame::NSpGroup_GetInfo
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 NSpGame::NSpGroup_GetInfo(NSpGroupID inGroupID, NSpGroupInfoPtr *outInfo)
 {
 	NMErr					status = kNMNoError;
@@ -854,10 +854,10 @@ NSpGame::NSpGroup_ReleaseInfo(NSpGroupInfoPtr inInfo)
 // NSpGame::NSpGroup_GetEnumeration
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 NSpGame::NSpGroup_GetEnumeration(NSpGroupEnumerationPtr *outGroups)
 {
-	OSStatus					status = kNMNoError;
+	NMErr					status = kNMNoError;
 	NSp_InterruptSafeListIterator	iter(*mGroupList);
 	NSp_InterruptSafeListMember	*theItem;
 	GroupListItem				*theGroup;
@@ -929,12 +929,12 @@ void NSpGame::NSpGroup_ReleaseEnumeration(NSpGroupEnumerationPtr inGroups)
 
 //Ä	This assigns a group id locally, and tells everyone else
 //Ä	Maybe it should ask the server for a group ID
-OSStatus
+NMErr
 NSpGame::NSpGroup_Create(NSpGroupID *outGroupID)
 {
 NSpGroupID			id;
 TCreateGroupMessage	message;
-OSStatus			status = kNMNoError;
+NMErr			status = kNMNoError;
 
 	id = mNextAvailableGroupID--;	//Ä	Group IDs go down as you 'increment'
 
@@ -970,11 +970,11 @@ OSStatus			status = kNMNoError;
 //----------------------------------------------------------------------------------------
 
 //Ä	Send a message to everyone, telling them to delete the group
-OSStatus
+NMErr
 NSpGame::NSpGroup_Delete(NSpGroupID inGroupID)
 {
 TDeleteGroupMessage		message;
-OSStatus				status = kNMNoError;
+NMErr				status = kNMNoError;
 
 	//Ä	Send a message to everyone, including ourselves, telling them to make a new group
 	NSpClearMessageHeader(&message.header);
@@ -994,11 +994,11 @@ OSStatus				status = kNMNoError;
 // NSpGame::NSpGroup_AddPlayer
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 NSpGame::NSpGroup_AddPlayer(NSpGroupID inGroupID, NSpPlayerID inPlayerID)
 {
 TAddPlayerToGroupMessage	message;
-OSStatus					status = kNMNoError;
+NMErr					status = kNMNoError;
 
 	//Ä	Send a message to everyone, including ourselves, telling them to make a new group
 	NSpClearMessageHeader(&message.header);
@@ -1019,11 +1019,11 @@ OSStatus					status = kNMNoError;
 // NSpGame::NSpGroup_RemovePlayer
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 NSpGame::NSpGroup_RemovePlayer(NSpGroupID inGroupID, NSpPlayerID inPlayerID)
 {
 TRemovePlayerFromGroupMessage	message;
-OSStatus						status = kNMNoError;
+NMErr						status = kNMNoError;
 
 #if DEBUG
 	NSp_InterruptSafeListIterator 		groupIter(*mGroupList);
@@ -1286,7 +1286,7 @@ NMBoolean	handled;
 // NSpGame::DoDeleteGroup
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 NSpGame::DoDeleteGroup(NSpGroupID inID)
 {
 NSp_InterruptSafeListIterator	iter(*mGroupList);
@@ -1481,15 +1481,15 @@ NSpGame::HandleRemovePlayerFromGroupMessage(TRemovePlayerFromGroupMessage *inMes
 // NSpGame::DoSelfSend
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 NSpGame::DoSelfSend(NSpMessageHeader *inHeader, void *inBody, NSpFlags inFlags, NMBoolean inCopy)
 {
+UNUSED_PARAMETER(inBody);
 UNUSED_PARAMETER(inFlags);
 UNUSED_PARAMETER(inCopy);
 
 
-ERObject		*theERObject;
-//UnsignedWide	baseTime;
+	ERObject		*theERObject;
 
 	theERObject = GetFreeERObject(inHeader->messageLen);
 
@@ -1500,21 +1500,7 @@ ERObject		*theERObject;
 	//	we can copy them with one move...
 	machine_move_data(inHeader, theERObject->PeekNetMessage(), inHeader->messageLen);
 
-/*
-	//Ä	First copy the header
-	machine_move_data(inHeader, theERObject->PeekNetMessage(), sizeof (NSpMessageHeader));
-
-	//Ä	Then copy the body, if there is one
-	if (inHeader->messageLen > sizeof (NSpMessageHeader) && inBody)
-	{
-		machine_move_data(inBody, (NMUInt8 *)theERObject->PeekNetMessage() + sizeof (NSpMessageHeader),
-			 inHeader->messageLen - sizeof (NSpMessageHeader));
-	}
-*/
-
 	//Ä	Set the when
-//	::machine_timestamp(&baseTime);
-//	theERObject->PeekNetMessage()->when = ::machine_timestamp_milliseconds(&baseTime) + mTimeStampDifferential;
 	theERObject->PeekNetMessage()->when = ::GetTimestampMilliseconds() + mTimeStampDifferential;
 
 	HandleEventForSelf(theERObject, NULL);

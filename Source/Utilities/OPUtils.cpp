@@ -70,8 +70,8 @@
 #endif
 
 #if (macintosh_build)
-	NMBoolean checkedOSVersion = false;
-	NMBoolean runningOSX;
+	NMBoolean gCheckedOSVersion = false;
+	NMBoolean gRunningOSX;
 	
 	#if (!macho_build)
 		extern	OTClientContextPtr  gOTClientContext;
@@ -99,9 +99,9 @@ void checkMacOSVersion()
 	UInt32 response;
 	if(Gestalt(gestaltSystemVersion, (SInt32 *) &response) == noErr){
 		if (response >= 0x1000)
-			runningOSX = true;
+			gRunningOSX = true;
 		else
-			runningOSX = false;
+			gRunningOSX = false;
 	}
 }
 
@@ -118,13 +118,13 @@ debug_message(const char *inMessage)
 
 	
 	//see if we're running OS-X
-	if (checkedOSVersion == false)
+	if (gCheckedOSVersion == false)
 		checkMacOSVersion();
 		
 	#if DEBUG
 		NMBoolean usePrintf;
 
-		if (runningOSX)
+		if (gRunningOSX)
 		{
 			#if MACOSX_USEPRINTF
 				usePrintf = true;
@@ -326,7 +326,7 @@ NMSInt16	length;
 		dprintf_oterr(
 			EndpointRef	ep,
 			char		*message,
-			OSStatus	err,
+			NMErr	err,
 			char		*file,
 			NMSInt32	line)
 		{
@@ -708,11 +708,11 @@ static ItemCount gReserveChunksAllocated;
 
 #endif
 
-OSStatus InitOTMemoryReserve(ByteCount freeHeapSpaceRequired, ByteCount chunkSize, 
+NMErr InitOTMemoryReserve(ByteCount freeHeapSpaceRequired, ByteCount chunkSize, 
 										   ItemCount minChunks, ItemCount maxChunks)
 	// See comment in interface part.
 {
-	OSStatus	err;
+	NMErr	err;
 	
 	if (freeHeapSpaceRequired < 32768)
 		freeHeapSpaceRequired = 32768;
@@ -759,9 +759,9 @@ OSStatus InitOTMemoryReserve(ByteCount freeHeapSpaceRequired, ByteCount chunkSiz
 }
 
 //ECF - added this to be able to keep a nice, full reserve as time goes on. - just call periodically at system-time
-OSStatus UpkeepOTMemoryReserve(void)
+NMErr UpkeepOTMemoryReserve(void)
 {
-	OSStatus err = noErr;
+	NMErr err = noErr;
 	Boolean done = false;
 	OTLink *	thisChunk;
 	
@@ -863,7 +863,7 @@ void *OTAllocMemFromReserve(OTByteCount size)
 	
 	//when running OSX we just return what we get the first time
 	#if carbon_build
-		if (runningOSX)
+		if (gRunningOSX)
 			return OTAllocMemInContext(size,gOTClientContext);
 	
 		result = OTAllocMemInContext(size,gOTClientContext);

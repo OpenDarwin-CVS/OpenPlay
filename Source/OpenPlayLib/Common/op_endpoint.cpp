@@ -25,12 +25,13 @@
  * Revision: $Id$
  */
 
+#include "portable_files.h"
+
 #ifndef __OPENPLAY__
 #include "OpenPlay.h"
 #endif
 
 #include "OPUtils.h"
-#include "portable_files.h"
 
 #include "NetModule.h"
 #include "NetModulePrivate.h"
@@ -41,7 +42,7 @@
 #include "OPDLLUtils.h"
 
 /* ------------ local code */
-static OPENPLAY_CALLBACK net_module_callback_function(NMEndpointRef inEndpoint, 
+static void net_module_callback_function(NMEndpointRef inEndpoint, 
 	                   void* inContext, NMCallbackCode inCode, 
                            NMErr inError, void* inCookie);
 
@@ -64,10 +65,27 @@ static void clean_up_endpoint(PEndpointRef endpoint, NMBoolean return_to_cache);
 
 /* ---------- opening/closing */
 
+//doxygen instruction:
+/** @addtogroup EndpointManagement
+ * @{
+ */
+
 
 //----------------------------------------------------------------------------------------
 // ProtocolOpenEndpoint
 //----------------------------------------------------------------------------------------
+/**
+	Create a new endpoint.
+	@brief Creates a new endpoint.
+	@param inConfig The \ref PConfigRef configuration to create end endpoint from.
+	@param inCallback The callback function OpenPlay will call for events involving this endpoint.
+	@param inContext A custom context that will be passed to the endpoint's callback function. 
+	@param outEndpoint Pass a pointer to a \ref PEndpointRef which will receive the new endpoint.
+	@param flags Flags - passing \ref kOpenNone will create a passive(host) endpoint, while passing \ref kOpenActive will create an active(client) endpoint.
+	@return \ref kNMNoError if the function succeeds.\n
+	Otherwise, an error code.
+	\n\n\n\n
+ */
 
 /*
 	Takes the config data created by ProtocolConfig, and builds an endpoint out of it.
@@ -123,13 +141,14 @@ NMErr ProtocolOpenEndpoint(
 				clean_up_endpoint(ep, false);
 			}
 		} else {
-			err= errFunctionNotBound;
+			err= kNMFunctionNotBoundErr;
 		}
 	}
 
-	#if (DEBUG)
+#if (DEBUG)
+	if( err )
 		DEBUG_PRINT("ProtocolOpenEndpoint returning %s (%d)\n",GetOPErrorName(err),err);
-	#endif //DEBUG
+#endif //DEBUG
 	
 	return err;
 }
@@ -137,6 +156,19 @@ NMErr ProtocolOpenEndpoint(
 //----------------------------------------------------------------------------------------
 // ProtocolCloseEndpoint
 //----------------------------------------------------------------------------------------
+/**
+	Close an endpoint.  Endpoints must always be closed,
+	even if they have received a \ref kNMEndpointDied message.
+	After closing an endpoint, one should wait for its \ref kNMCloseComplete message to arrive,
+	or else wait until \ref ProtocolIsAlive() returns false for the endpoint.
+	Only then can one be certain that the endpoint's callback will no longer be triggered with new messages.
+	@brief Close an endpoint.
+	@param endpoint The endpoint to close.
+	@param inOrderly Whether to attempt an "orderly" disconnect.  This is not yet well-defined...
+	@return \ref kNMNoError if the function succeeds.\n
+	Otherwise, an error code.
+	\n\n\n\n
+ */
 
 /*
 	closes the endpoint
@@ -173,7 +205,7 @@ NMErr ProtocolCloseEndpoint(
 					endpoint->state, _state_unknown, _state_closing));
 			}
 		} else {
-			err= errFunctionNotBound;
+			err= kNMFunctionNotBoundErr;
 		}
 		/* note we clean up everything on the response from the NMClose... */
 	} else {
@@ -181,12 +213,13 @@ NMErr ProtocolCloseEndpoint(
 			DEBUG_PRINT("invalid endpoint(0X%X) passed to ProtocolCloseEndpoint()",endpoint);
 		else if (endpoint->state == _state_closing)
 			DEBUG_PRINT("endpoint (0X%X) passed to ProtocolCloseEndpoint() in state _state_closing",endpoint);
-		err= errParamErr;
+		err= kNMParameterErr;
 	}
 	
-	#if (DEBUG)
+#if (DEBUG)
+	if( err )
 		DEBUG_PRINT("ProtocolCloseEndpoint returning %s (%d) for endpoint (0X%X)",GetOPErrorName(err),err,endpoint);	
-	#endif //DEBUG
+#endif //DEBUG
 	return err;
 }
 
@@ -235,6 +268,17 @@ static void clean_up_endpoint(
 //----------------------------------------------------------------------------------------
 // ProtocolAcceptConnection
 //----------------------------------------------------------------------------------------
+/**
+	Accept a pending client connection, creating a new \ref PEndpointRef for the client connection.
+	@brief Accept a pending client connection.
+	@param endpoint The endpoint that received the \ref kNMConnectRequest message.
+	@param inCookie The cookie value which accompanied the \ref kNMConnectRequest message to the host endpoint's callback.
+	@param inNewCallback The callback function for the new endpoint to be created for the client.
+	@param inNewContext The custom context to be assigned to the new endpoint.
+	@return \ref kNMNoError if the function succeeds.\n
+	Otherwise, an error code.
+	\n\n\n\n
+ */
 
 /* -------------- connections */
 NMErr 
@@ -274,21 +318,34 @@ ProtocolAcceptConnection(
 				}
 			}
 		} else {
-			err= errFunctionNotBound;
+			err= kNMFunctionNotBoundErr;
 		}
 	} else {
-		err= errParamErr;
+		err= kNMParameterErr;
 	}
 	
-	#if (DEBUG)
+#if (DEBUG)
+	if( err )
 		DEBUG_PRINT("ProtocolAcceptConnection returning %s (%d)",GetOPErrorName(err),err);	
-	#endif //DEBUG
+#endif //DEBUG
 	return err;
 }
 
 //----------------------------------------------------------------------------------------
 // ProtocolRejectConnection
 //----------------------------------------------------------------------------------------
+/**
+	Reject a pending client connection.
+	@brief Reject a pending client connection.
+	@param endpoint The endpoint that received the \ref kNMConnectRequest message.
+	@param inCookie the cookie value which accompanied the \ref kNMConnectRequest message to the host endpoint's callback.
+	@return \ref kNMNoError if the function succeeds.\n
+	Otherwise, returns an error code.
+	@warning Some NetModules/configurations may be unable to do a "graceful" rejection, and the client side will appear to have the connection
+	accepted and then immediately receive a \ref kNMEndpointDied message.
+	The safest way to avoid this is to always accept a connection initially, and then send it a custom-defined approval or denial message, disconnecting it then if necessary.
+	\n\n\n\n
+ */
 
 NMErr ProtocolRejectConnection(
 	PEndpointRef endpoint, 
@@ -306,21 +363,31 @@ NMErr ProtocolRejectConnection(
 			op_assert(endpoint->module);
 			err= endpoint->NMRejectConnection(endpoint->module, inCookie);
 		} else {
-			err= errFunctionNotBound;
+			err= kNMFunctionNotBoundErr;
 		}
 	} else {
-		err= errParamErr;
+		err= kNMParameterErr;
 	}
 	
-	#if (DEBUG)
+#if (DEBUG)
+	if( err )
 		DEBUG_PRINT("ProtocolRejectConnection returning %s (%d)",GetOPErrorName(err),err);		
-	#endif //DEBUG
+#endif //DEBUG
 	return err;
 }
 
 //----------------------------------------------------------------------------------------
 // ProtocolSetTimeout
 //----------------------------------------------------------------------------------------
+/**
+	Set the default timeout for OpenPlay operations.
+	@brief Set the default timeout for OpenPlay operations.
+	@param endpoint The endpoint for which the timeout is to be set.
+	@param timeout The timeout value, in 60ths of a second.
+	@return \ref kNMNoError if the function succeeds.\n
+	Otherwise, an error code.
+	\n\n\n\n
+ */
 
 /* -------------- options */
 /*
@@ -347,10 +414,10 @@ NMErr ProtocolSetTimeout(
 			op_assert(endpoint->module);
 			err= endpoint->NMSetTimeout(endpoint->module, timeout);
 		} else {
-			err= errFunctionNotBound;
+			err= kNMFunctionNotBoundErr;
 		}
 	} else {
-		err= errParamErr;
+		err= kNMParameterErr;
 	}
 
 	return err;
@@ -359,6 +426,16 @@ NMErr ProtocolSetTimeout(
 //----------------------------------------------------------------------------------------
 // ProtocolIsAlive
 //----------------------------------------------------------------------------------------
+/**
+	Determine if an endpoint exists and is able to trigger a callback.
+	Once this function returns true for an endpoint, the endpoint can be assumed truly "dead" and its associated contexts
+	disposed of without fear of the endpoint's callback being triggered any more.
+	@brief Determine if an endpoint exists and is able to trigger a callback.
+	@param endpoint the endpoint to check for life.
+	@return true if the endpoint exists and has not yet sent its \ref kNMCloseComplete message.\n
+	false otherwise.
+	\n\n\n\n
+ */
 
 NMBoolean ProtocolIsAlive(
 	PEndpointRef endpoint)
@@ -385,6 +462,14 @@ NMBoolean ProtocolIsAlive(
 //----------------------------------------------------------------------------------------
 // ProtocolIdle
 //----------------------------------------------------------------------------------------
+/**
+	Provide processing time to an endpoint if necessary. \ref ProtocolGetEndpointInfo() can be used to determine if the endpoint requires idle time.
+	@brief Provide processing time to an endpoint if necessary.
+	@param endpoint The endpoint to provide processing time to.
+	@return \ref kNMNoError if the function succeeds.\n
+	Otherwise, an error code.
+	\n\n\n\n
+ */
 
 NMErr ProtocolIdle(
 	PEndpointRef endpoint)
@@ -405,10 +490,10 @@ NMErr ProtocolIdle(
 			op_assert(endpoint->module);
 			err= endpoint->NMIdle(endpoint->module);
 		} else {
-			err= errFunctionNotBound;
+			err= kNMFunctionNotBoundErr;
 		}
 	} else {
-		err= errParamErr;
+		err= kNMParameterErr;
 	}
 
 	return err;
@@ -417,6 +502,17 @@ NMErr ProtocolIdle(
 //----------------------------------------------------------------------------------------
 // ProtocolFunctionPassThrough
 //----------------------------------------------------------------------------------------
+/**
+	Access NetModule-specific functionality for a \ref PEndpointRef.
+	@brief Access NetModule-specific functionality for a \ref PEndpointRef.
+	@param endpoint The \ref PEndpointRef on which the supplementary function acts.
+	@param inSelector An index that tells the NetModule which custom operation is to be done.
+	@param inParamBlock data to pass to the NetModule for the function.
+	@return \ref kNMNoError if the function succeeds.\n
+	\ref kNMUnknownPassThrough if the NetModule does not recognize the value of \e inSelector. \n
+	Otherwise, an error code.
+	\n\n\n\n
+ */
 
 NMErr ProtocolFunctionPassThrough(
 	PEndpointRef endpoint, 
@@ -436,10 +532,10 @@ NMErr ProtocolFunctionPassThrough(
 			op_assert(endpoint->module);
 			err= endpoint->NMFunctionPassThrough(endpoint->module, inSelector, inParamBlock);
 		} else {
-			err= errFunctionNotBound;
+			err= kNMFunctionNotBoundErr;
 		}
 	} else {
-		err= errParamErr;
+		err= kNMParameterErr;
 	}
 
 	return err;
@@ -448,7 +544,15 @@ NMErr ProtocolFunctionPassThrough(
 //----------------------------------------------------------------------------------------
 // ProtocolSetEndpointContext
 //----------------------------------------------------------------------------------------
-
+/**
+	Set an endpoint's associated context to a new value.
+	@brief Set an endpoint's associated context to a new value.
+	@param endpoint The endpoint whose context is to be set.
+	@param newContext The new context for the endpoint.
+	@return \ref kNMNoError if the function succeeds.\n
+	Otherwise, an error code.
+	\n\n\n\n
+ */
 
 /* >>> [Edmark/PBE] 11/10/99 added ProtocolSetEndpointContext() 
   "... allows us to set an endpoint's context after it's created. Adding this 
@@ -467,7 +571,7 @@ NMErr ProtocolSetEndpointContext(PEndpointRef endpoint, void* newContext)
 	}
 	else
 	{
-		err = errParamErr;
+		err = kNMParameterErr;
 	}
 
 	return err;
@@ -477,22 +581,61 @@ NMErr ProtocolSetEndpointContext(PEndpointRef endpoint, void* newContext)
 //----------------------------------------------------------------------------------------
 // ProtocolStartAdvertising
 //----------------------------------------------------------------------------------------
+/**
+	Enable a host endpoint to be seen on the network.
+	@brief Enable a host endpoint to be seen on the network.
+	@param endpoint The passive(host) endpoint to enable advertising for.
+	@return No return value.
+	\n\n\n\n
+ */
 
 /* >>>> Moved ProtocolStart/StopAdvertising() from op_module_mgmt.c */
 void ProtocolStartAdvertising(PEndpointRef endpoint)	/* [Edmark/PBE] 11/8/99 changed parameter from PConfigRef to PEndpointRef */
 {
 	endpoint->NMStartAdvertising(endpoint->module);
 }
+//----------------------------------------------------------------------------------------
+// ProtocolStopAdvertising
+//----------------------------------------------------------------------------------------
+/**
+	Prevent a host endpoint from being seen on the network.
+	@brief Prevent a host endpoint from being seen on the network.
+	@param endpoint The passive(host) endpoint to disable advertising for.
+	@return No return value.
+	\n\n\n\n
+ */
 
 void ProtocolStopAdvertising(PEndpointRef endpoint)	/* [Edmark/PBE] 11/8/99 changed parameter from PConfigRef to PEndpointRef */
 {
 	endpoint->NMStopAdvertising(endpoint->module);
 }
 
+/** @}*/
+
+ //doxygen instruction:
+/** @addtogroup DataTransfer
+ * @{
+ */
+
 //----------------------------------------------------------------------------------------
 // ProtocolSendPacket
 //----------------------------------------------------------------------------------------
-
+/**
+	Send a packet via an endpoint's unreliable(datagram) connection.  Packets are generally faster
+	arriving than stream data, but are not guaranteed to arrive in order, if at all.  The ones that do arrive,
+	however, arrive as packets of the same size as they were sent, unlike stream data, which "flows" in as one long
+	stream of data with no boundaries.  
+	@brief Send a packet via an endpoint's unreliable(datagram) connection.
+	@param endpoint The endpoint to send the data to.
+	@param inData Pointer to the data to be sent.
+	@param inLength Size of the data to be sent.
+	@param inFlags Flags.  None used currently.
+	@return \ref kNMNoError if the function succeeds.\n
+	\ref kNMFlowErr if no data can currently be sent due to flow control (network is saturated).
+	In this case, the endpoint will be sent a \ref kNMFlowClear message when data can be sent again.\n
+	Otherwise, an error code.
+	\n\n\n\n
+ */
 /* -------------- sending/receiving */	
 /*
 	Send the packet to the given endpoint
@@ -515,10 +658,10 @@ NMErr ProtocolSendPacket(
 			op_assert(endpoint->module);
 			err= endpoint->NMSendDatagram(endpoint->module, (unsigned char*)inData, inLength, inFlags);
 		} else {
-			err= errFunctionNotBound;
+			err= kNMFunctionNotBoundErr;
 		}
 	} else {
-		err= errParamErr;
+		err= kNMParameterErr;
 	}
 
 	return err;
@@ -527,7 +670,18 @@ NMErr ProtocolSendPacket(
 //----------------------------------------------------------------------------------------
 // ProtocolReceivePacket
 //----------------------------------------------------------------------------------------
-
+/**
+	Receive a packet from an endpoint's unreliable(datagram) connection.
+	@brief Receive a packet from an endpoint's unreliable(datagram) connection.
+	@param endpoint The endpoint to receive the data from.
+	@param outData Pointer to a buffer to receive a datagram.
+	@param outLength In: size of \e outData buffer. Out: size of datagram received.
+	@param outFlags Flags. Pass \ref kNMBlocking to block until receival of a datagram.
+	@return \ref kNMNoError if the function succeeds.\n
+	\ref kNMNoDataErr if there are no more waiting datagrams.\n
+	Otherwise, an error code.
+	\n\n\n\n
+ */
 /*
 	Tries to receive the endpoint.  Does a copy here.
 */	
@@ -550,10 +704,10 @@ NMErr ProtocolReceivePacket(
 			op_assert(endpoint->module);
 			err= endpoint->NMReceiveDatagram(endpoint->module, (unsigned char*)outData, outLength, outFlags);
 		} else {
-			err= errFunctionNotBound;
+			err= kNMFunctionNotBoundErr;
 		}
 	} else {
-		err= errParamErr;
+		err= kNMParameterErr;
 	}
 	
 	return err;
@@ -562,11 +716,19 @@ NMErr ProtocolReceivePacket(
 //----------------------------------------------------------------------------------------
 // ProtocolSend
 //----------------------------------------------------------------------------------------
-
-/* ------------ streaming */
-/*
-	Sends a stream of data.  Is blocking and synchronous (right?)
-	Connects to the other end if necessary...
+/**
+	Send data via an endpoint's reliable(stream) connection.  Stream data is guaranteed to arrive in the order it was sent
+	and it generally faster for large amounts of data, but does not arrive in "packets" of any specific size.  Applications must
+	be prepared to break the stream back into packets if necessary.
+	@brief Send data via an endpoint's reliable(stream) connection.
+	@param endpoint The endpoint to send the data to.
+	@param inData Pointer to the data to be sent.
+	@param inSize Size of the data to be sent.
+	@param inFlags Flags.
+	@return If positive, the number of bytes actually sent.\n If negative, an error code.\n
+	If the number of bytes sent is less than the number requested, the endpoint will receive a \ref kNMFlowClear message once
+	more data can be sent.
+	\n\n\n\n
 */
 NMSInt32 ProtocolSend(
 	PEndpointRef endpoint, 
@@ -577,7 +739,7 @@ NMSInt32 ProtocolSend(
 NMSInt32 result= 0;
 
 	/* Some of this error checking could be ignored.. */	
-	op_assert(valid_endpoint(endpoint));
+	op_warn(valid_endpoint(endpoint));
 	if(endpoint)
 	{
 		op_assert(endpoint->cookie==PENDPOINT_COOKIE);
@@ -586,10 +748,10 @@ NMSInt32 result= 0;
 			op_assert(endpoint->module);
 			result= endpoint->NMSend(endpoint->module, inData, inSize, inFlags);
 		} else {
-			result= errFunctionNotBound;
+			result= kNMFunctionNotBoundErr;
 		}
 	} else {
-		result= errParamErr;
+		result= kNMParameterErr;
 	}
 	
 	return result; // is < 0 incase of error...
@@ -598,7 +760,18 @@ NMSInt32 result= 0;
 //----------------------------------------------------------------------------------------
 // ProtocolReceive
 //----------------------------------------------------------------------------------------
-
+/**
+	Receive data from an endpoint's reliable(stream) connection.
+	@brief Receive data from an endpoint's reliable(stream) connection.
+	@param endpoint The endpoint to receive the data from.
+	@param outData Pointer to a buffer to receive the stream data.
+	@param ioSize In: amount of data requested. Out: amount of data received.
+	@param outFlags Flags. Pass \ref kNMBlocking to block until receival of \e ioSize bytes of data.
+	@return \ref kNMNoError if the function succeeds.\n
+	\ref kNMNoDataErr if there is no more data to be read.\n
+	Otherwise, an error code.
+	\n\n\n\n
+ */
 NMErr ProtocolReceive(
 	PEndpointRef endpoint, 
 	void *outData, 
@@ -617,18 +790,30 @@ NMErr ProtocolReceive(
 			op_assert(endpoint->module);
 			err= endpoint->NMReceive(endpoint->module, outData, ioSize, outFlags);
 		} else {
-			err= errFunctionNotBound;
+			err= kNMFunctionNotBoundErr;
 		}
 	} else {
-		err= errParamErr;
+		err= kNMParameterErr;
 	}
 	
 	return err;
 }
 
 //----------------------------------------------------------------------------------------
-// entering/leaving notifiers
+// ProtocolEnterNotifier
 //----------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
+/**
+	Temporarily disable callbacks for an endpoint.
+	This should be used only for small blocks of code where it is important that an endpoint's callback not be called.
+	Be sure to call \ref ProtocolLeaveNotifier() when done.
+	@brief Temporarily disable callbacks for an endpoint.
+	@param endpoint The endpoint to disable callbacks for.
+	@param endpointMode The endpoint mode/s to disable callbacks for.
+	@return \ref kNMNoError if the function succeeds.\n
+	Otherwise, an error code.
+	\n\n\n\n
+ */
 
 NMErr ProtocolEnterNotifier(
 	PEndpointRef endpoint,
@@ -642,16 +827,27 @@ NMErr ProtocolEnterNotifier(
 		{
 			err= endpoint->NMEnterNotifier(endpoint->module, endpointMode);
 		} else {
-			err= errFunctionNotBound;
+			err= kNMFunctionNotBoundErr;
 		}
 	} else {
-		err= errParamErr;
+		err= kNMParameterErr;
 	}
 
 	return err;
 }
 
 //----------------------------------------------------------------------------------------
+// ProtocolLeaveNotifier
+//----------------------------------------------------------------------------------------
+/**
+	Re-enable callbacks for an endpoint.
+	@brief Re-enable callbacks for an endpoint.
+	@param endpoint The endpoint to enable callbacks for.
+	@param endpointMode The endpoint mode/s to enable callbacks for.
+	@return \ref kNMNoError if the function succeeds.\n
+	Otherwise, an error code.
+	\n\n\n\n
+ */
 
 NMErr ProtocolLeaveNotifier(
 	PEndpointRef endpoint,
@@ -665,10 +861,10 @@ NMErr ProtocolLeaveNotifier(
 		{
 			err= endpoint->NMLeaveNotifier(endpoint->module, endpointMode);
 		} else {
-			err= errFunctionNotBound;
+			err= kNMFunctionNotBoundErr;
 		}
 	} else {
-		err= errParamErr;
+		err= kNMParameterErr;
 	}
 
 	return err;
@@ -678,6 +874,15 @@ NMErr ProtocolLeaveNotifier(
 //----------------------------------------------------------------------------------------
 // ProtocolGetEndpointInfo
 //----------------------------------------------------------------------------------------
+/**
+	Returns extended info about an endpoint.
+	@brief Returns extended info about an endpoint.
+	@param endpoint The endpoint to obtain info for.
+	@param info Pointer to the \ref NMModuleInfoStruct to be filled in.
+	@return \ref kNMNoError if the function succeeds.\n
+	Otherwise, an error code.
+	\n\n\n\n
+ */
 
 /* ----------- information functions */
 NMErr ProtocolGetEndpointInfo(
@@ -695,12 +900,83 @@ NMErr ProtocolGetEndpointInfo(
 		{
 			err= endpoint->NMGetModuleInfo(info);
 		} else {
-			err= errFunctionNotBound;
+			err= kNMFunctionNotBoundErr;
 		}
 	} else {
-		err= errParamErr;
+		err= kNMParameterErr;
 	}
 	
+	return err;
+}
+
+//----------------------------------------------------------------------------------------
+// ProtocolFreeEndpointAddress
+//----------------------------------------------------------------------------------------
+/*
+	Frees the address of the endpoint in the type specified.
+*/
+NMErr ProtocolFreeEndpointAddress(
+	PEndpointRef endpoint,
+	void **outAddress)
+{
+	NMErr err= kNMNoError;
+
+	/* call as often as possible (anything that is synchronous) */
+	op_idle_synchronous(); 
+	
+	op_assert(valid_endpoint(endpoint));
+	if(endpoint)
+	{
+		op_assert(endpoint->cookie==PENDPOINT_COOKIE);
+
+		/* keep a local copy. */
+		if(endpoint->NMFreeAddress)
+		{
+			op_assert(endpoint->module);
+			err= endpoint->NMFreeAddress(endpoint->module, outAddress);
+		} else {
+			err= kNMFunctionNotBoundErr;
+		}
+	} else {
+		err= kNMParameterErr;
+	}
+
+	return( err );
+}
+
+//----------------------------------------------------------------------------------------
+// ProtocolGetEndpointAddress
+//----------------------------------------------------------------------------------------
+/*
+	Returns the address of the endpoint in the type specified.
+*/
+NMErr ProtocolGetEndpointAddress(
+	PEndpointRef endpoint,
+	NMAddressType addressType,
+	void **outAddress)
+{
+	NMErr err= kNMNoError;
+
+	/* call as often as possible (anything that is synchronous) */
+	op_idle_synchronous(); 
+	
+	op_assert(valid_endpoint(endpoint));
+	if(endpoint)
+	{
+		op_assert(endpoint->cookie==PENDPOINT_COOKIE);
+
+		/* keep a local copy. */
+		if(endpoint->NMGetAddress)
+		{
+			op_assert(endpoint->module);
+			err= endpoint->NMGetAddress(endpoint->module, addressType, outAddress);
+		} else {
+			err= kNMFunctionNotBoundErr;
+		}
+	} else {
+		err= kNMParameterErr;
+	}
+
 	return err;
 }
 
@@ -709,7 +985,7 @@ NMErr ProtocolGetEndpointInfo(
 //----------------------------------------------------------------------------------------
 
 /* ------------ static code */
-static OPENPLAY_CALLBACK net_module_callback_function(
+static void net_module_callback_function(
 	NMEndpointRef inEndpoint, 
 	void* inContext,
 	NMCallbackCode inCode, 
@@ -806,6 +1082,8 @@ static PEndpointRef create_endpoint_and_bind_to_protocol_library(
 
 			ep->NMSetTimeout= (NMSetTimeoutPtr) load_proc(ep->connection, kNMSetTimeout);
 			ep->NMIsAlive= (NMIsAlivePtr) load_proc(ep->connection, kNMIsAlive);
+			ep->NMFreeAddress= (NMFreeAddressPtr) load_proc(ep->connection, kNMFreeAddress);
+			ep->NMGetAddress= (NMGetAddressPtr) load_proc(ep->connection, kNMGetAddress);
 			ep->NMFunctionPassThrough= (NMFunctionPassThroughPtr) load_proc(ep->connection, kNMFunctionPassThrough);
 
 			ep->NMIdle= (NMIdlePtr) load_proc(ep->connection, kNMIdle);
@@ -831,7 +1109,7 @@ static PEndpointRef create_endpoint_and_bind_to_protocol_library(
 			ep= NULL;
 		}
 	} else {
-		*err= errNoMemory;
+		*err= kNMOutOfMemoryErr;
 	}
 
 	return ep;
@@ -884,6 +1162,8 @@ static Endpoint *create_endpoint_for_accept(
 			new_endpoint->NMReceive= endpoint->NMReceive;
 			new_endpoint->NMSetTimeout= endpoint->NMSetTimeout;
 			new_endpoint->NMIsAlive= endpoint->NMIsAlive;
+			new_endpoint->NMFreeAddress= endpoint->NMFreeAddress;
+			new_endpoint->NMGetAddress= endpoint->NMGetAddress;
 			new_endpoint->NMFunctionPassThrough= endpoint->NMFunctionPassThrough;
 			new_endpoint->NMIdle= endpoint->NMIdle;
 
@@ -896,19 +1176,17 @@ static Endpoint *create_endpoint_for_accept(
 			new_endpoint->next= NULL;
 
 			add_endpoint_to_loaded_list(new_endpoint);
-		} else {
-			DEBUG_PRINT("Err %d binding to protocol", *err);
 		}
-		
-		if(*err)
+		else
 		{
-			/* DEBUG_PRINT("returning to cache due to error.. %d", *err); */
+			DEBUG_PRINT("Err %d binding to protocol", *err);
+
 			op_assert(gOp_globals.cache_size+1<=MAXIMUM_CACHED_ENDPOINTS);
 			gOp_globals.endpoint_cache[gOp_globals.cache_size++]= new_endpoint;
 			new_endpoint= NULL;
 		}
 	} else {
-		*err= errNoMemory;
+		*err= kNMOutOfMemoryErr;
 	}
 #elif posix_build
 	new_endpoint = (Endpoint*)new_pointer(sizeof(Endpoint));
@@ -938,6 +1216,8 @@ static Endpoint *create_endpoint_for_accept(
 			new_endpoint->NMReceive= endpoint->NMReceive;
 			new_endpoint->NMSetTimeout= endpoint->NMSetTimeout;
 			new_endpoint->NMIsAlive= endpoint->NMIsAlive;
+			new_endpoint->NMFreeAddress= endpoint->NMFreeAddress;
+			new_endpoint->NMGetAddress= endpoint->NMGetAddress;
 			new_endpoint->NMFunctionPassThrough= endpoint->NMFunctionPassThrough;
 			new_endpoint->NMIdle= endpoint->NMIdle;
 
@@ -950,12 +1230,11 @@ static Endpoint *create_endpoint_for_accept(
 			new_endpoint->next= NULL;
 
 			add_endpoint_to_loaded_list(new_endpoint);
-		} else {
-			DEBUG_PRINT("Err %d binding to protocol", *err);
 		}
-		
-		if(*err)
+		else
 		{
+			DEBUG_PRINT("Err %d binding to protocol", *err);
+
 			new_endpoint= NULL;
 		}
 	} else {
@@ -979,7 +1258,6 @@ static Endpoint *create_endpoint_for_accept(
 char* GetOPErrorName(NMErr err)
 {
 	switch (err){
-		DO_CASE(kNMOpenEndpointFailedErr);
 		DO_CASE(kNMOutOfMemoryErr);
 		DO_CASE(kNMParameterErr);
 		DO_CASE(kNMTimeoutErr);
@@ -1003,23 +1281,19 @@ char* GetOPErrorName(NMErr err)
 		DO_CASE(kNMBadStateErr);
 		DO_CASE(kNMTooMuchDataErr);
 		DO_CASE(kNMCantBlockErr);
-		DO_CASE(kNMInitFailedErr);
 		DO_CASE(kNMFlowErr);
 		DO_CASE(kNMProtocolErr);
 		DO_CASE(kNMModuleInfoTooSmall);
 		DO_CASE(kNMClassicOnlyModuleErr);
 		DO_CASE(kNMNoError);
-		DO_CASE(errBadPacketDefinition);
-		DO_CASE(errBadShortAlignment);
-		DO_CASE(errBadLongAlignment);
-		DO_CASE(errBadPacketDefinitionSize);
-		DO_CASE(errBadVersion);
-		DO_CASE(errParamErr);
-		DO_CASE(errNoMoreNetModules);
-		DO_CASE(errModuleNotFound);
-		DO_CASE(errBadConfig);
-		DO_CASE(errFunctionNotBound);
-		DO_CASE(errNoMemory);
+		DO_CASE(kNMBadPacketDefinitionErr);
+		DO_CASE(kNMBadShortAlignmentErr);
+		DO_CASE(kNMBadLongAlignmentErr);
+		DO_CASE(kNMBadPacketDefinitionSizeErr);
+		DO_CASE(kNMBadVersionErr);
+		DO_CASE(kNMNoMoreNetModulesErr);
+		DO_CASE(kNMModuleNotFoundErr);
+		DO_CASE(kNMFunctionNotBoundErr);
 		default: return "unknown OP error"; break;
 	}
 }

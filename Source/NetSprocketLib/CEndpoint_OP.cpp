@@ -113,6 +113,8 @@ CEndpoint::CEndpoint(NSpGame *inGame)
 
 CEndpoint::CEndpoint(NSpGame *inGame, EPCookie *inUnreliableCookie, EPCookie *inCookie)
 {
+	UNUSED_PARAMETER(inUnreliableCookie);
+	
 	mGame = inGame;
 
 	//	Initialize everything, just in case
@@ -176,7 +178,7 @@ CEndpoint::CEndpoint(NSpGame *inGame, EPCookie *inUnreliableCookie, EPCookie *in
 void
 CEndpoint::Veto(void *inCookie, NSpMessageHeader *inMessage)
 {
-OSStatus					result;
+NMErr					result;
 EPCookie					*theCookie = (EPCookie *) inCookie;
 NSp_InterruptSafeListIterator	iter(*mPendingJoinConnections);
 NSp_InterruptSafeListMember	*theItem;
@@ -277,7 +279,7 @@ CEndpoint::~CEndpoint()
 	while (kOPInvalidEndpointRef != mOpenPlayEndpoint)
 	{
 #if ASYNCDEBUGGING
-	OSStatus	status;
+	NMErr	status;
 	
 		status = ::OTGetEndpointState(mOpenPlayEndpoint);
 		DEBUG_PRINT("CEndpoint::~CEndpoint: Waiting for unbind to complete.  state is %d", status);
@@ -326,7 +328,7 @@ CEndpoint::Close()
 // CEndpoint::Init
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 CEndpoint::Init(NMUInt32		inConnectionReqCount,
 				PConfigRef	inConfig)
 {
@@ -460,7 +462,7 @@ CEndpoint::Advertise(NMBoolean inAdvertise)
 // CEndpoint::HandleDisconnectComplete
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 CEndpoint::HandleDisconnectComplete(PEndpointRef inEP, EPCookie *inCookie)
 {
 UNUSED_PARAMETER(inCookie);
@@ -573,10 +575,10 @@ CEndpoint::FindPendingJoin(void *inCookie)
 // CEndpoint::Disconnect
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 CEndpoint::Disconnect(NMBoolean orderly)
 {
-OSStatus 	status = kNMNoError;
+NMErr 	status = kNMNoError;
 	
 NSp_InterruptSafeListIterator	*iter = NULL;
 NSp_InterruptSafeListMember		*theItem;
@@ -641,11 +643,11 @@ EPCookie						*theCookie = NULL;
 // CEndpoint::WaitForDisconnect
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 CEndpoint::WaitForDisconnect(NMUInt32 inWaitSecs)
 {	
 NMUInt32	time, timesUp;
-OSStatus	status = kNSpTimeoutErr;
+NMErr	status = kNSpTimeoutErr;
 NMBoolean	state;
 	
 	time = machine_tick_count();
@@ -672,12 +674,14 @@ NMBoolean	state;
 //		We assume that all of the header information has already been set
 //		up by the time we get here
 
-OSStatus
+NMErr
 CEndpoint::SendMessage(NSpMessageHeader *inHeader, NMUInt8 *inBody, NSpFlags inFlags, NMBoolean swapIt)
 {
 	NMErr	 	result = kNMNoError;
 	NMUInt32		messageLength;
 	
+	UNUSED_PARAMETER(inBody);
+
 	op_vassert_return((inHeader != NULL),"inHeader is NULL!",kNSpInvalidParameterErr);
 
 
@@ -703,6 +707,8 @@ CEndpoint::SendMessage(NSpMessageHeader *inHeader, NMUInt8 *inBody, NSpFlags inF
 		inHeader->when = SWAP4(inHeader->when);			// Since this field is now not swapped, must swap it.
 	}	
 #else
+
+	UNUSED_PARAMETER(swapIt);
 
 	//	OR the version with the send flags.  Perhaps this should be done outside of this function, since
 	//	everyone platform does this, and we can therefore avoid some byteswapping subtleties.  CRT, Sep, 2000
@@ -831,12 +837,12 @@ error:
 // CEndpoint::PostponeSend
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 CEndpoint::PostponeSend(SendInfo *inInfo, NSpMessageHeader *inData, NMUInt32 inBytesSent, NMBoolean inAddToTail)
 {
 
 	SendQItem	*qItem = NULL;
-	OSStatus	status = kNMNoError;
+	NMErr	status = kNMNoError;
 	NMEndpointMode	endpointMode = kNMModeNone;
 	NMErr notifierErr = kNMNoError;
 
@@ -898,11 +904,11 @@ error:
 // CEndpoint::RunQ
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 CEndpoint::RunQ(SendInfo *inInfo)
 {
 
-	OSStatus	result = kNMNoError;
+	NMErr	result = kNMNoError;
 	SendQItem	*theItem;
 	NMUInt32	leftToSend;
 	char		*dataPointer;
@@ -981,10 +987,10 @@ CEndpoint::RunQ(SendInfo *inInfo)
 // CEndpoint::HandleGoData
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 CEndpoint::HandleGoData(PEndpointRef inEP)
 {
-OSStatus	status = kNMNoError;
+NMErr	status = kNMNoError;
 	
 	if (inEP == mOpenPlayEndpoint)
 	{
@@ -1025,7 +1031,7 @@ CEndpoint::Notifier(PEndpointRef		inEndpoint,
 					NMErr 				inError,
 					void				*inCookie)
 {
-	OSStatus	status;
+	NMErr	status;
 	
 	if (inError < kNMNoError)
 		return;
@@ -1123,10 +1129,10 @@ CEndpoint::HandleNewConnection(PEndpointRef inEndpoint, void *inCookie)
 // CEndpoint::HandOffConnection
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 CEndpoint::HandOffConnection(PEndpointRef inEndpoint, void *inCookie)
 {
-	OSStatus	status = kNMNoError;
+	NMErr	status = kNMNoError;
 	EPCookie	*newCookie = NULL;
 	
 	
@@ -1170,7 +1176,7 @@ error:
 // CEndpoint::DoReceiveStream
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 CEndpoint::DoReceiveStream(PEndpointRef inEndpoint, EPCookie *inCookie)
 {
 	NMErr				result = kNMNoError;
@@ -1350,10 +1356,10 @@ ERObject	*backupER;
 // CEndpoint::DoReceiveDatagram
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 CEndpoint::DoReceiveDatagram(PEndpointRef inEndpoint, EPCookie *inCookie)
 {
-	OSStatus			status = kNMNoError;
+	NMErr			status = kNMNoError;
 	NMUInt8				*receiveBuffer;
 	NMUInt32			bufSize;
 	NMUInt32			bytesToRead;
@@ -1463,7 +1469,7 @@ error:
 // CEndpoint::HandleAcceptComplete
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 CEndpoint::HandleAcceptComplete(PEndpointRef inEP, EPCookie *inCookie)
 {
 	UInt32ListMember	*theMember = NULL;

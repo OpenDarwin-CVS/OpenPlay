@@ -45,15 +45,15 @@
 								COTZonesEnumerator();
 			virtual				~COTZonesEnumerator();
 						
-			virtual OSStatus	Initialize(ATPortRef port, OTNotifyUPP notifier, void* contextPtr);		
-			virtual OSStatus	GetCount(NMBoolean* allFound, NMUInt32* count);
-			virtual OSStatus	GetMachineZone(StringPtr zoneName);
-			virtual OSStatus	GetIndexedZone(OneBasedIndex index, StringPtr zoneName);
-			virtual OSStatus	Sort();
+			virtual NMErr	Initialize(ATPortRef port, OTNotifyUPP notifier, void* contextPtr);		
+			virtual NMErr	GetCount(NMBoolean* allFound, NMUInt32* count);
+			virtual NMErr	GetMachineZone(StringPtr zoneName);
+			virtual NMErr	GetIndexedZone(OneBasedIndex index, StringPtr zoneName);
+			virtual NMErr	Sort();
 
 		private:
 		
-			static pascal void 	ZonesListNotifier(void* contextPtr, ATEventCode code, OSStatus result, void* cookie);
+			static pascal void 	ZonesListNotifier(void* contextPtr, ATEventCode code, NMErr result, void* cookie);
 			
 			TZoneList*			fZonesList;
 			OTNotifyUPP			fNotifier;
@@ -67,12 +67,12 @@
 							COTEntitiesEnumerator();
 		virtual				~COTEntitiesEnumerator();
 							
-		virtual OSStatus	Initialize(ATPortRef port, OTNotifyUPP notifier, void* contextPtr);		
-		virtual OSStatus	StartLookup(Str32 zone, Str32 type, Str32 prefix, NMBoolean clearPreviousResults);
-		virtual OSStatus	GetCount(NMBoolean* allFound, NMUInt32* count);
-		virtual OSStatus	GetIndexedEntity(OneBasedIndex index, StringPtr zone, StringPtr type, StringPtr name, ATAddress* address);
-		virtual OSStatus	Sort();
-		virtual OSStatus	CancelLookup();
+		virtual NMErr	Initialize(ATPortRef port, OTNotifyUPP notifier, void* contextPtr);		
+		virtual NMErr	StartLookup(Str32 zone, Str32 type, Str32 prefix, NMBoolean clearPreviousResults);
+		virtual NMErr	GetCount(NMBoolean* allFound, NMUInt32* count);
+		virtual NMErr	GetIndexedEntity(OneBasedIndex index, StringPtr zone, StringPtr type, StringPtr name, ATAddress* address);
+		virtual NMErr	Sort();
+		virtual NMErr	CancelLookup();
 
 
 	private:

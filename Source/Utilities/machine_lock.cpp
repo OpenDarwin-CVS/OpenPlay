@@ -42,6 +42,8 @@ machine_acquire_lock(machine_lock *lockPtr)
 {
 #if defined(macintosh_build)
 	return OTAcquireLock(lockPtr);
+#elif defined(__OPENTRANSPORT__)
+	return OTAcquireLock(lockPtr);
 #elif defined(windows_build)
 	op_assert(lockPtr);
 	return lockPtr->acquire();
@@ -61,6 +63,8 @@ void
 machine_clear_lock(machine_lock *lockPtr)
 {
 #if defined(macintosh_build)
+	OTClearLock(lockPtr);
+#elif defined(__OPENTRANSPORT__)
 	OTClearLock(lockPtr);
 #elif defined(windows_build)
 	op_assert(lockPtr);

@@ -199,9 +199,9 @@ NMBoolean	scanning = true;	// %%% yan - please review
 		// we exit OTAsyncOpen, and set fErr to an error. Therefore we can't set the result of 
 		// OTAsyncOpen to fErr directly or we may miss error conditions
 #ifndef carbon_build
-		OSStatus err = OTAsyncOpenAppleTalkServices(fConfiguration, 0, ZoneListNotifierProc, this);
+		NMErr err = OTAsyncOpenAppleTalkServices(fConfiguration, 0, ZoneListNotifierProc, this);
 #else
-		OSStatus err = OTAsyncOpenAppleTalkServicesInContext(fConfiguration, 0, gZoneListNotifier.fUPP, this, gOTClientContext);
+		NMErr err = OTAsyncOpenAppleTalkServicesInContext(fConfiguration, 0, gZoneListNotifier.fUPP, this, gOTClientContext);
 #endif
 
 		if ( err != kNMNoError )

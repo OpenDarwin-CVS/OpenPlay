@@ -73,17 +73,17 @@ NSpGameSlave::~NSpGameSlave()
 	sends a join request.  If the request is granted, we use this endpoint
 	for all our communications with the server
 */
-OSStatus
+NMErr
 NSpGameSlave::Join(
-		ConstStr31Param		inPlayerName,
-		ConstStr31Param		inPassword,
+		NMConstStr31Param	inPlayerName,
+		NMConstStr31Param	inPassword,
 		NSpPlayerType		inType,
 		void				*inCustomData,
 		NMUInt32			inCustomDataLen,
 		NSpAddressReference	inAddress)
 {
 	NMErr				status = kNMNoError;
-	OSStatus			err = kNMNoError;
+	NMErr			err = kNMNoError;
 	NMType				netModuleType;
 	/*
 	char				netModuleTypeString[32];
@@ -157,11 +157,6 @@ NSpGameSlave::Join(
 				goto error;
 
 			
-#if macintosh_build		//?? still needed??
-				unsigned long dummyClock;	// crt 7/14/2001
-				Delay(5, &dummyClock);		// crt 7/14/2001
-#endif
-			
 			//Ä	Send our join request
 			status = SendJoinRequest(inPlayerName, inPassword, inType, inCustomData, inCustomDataLen);
 			//ThrowIfOSErr_(err);
@@ -186,15 +181,15 @@ NSpGameSlave::Join(
 // NSpGameSlave::SendJoinRequest
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 NSpGameSlave::SendJoinRequest(
-		ConstStr31Param	inPlayerName,
-		ConstStr31Param	inPassword,
+		NMConstStr31Param	inPlayerName,
+		NMConstStr31Param	inPassword,
 		NSpPlayerType	inType,
 		void			*inCustomData,
 		NMUInt32		inCustomDataLen)
 {
-OSStatus				status;
+NMErr				status;
 NSpJoinRequestMessage	*theMessage;
 NMUInt32				messageSize;
 
@@ -235,10 +230,10 @@ NMUInt32				messageSize;
 // NSpGameSlave::SendUserMessage
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 NSpGameSlave::SendUserMessage(NSpMessageHeader *inMessage, NSpFlags inFlags)
 {
-OSStatus status;
+NMErr status;
 NSp_InterruptSafeListIterator 	groupIter(*mGroupList);
 NSp_InterruptSafeListIterator 	*playerIter;
 NSp_InterruptSafeListMember 	*theItem;
@@ -312,7 +307,7 @@ NMBoolean					swapBack = false;	//?? why here and not below?
 	// for some purpose, but they will be shocked to find that the header has been swapped on
 	// them!  So if it has been swapped, then swap it back before returning...
 	
-#if !macintosh_build
+#if !big_endian
 	
 	if (swapBack)
 		SwapHeaderByteOrder(inMessage);	
@@ -337,10 +332,10 @@ NSpGameSlave::IdleEndpoints(void)
 // NSpGameSlave::SendTo
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 NSpGameSlave::SendTo(NSpPlayerID inTo, NMSInt32 inWhat, void *inData, NMUInt32 inLen, NSpFlags inFlags)
 {
-OSStatus status;
+NMErr status;
 //NSpMessageHeader header;
 NSpMessageHeader				*headerPtr = NULL;
 NMUInt8							*dataPtr;
@@ -438,7 +433,7 @@ NMBoolean						bSelfSent = false;
 NMBoolean
 NSpGameSlave::HandleJoinApproved(TJoinApprovedMessagePrivate *inMessage, NMUInt32 inTimeReceived)
 {
-OSStatus		status;
+NMErr		status;
 NMBoolean		handled = true;
 NSpPlayerInfo	playerInfo;
 NSpGroupInfoPtr	groupInfoPtr;
@@ -471,7 +466,7 @@ NMUInt32		hostProcessingTime;
 			//Ä	Ä This should change if we do client-client topology or fault-tolerance
 			handled = AddPlayer(&playerInfo, mEndpoint);
 
-			if (false == handled)
+			if (!handled)
 			{
 #if INTERNALDEBUG
 				debug_message("AddPlayer not handled in HandleJoinApproved.");
@@ -481,27 +476,30 @@ NMUInt32		hostProcessingTime;
 		}
 	}
 
-	if (false == handled)
-		return (handled);
-
-	//Ä	Record the groups state
-	if (inMessage->groupCount > 0)
-	{
-		groupInfoPtr = (NSpGroupInfoPtr) (inMessage->data + (inMessage->playerCount * kJoinApprovedPlayerInfoSize));
-
-		status = MakeGroupListFromJoinApprovedMessage(groupInfoPtr, inMessage->groupCount);
-	}
-
 	if (handled)
 	{
+		//Ä	Record the groups state
+		groupInfoPtr = (NSpGroupInfoPtr) (inMessage->data + (inMessage->playerCount * kJoinApprovedPlayerInfoSize));
+
+		if (inMessage->groupCount > 0)
+		{
+			status = MakeGroupListFromJoinApprovedMessage(&groupInfoPtr, inMessage->groupCount);
+		}
+
 		//Ä	The to field contains our player id
 		mPlayerID = inMessage->header.to;
-	}
 
-	//Ä	Set the timestamp differential
-	hostProcessingTime = inMessage->header.when - inMessage->receivedTimeStamp;
-	rtt = inTimeReceived - mEndpoint->GetLastMessageSentTimeStamp() - hostProcessingTime;
-	mTimeStampDifferential = (inMessage->receivedTimeStamp - mEndpoint->GetLastMessageSentTimeStamp()) - rtt/2;
+		//Ä	Set the timestamp differential
+		hostProcessingTime = inMessage->header.when - inMessage->receivedTimeStamp;
+		rtt = inTimeReceived - mEndpoint->GetLastMessageSentTimeStamp() - hostProcessingTime;
+		mTimeStampDifferential = (inMessage->receivedTimeStamp - mEndpoint->GetLastMessageSentTimeStamp()) - rtt/2;
+
+		// If there is data past the end of the buffer where player/group data stop then
+		// we have a game name and should copy it to the mGameInfo record now.
+		if( (long)(groupInfoPtr) < (long)inMessage + inMessage->header.messageLen )
+			doCopyPStrMax( (unsigned char *)groupInfoPtr, mGameInfo.name, 31 );
+
+	}
 
 	return handled;
 }
@@ -510,49 +508,41 @@ NMUInt32		hostProcessingTime;
 // NSpGameSlave::MakeGroupListFromJoinApprovedMessage
 //----------------------------------------------------------------------------------------
 
-OSStatus
-NSpGameSlave::MakeGroupListFromJoinApprovedMessage(NSpGroupInfoPtr inGroups, NMUInt32 inCount)
+NMErr
+NSpGameSlave::MakeGroupListFromJoinApprovedMessage(NSpGroupInfoPtr *inGroups, NMUInt32 inCount)
 {
-	NMErr 						status = kNMNoError;
 	NMUInt32					i, j;
 	TCreateGroupMessage			message;
 	TAddPlayerToGroupMessage	playerAddMessage;
 	NMBoolean					handled;
+	NSpGroupInfoPtr 			groupsPtr = *inGroups;
 
 	NSpClearMessageHeader(&message.header);
 
-	//Try_
+	for (i = 0; i < inCount; i++)
 	{
-		for (i = 0; i < inCount; i++)
-		{
-			message.id = inGroups->id;
-			handled = HandleCreateGroupMessage(&message);
+		message.id = groupsPtr->id;
+		handled = HandleCreateGroupMessage(&message);
 #if INTERNALDEBUG
-			if (!handled)
-			{
-				DEBUG_PRINT("HandleCreateGroupMessage failed in MakeGroupListFromJoinApprovedMessage for group #%d", message.id);
-			}
-#endif
-			for (j = 0; j < inGroups->playerCount; j++)
-			{
-				playerAddMessage.player = inGroups->players[j];
-				playerAddMessage.group = inGroups->id;
-				handled = HandleAddPlayerToGroupMessage(&playerAddMessage);
-			}
-
-			inGroups = (NSpGroupInfoPtr)((NMUInt8 *)inGroups + sizeof (NSpGroupInfo) + (((inGroups->playerCount == 0) ? 0 : inGroups->playerCount - 1)
-							* sizeof (NSpPlayerID)));
+		if (!handled)
+		{
+			DEBUG_PRINT("HandleCreateGroupMessage failed in MakeGroupListFromJoinApprovedMessage for group #%d", message.id);
 		}
-	}
-	//Catch_(code)
-	error:
-	if (status)
-	{
-		NMErr code = status;
-		return code;
+#endif
+		for (j = 0; j < groupsPtr->playerCount; j++)
+		{
+			playerAddMessage.player = groupsPtr->players[j];
+			playerAddMessage.group = groupsPtr->id;
+			handled = HandleAddPlayerToGroupMessage(&playerAddMessage);
+		}
+
+		groupsPtr = (NSpGroupInfoPtr)((NMUInt8 *)groupsPtr + sizeof (NSpGroupInfo) + (((groupsPtr->playerCount == 0) ? 0 : groupsPtr->playerCount - 1)
+						* sizeof (NSpPlayerID)));
 	}
 
-	return status;
+	*inGroups = groupsPtr;
+
+	return kNMNoError;
 }
 
 //----------------------------------------------------------------------------------------
@@ -662,12 +652,12 @@ UNUSED_PARAMETER(inCookie);
 // NSpGameSlave::PrepareForDeletion
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 NSpGameSlave::PrepareForDeletion(NSpFlags inFlags)
 {
 UNUSED_PARAMETER(inFlags);
 
-OSStatus	status = kNMNoError;
+NMErr	status = kNMNoError;
 
 	if (mGameState == kStopped)
 	{
@@ -854,12 +844,12 @@ NMBoolean					found = false;
 // NSpGameSlave::HandleEndpointDisconnected
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 NSpGameSlave::HandleEndpointDisconnected(CEndpoint *inEndpoint)
 {
 UNUSED_PARAMETER(inEndpoint);
 
-OSStatus					status = kNMNoError;
+NMErr					status = kNMNoError;
 NSpGameTerminatedMessage	message;
 
 	if (mGameState != kStopped)		// Only tell the user if we didn't already

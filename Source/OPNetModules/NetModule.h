@@ -50,7 +50,7 @@
 	typedef 	struct NMProtocolConfigPriv	*		NMConfigRef;
 	typedef  	struct NMEndpointPriv			*	NMEndpointRef;
 
-	typedef OPENPLAY_CALLBACK 
+	typedef void 
 	(NMEndpointCallbackFunction)(	NMEndpointRef	 			inEndpoint, 
 									void* 						inContext,
 									NMCallbackCode				inCode, 
@@ -102,6 +102,15 @@ extern "C" {
 
 		OP_DEFINE_API_C(NMBoolean)
 		NMIsAlive			(	NMEndpointRef		inEndpoint);
+
+		OP_DEFINE_API_C(NMErr)
+		NMFreeAddress		(	NMEndpointRef 		inEndpoint,
+								void **				outAddress);
+
+		OP_DEFINE_API_C(NMErr)
+		NMGetAddress		(	NMEndpointRef 		inEndpoint,
+								NMAddressType		addressType,
+								void **				outAddress);
 
 		OP_DEFINE_API_C(NMErr)
 		NMSetTimeout		(	NMEndpointRef 		inEndpoint, 

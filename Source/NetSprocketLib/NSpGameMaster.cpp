@@ -58,14 +58,18 @@
 #include "String_Utils.h"
 
 
+
+#define	kCustomLocalJoinRequest		0xFFFFFFFF
+
+
 //----------------------------------------------------------------------------------------
 // NSpGameMaster::NSpGameMaster
 //----------------------------------------------------------------------------------------
 
 NSpGameMaster::NSpGameMaster(
 		NMUInt32		inMaxPlayers,
-		ConstStr31Param	inGameName,
-		ConstStr31Param	inPassword, 
+		NMConstStr31Param	inGameName,
+		NMConstStr31Param	inPassword, 
 		NSpTopology		inTopology,
 		NSpFlags		inFlags) : NSpGame(inMaxPlayers, inGameName, inPassword, inTopology, inFlags)
 {
@@ -128,7 +132,7 @@ NSpGameMaster::~NSpGameMaster()
 // NSpGameMaster::HostAT
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 NSpGameMaster::HostAT(NSpProtocolPriv *inProt)
 {
 	NMErr	status = kNMNoError;
@@ -185,7 +189,7 @@ NSpGameMaster::HostAT(NSpProtocolPriv *inProt)
 // NSpGameMaster::HostIP
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 NSpGameMaster::HostIP(NSpProtocolPriv *inProt)
 {
 	NMErr	status = kNMNoError;
@@ -244,10 +248,10 @@ NSpGameMaster::HostIP(NSpProtocolPriv *inProt)
 // NSpGameMaster::UnHostAT
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 NSpGameMaster::UnHostAT(void)
 {
-OSStatus status = kNMNoError;
+NMErr status = kNMNoError;
 	
 	if (!bAdvertisingAT || mAdvertisingATEndpoint == NULL)
 		status = kNSpNotAdvertisingErr;
@@ -261,10 +265,10 @@ OSStatus status = kNMNoError;
 // NSpGameMaster::UnHostIP
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 NSpGameMaster::UnHostIP(void)
 {
-OSStatus status = kNMNoError;
+NMErr status = kNMNoError;
 	
 	if (!bAdvertisingIP || mAdvertisingIPEndpoint == NULL)
 		status = kNSpNotAdvertisingErr;
@@ -278,8 +282,8 @@ OSStatus status = kNMNoError;
 // NSpGameMaster::AddLocalPlayer
 //----------------------------------------------------------------------------------------
 
-OSStatus
-NSpGameMaster::AddLocalPlayer(ConstStr31Param inPlayerName, NSpPlayerType inPlayerType, 
+NMErr
+NSpGameMaster::AddLocalPlayer(NMConstStr31Param inPlayerName, NSpPlayerType inPlayerType, 
 								NSpProtocolPriv *theProt)
 {
 	NMErr	status = kNMNoError;
@@ -356,10 +360,10 @@ NSpGameMaster::AddLocalPlayer(ConstStr31Param inPlayerName, NSpPlayerType inPlay
 // NSpGameMaster::InstallJoinRequestHandler
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 NSpGameMaster::InstallJoinRequestHandler(NSpJoinRequestHandlerProcPtr inHandler, void *inContext)
 {
-OSStatus status = kNMNoError;
+NMErr status = kNMNoError;
 	
 	mJoinRequestHandler = inHandler;
 	mJoinRequestContext = inContext;
@@ -402,7 +406,7 @@ NSpGameMaster::HandleJoinRequest(
 		
 	//Try_
 	{
-		if (inMessage->customDataLen == -1)		//Ä	It's a local request
+		if (inMessage->customDataLen == kCustomLocalJoinRequest)		//Ä	It's a local request
 		{
 			approved = true;					//Ä	Always approve the local request
 			localRequest = true;
@@ -490,10 +494,10 @@ NSpGameMaster::HandleJoinRequest(
 // NSpGameMaster::NotifyPlayerJoined
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 NSpGameMaster::NotifyPlayerJoined(NSpPlayerInfo *info)
 {
-OSStatus				status;
+NMErr				status;
 NSpPlayerJoinedMessage	theMessage;
 		
 	NSpClearMessageHeader((NSpMessageHeader *)&theMessage);
@@ -512,7 +516,7 @@ NSpPlayerJoinedMessage	theMessage;
 // NSpGameMaster::SendSystemMessage
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 NSpGameMaster::SendSystemMessage(NSpMessageHeader *inMessage, NSpFlags inFlags)
 {
 	
@@ -527,7 +531,7 @@ NSpGameMaster::SendSystemMessage(NSpMessageHeader *inMessage, NSpFlags inFlags)
 // NSpGameMaster::ForwardMessage
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 NSpGameMaster::ForwardMessage(NSpMessageHeader *inMessage)
 {
 	NSpFlags	flags;
@@ -544,7 +548,7 @@ NSpGameMaster::ForwardMessage(NSpMessageHeader *inMessage)
 // NSpGameMaster::RouteMessage
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 NSpGameMaster::RouteMessage(NSpMessageHeader *inHeader, NMUInt8 *inBody, NSpFlags inFlags)
 {
 	NMErr	 						status = kNMNoError;
@@ -720,7 +724,7 @@ NSpGameMaster::RouteMessage(NSpMessageHeader *inHeader, NMUInt8 *inBody, NSpFlag
 // NSpGameMaster::SendUserMessage
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 NSpGameMaster::SendUserMessage(NSpMessageHeader *inMessage, NSpFlags inFlags)
 {
 	NMErr						status = kNMNoError;
@@ -853,7 +857,7 @@ NSpGameMaster::IdleEndpoints(void)
 // NSpGameMaster::SendTo
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 NSpGameMaster::SendTo(NSpPlayerID inTo, NMSInt32 inWhat, void *inData, NMUInt32 inLen, NSpFlags inFlags)
 {
 	NMErr							status = kNMNoError;
@@ -982,10 +986,10 @@ NSpGameMaster::SendTo(NSpPlayerID inTo, NMSInt32 inWhat, void *inData, NMUInt32 
 	and a group enumeration and send it.
 */
 
-OSStatus
+NMErr
 NSpGameMaster::SendJoinApproved(CEndpoint *inEndpoint, NSpPlayerID inID, NMUInt32 inReceivedTime)
 {
-OSStatus					status = kNMNoError;
+NMErr					status = kNMNoError;
 TJoinApprovedMessagePrivate	*theMessage = NULL;
 NSpPlayerEnumerationPtr		thePlayers = NULL;
 NSpGroupEnumerationPtr		theGroups = NULL;
@@ -1031,7 +1035,7 @@ NSpGroupEnumerationPtr		theGroups = NULL;
 // NSpGameMaster::MakeJoinApprovedMessage
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 NSpGameMaster::MakeJoinApprovedMessage(
 		TJoinApprovedMessagePrivate	**theMessage,
 		NSpPlayerEnumerationPtr		thePlayers,
@@ -1046,7 +1050,7 @@ NMUInt32			messageSize;
 NMUInt32			i;
 NSpPlayerInfoPtr	playerInfo;
 NSpGroupInfoPtr		groupInfo;
-OSStatus			status = kNMNoError;
+NMErr			status = kNMNoError;
 NMUInt32			size;
 
 	if (thePlayers == NULL)
@@ -1082,6 +1086,8 @@ NMUInt32			size;
 
 	//Ä	Now we can construct the size of the entire message
 	messageSize = ((sizeof (TJoinApprovedMessagePrivate) - 1) + playerDataSize + groupDataSize);
+
+	messageSize += mGameInfo.name[0] + 1;	//LR 2.2 -- we tack the game name to the end of the message
 
 	//Ä	Alloc the message
 	*theMessage = (TJoinApprovedMessagePrivate *) InterruptSafe_alloc(messageSize);
@@ -1141,6 +1147,10 @@ NMUInt32			size;
 		}
 	}
 
+//	Add the game name to the end of the buffer. This will be ignored in 2.1 and earlier,
+//	while 2.2 and later will recognize the extra data and copy it to the local game info record
+	doCopyPStr( mGameInfo.name, (unsigned char *)p );
+
 	//Ä	Decrement the group range for the next player
 	mNextPlayersGroupStartRange -= 1024;
 	
@@ -1153,11 +1163,11 @@ NMUInt32			size;
 
 //Ä	This is quirky, but since we never created a "Real" endpoint for this person,
 //Ä	We need to pass the message to the endpoint here
-OSStatus
+NMErr
 NSpGameMaster::SendJoinDenied(CEndpoint *inEndpoint,  void *inCookie, const NMUInt8 *inMessage)
 {
 NSpJoinDeniedMessage	theReply;
-OSStatus				err = kNMNoError;
+NMErr				err = kNMNoError;
 	
 	theReply.header.what = kNSpJoinDenied;
 	theReply.header.from = kNSpHostOnly;
@@ -1243,10 +1253,10 @@ NSpGameMaster::HandleNewEvent(ERObject *inERObject, CEndpoint *inEndpoint, void 
 // NSpGameMaster::PrepareForDeletion
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 NSpGameMaster::PrepareForDeletion(NSpFlags inFlags)
 {
-OSStatus	status  = kNMNoError;
+NMErr	status  = kNMNoError;
 NMBoolean	newHost = false;
 
 #if 0
@@ -1457,7 +1467,7 @@ NSpGameMaster::ProcessSystemMessage(NSpMessageHeader *inMessage, NMBoolean *doFo
 NMBoolean
 NSpGameMaster::NegotiateNewHost()
 {	
-	OSStatus	status;
+	NMErr	status;
 	
 	//Ä	Pause the game!
 	mGameState = kPaused;
@@ -1473,13 +1483,13 @@ NSpGameMaster::NegotiateNewHost()
 // NSpGameMaster::SendPauseGame
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 NSpGameMaster::SendPauseGame()
 {
 	return (kNMNoError);
 	
 TPauseGameMessage	message;
-OSStatus			status;
+NMErr			status;
 	
 	NSpClearMessageHeader(&message);
 	message.what = kNSPauseGame;
@@ -1495,10 +1505,10 @@ OSStatus			status;
 // NSpGameMaster::SendBecomeHostRequest
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 NSpGameMaster::SendBecomeHostRequest()
 {
-OSStatus	status = kNMNoError;
+NMErr	status = kNMNoError;
 	
 	return (status);
 }
@@ -1510,7 +1520,7 @@ OSStatus	status = kNMNoError;
 NMBoolean
 NSpGameMaster::RemovePlayer(NSpPlayerID inPlayer, NMBoolean inDisconnect)
 {
-OSStatus					status = kNMNoError;
+NMErr					status = kNMNoError;
 NSp_InterruptSafeListIterator	iter(*mPlayerList);
 NSp_InterruptSafeListIterator	groupIter(*mGroupList);
 NSp_InterruptSafeListMember 	*theItem;
@@ -1581,10 +1591,10 @@ NMBoolean					found = false;
 // NSpGameMaster::HandleEndpointDisconnected
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 NSpGameMaster::HandleEndpointDisconnected(CEndpoint *inEndpoint)
 {
-OSStatus					status;
+NMErr					status;
 NSp_InterruptSafeListIterator	iter(*mPlayerList);
 NSp_InterruptSafeListMember 	*theItem;
 PlayerListItem				*thePlayer;
@@ -1636,10 +1646,10 @@ NSpPlayerName				thePlayerName;
 // NSpGameMaster::SendJoinRequest
 //----------------------------------------------------------------------------------------
 
-OSStatus
-NSpGameMaster::SendJoinRequest(ConstStr31Param inPlayerName, NSpPlayerType inType)
+NMErr
+NSpGameMaster::SendJoinRequest(NMConstStr31Param inPlayerName, NSpPlayerType inType)
 {
-OSStatus				status;
+NMErr				status;
 NSpJoinRequestMessage	theMessage;
 
 	NSpClearMessageHeader(&theMessage.header);
@@ -1648,7 +1658,7 @@ NSpJoinRequestMessage	theMessage;
 	theMessage.header.messageLen = sizeof(NSpJoinRequestMessage);
 	theMessage.header.to = kNSpHostOnly;
 	theMessage.theType = inType;
-	theMessage.customDataLen = (NMUInt32)-1;			//Ä	Signifying a local join request
+	theMessage.customDataLen = kCustomLocalJoinRequest;			//Ä	Signifying a local join request
 	doCopyPStrMax(inPlayerName, theMessage.name, 31);
 
 	status = SendUserMessage( &theMessage.header, kNSpSendFlag_Registered);
@@ -1657,19 +1667,50 @@ NSpJoinRequestMessage	theMessage;
 }
 
 //----------------------------------------------------------------------------------------
+// NSpGameMaster::FreePlayerAddress
+//----------------------------------------------------------------------------------------
+
+NMErr
+NSpGameMaster::FreePlayerAddress(void **outAddress)
+{
+	NMErr err;
+	NSp_InterruptSafeListIterator	iter(*mPlayerList);
+	NSp_InterruptSafeListMember 	*theItem;
+	PlayerListItem					*thePlayer;
+
+	if( iter.Next(&theItem) )	/* get first player */
+	{
+		thePlayer = (PlayerListItem *) theItem;
+		if (thePlayer->endpoint)
+		{
+			PEndpointRef		openPlayEndpoint;
+
+			openPlayEndpoint = thePlayer->endpoint->GetReliableEndpoint();
+
+			err = ProtocolFreeEndpointAddress(openPlayEndpoint, outAddress);	/* module must sanity check param! */
+		}
+		else
+			err = kNMBadStateErr;
+
+		return(err);
+	}
+	else
+		return( kNSpNoPlayersErr );
+}
+
+//----------------------------------------------------------------------------------------
 // NSpGameMaster::GetPlayerIPAddress
 //----------------------------------------------------------------------------------------
 
-OSStatus
-NSpGameMaster::GetPlayerIPAddress(const NSpPlayerID inPlayerID, char *outAddress)
+NMErr
+NSpGameMaster::GetPlayerIPAddress(const NSpPlayerID inPlayerID, char **outAddress)
 {
 NMErr							theError = kNMNoError;
 NSp_InterruptSafeListIterator	iter(*mPlayerList);
 NSp_InterruptSafeListMember 	*theItem;
 PlayerListItem					*thePlayer;
-NMBoolean						found = false;
 
-	while (!found && iter.Next(&theItem))
+	while (iter.Next(&theItem))
 	{
 		thePlayer = (PlayerListItem *) theItem;
 
@@ -1681,13 +1722,9 @@ NMBoolean						found = false;
 
 				openPlayEndpoint = thePlayer->endpoint->GetReliableEndpoint();
 
-//				theError = ProtocolGetPlatformData(openPlayEndpoint, NMDATA_REMOTEIPADDRESS, (void**)outAddress);
+				theError = ProtocolGetEndpointAddress(openPlayEndpoint, kNMIPAddressType, (void**)outAddress);
 				
-				if (theError == kNMNoError)
-					return (kNMNoError);
-				else
-					return (kNSpFeatureNotImplementedErr);
-
+				return (theError);
 			}
 		}
 	}
@@ -1695,22 +1732,21 @@ NMBoolean						found = false;
 	return (kNSpInvalidPlayerIDErr);
 }
 
-#if macintosh_build
+#if mac_cfm_build
 
 //----------------------------------------------------------------------------------------
 // NSpGameMaster::GetPlayerAddress
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 NSpGameMaster::GetPlayerAddress(const NSpPlayerID inPlayerID, OTAddress **outAddress)
 {
 NMErr							theError = kNMNoError;
 NSp_InterruptSafeListIterator	iter(*mPlayerList);
 NSp_InterruptSafeListMember 	*theItem;
 PlayerListItem					*thePlayer;
-NMBoolean						found = false;
 
-	while (!found && iter.Next(&theItem))
+	while (iter.Next(&theItem))
 	{
 		thePlayer = (PlayerListItem *) theItem;
 
@@ -1722,14 +1758,9 @@ NMBoolean						found = false;
 
 				openPlayEndpoint = thePlayer->endpoint->GetReliableEndpoint();
 
-//				theError = ProtocolGetPlatformData(openPlayEndpoint, NMDATA_REMOTEOTADDRESS, (void**)outAddress);
-/*				theError = 1; //%% we dont work...
-				
-				if (theError == kNMNoError)
-					return (kNMNoError);
-				else
-*/					return (kNSpFeatureNotImplementedErr);
+				theError = ProtocolGetEndpointAddress(openPlayEndpoint, kNMOTAddressType, (void**)outAddress);
 
+				return (theError);
 			}
 		}
 	}
@@ -1743,14 +1774,14 @@ NMBoolean						found = false;
 // NSpGameMaster::ChangePlayerType
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 NSpGameMaster::ChangePlayerType(const NSpPlayerID inPlayerID, const NSpPlayerType inNewType)
 {
 NSp_InterruptSafeListIterator	iter(*mPlayerList);
 NSp_InterruptSafeListMember 	*theItem;
 PlayerListItem				*thePlayer;
 NMBoolean					found = false;
-OSStatus					status = kNMNoError;
+NMErr					status = kNMNoError;
 	
 	while (!found && iter.Next(&theItem))
 	{
@@ -1798,14 +1829,14 @@ OSStatus					status = kNMNoError;
 // NSpGameMaster::ForceRemovePlayer
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 NSpGameMaster::ForceRemovePlayer(const NSpPlayerID inPlayerID)
 {
 NSp_InterruptSafeListIterator	iter(*mPlayerList);
 NSp_InterruptSafeListMember 	*theItem;
 PlayerListItem				*thePlayer;
 NMBoolean					found = false;
-OSStatus					status = kNMNoError;
+NMErr					status = kNMNoError;
 
 	if (0 >= inPlayerID)		// Can't remove a group or all players.  So PlayerID must be greater than 0.
 		return (kNSpInvalidPlayerIDErr);

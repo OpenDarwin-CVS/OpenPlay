@@ -83,12 +83,17 @@ NMBoolean equal_filedescs(
 	FileDesc *a, 
 	FileDesc *b)
 {
-  NMBoolean equal = false;
-	
-  if ( strcmp((char*)a->name, (char*)b->name) == 0 )
-    equal = true;
-	
+#if (project_builder)
+	//This function isn't currently used, but it would be good to fill this in.
+	return false;
+#else
+	NMBoolean equal = false;
+
+	if ( strcmp((char*)a->name, (char*)b->name) == 0 )
+	equal = true;
+
 	return equal;
+#endif
 }
 
 /* --------- Local Code --------- */
@@ -97,43 +102,77 @@ static int alphabetical_names(
 	const FileDesc *a, 
 	const FileDesc *b)
 {
-  return( strcmp((char*)a->name, (char*)b->name) );
+#if (project_builder)
+	op_vhalt("alphabetical_names unimplemented for this version");
+	return 0;
+#else
+	return( strcmp((char*)a->name, (char*)b->name) );
+#endif
 }
 
 static FileError enumerate_files(struct find_file_pb *param_block)
 {
-  NMBoolean result;
-  FileDesc  temp_file;
-  DIR       *dir_stream = NULL;
-  struct dirent  *dir_entry;
+#if (project_builder)
+	CFArrayRef moduleURLs;
+	CFURLRef theURL;
+	long counter;
+	FileDesc temp_file;
+	NMBoolean result;
+	moduleURLs = CFBundleCopyResourceURLsOfType(param_block->start_search_from.bundle,CFSTR("netmodule"),CFSTR("OpenPlay Modules"));
+	long count = CFArrayGetCount(moduleURLs);
+	DEBUG_PRINT("found %d modules",count);		
+	
+	for (counter = 0;counter < count;counter++){
+		theURL = (CFURLRef)CFArrayGetValueAtIndex(moduleURLs,counter);
+		op_assert(theURL);
+		temp_file.bundle = CFBundleCreate(kCFAllocatorDefault,theURL);
+		if (temp_file.bundle){
+			if ((param_block->search_type == _callback_only) && (param_block->callback))
+			{
+				if (param_block->flags & _ff_callback_with_catinfo)
+				{
+					result = param_block->callback(&temp_file, (void *)param_block->start_search_from.bundle); /* callback with catinfo */					
+				}
+				else
+					result = param_block->callback(&temp_file, param_block->user_data); /* callback with user data */
+			}
+			CFRelease(temp_file.bundle);
+		}
+	}
+	CFRelease(moduleURLs);
+	return 0;
+#else
+	NMBoolean result;
+	FileDesc  temp_file;
+	DIR       *dir_stream = NULL;
+	struct dirent  *dir_entry;
 
-  
-  dir_stream = opendir((char*)param_block->start_search_from.name);
+	dir_stream = opendir((char*)param_block->start_search_from.name);
 
-  if (dir_stream)
-  {
-    dir_entry = readdir(dir_stream);
-
-    while(dir_entry)
-    {
-      strcpy((char*)temp_file.name, dir_entry->d_name);
-
-      if ((param_block->search_type == _callback_only) && (param_block->callback))
-      {
-        if (param_block->flags & _ff_callback_with_catinfo)
+	if (dir_stream)
 	{
-          result = param_block->callback(&temp_file, (void *)param_block->start_search_from.name); /* callback with catinfo */
-        }
-        else
-          result = param_block->callback(&temp_file, param_block->user_data); /* callback with user data */
-      } 
+		dir_entry = readdir(dir_stream);
 
-      dir_entry = readdir(dir_stream);
-    }
-  }
-  else
-    return(errno);
-    
- return errno;
+		while(dir_entry)
+		{
+		  strcpy((char*)temp_file.name, dir_entry->d_name);
 
+		  if ((param_block->search_type == _callback_only) && (param_block->callback))
+		  {
+		    if (param_block->flags & _ff_callback_with_catinfo)
+		{
+		      result = param_block->callback(&temp_file, (void *)param_block->start_search_from.name); /* callback with catinfo */
+		    }
+		    else
+		      result = param_block->callback(&temp_file, param_block->user_data); /* callback with user data */
+		  } 
+
+		  dir_entry = readdir(dir_stream);
+		}
+	}
+	else
+	return(errno);
+
+	return errno;
+#endif
 }

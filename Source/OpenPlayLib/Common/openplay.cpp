@@ -25,11 +25,51 @@
  * Revision: $Id$
  */
  
+//define our sections for doxygen to make start our documentation from here...
+
+/** \addtogroup TypesAndConstants Types and Constants*/
+/*\@{*/
+/*\@}*/
+/** \addtogroup Configuration Configuration Functions*/
+/*\@{*/
+/*\@}*/
+/** \addtogroup EndpointManagement Endpoint Management Functions */
+/*\@{*/
+/*\@}*/
+/** \addtogroup DataTransfer Data Transfer Functions*/
+/*\@{*/
+/*\@}*/
+/** \addtogroup Enumeration Enumeration Functions */
+/*\@{*/
+/*\@}*/
+/** \addtogroup HumanInterface Human Interface Functions */
+/*\@{*/
+/*\@}*/
+
+/*! \mainpage OpenPlay "Protocol" API Documentation
+ *
+ * \section intro Introduction
+ *
+ * The OpenPlay library, in a nutshell, is a Net Module Manager. The Net Module Manager and the individual Net Modules provide various transports for OpenPlay clients. Any product that is written to the OpenPlay Protocol interface can work with any Net Module. To provide cross-platform connectivity, OpenPlay is available for Mac OS 9/X, Windows, and various flavors of Unix. 
+ * The lowest level connection between an application and the Net Module Manager is the OpenPlay Protocol API. The connections between the Net Module Manager and the individual plug-ins represents the Net Module API (See the document "Writing OpenPlay Net Modules" for more info on the Net Module specification). 
+ * Clients may choose to talk to the Net Module Manager directly via the Protocol interface, or through some other high-level abstraction API such as NetSprocket (also contained in the OpenPlay library). 
+*
+*This document is divided into the following sections:
+*\li \ref TypesAndConstants
+*\li \ref Configuration
+*\li \ref EndpointManagement
+*\li \ref DataTransfer
+*\li \ref Enumeration
+*\li \ref HumanInterface
+*/
+
+
+#include "portable_files.h"
+ 
 #ifndef __OPENPLAY__
 #include 			"OpenPlay.h"
 #endif
 #include "OPUtils.h"
-#include "portable_files.h"
 #include "op_definitions.h"
 #include "op_globals.h"
 #include "module_management.h"

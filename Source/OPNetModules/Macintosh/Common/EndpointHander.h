@@ -42,7 +42,7 @@
 		EndpointHander(OTEndpoint *inListener, OTEndpoint *inNewEP, TCall *inCall);
 		~EndpointHander();
 
-		OSStatus		DoIt(void);
+		NMErr		DoIt(void);
 		static void		CleanupEndpoints(void);
 
 	protected:
@@ -66,9 +66,9 @@
 			kDatagramLocalAddr = 128
 		};
 		
-		OSStatus	GetStreamEP(void);
-		OSStatus	GetDatagramEP(void);
-		OSStatus	Finish(void);
+		NMErr	GetStreamEP(void);
+		NMErr	GetDatagramEP(void);
+		NMErr	Finish(void);
 		NMBoolean	ScheduleDelete();
 		
 		static NetNotifierUPP	mNotifier;

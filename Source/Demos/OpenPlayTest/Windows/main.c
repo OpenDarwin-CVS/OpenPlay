@@ -529,7 +529,7 @@ static LRESULT CALLBACK select_protocol_proc(
 					append_item_to_popup(dialog, iPROTOCOL_LIST, protocol.name);
 					module_types[count++]= protocol.type;
 				} else {
-					if(err != errNoMoreNetModules) DEBUG_PRINT("Err %d in GetIndexedProtocol...", err);
+					if(err != kNMNoMoreNetModulesErr) DEBUG_PRINT("Err %d in GetIndexedProtocol...", err);
 				}
 			}
 			// we didn't set the focus

@@ -65,7 +65,7 @@
 
 	typedef struct IPInfo
 	{
-		InetPort	port;
+		NMInetPort	port;
 	} IPInfo;
 
 
@@ -79,8 +79,8 @@
 		NSpProtocolPriv();
 		~NSpProtocolPriv();
 		
-		OSStatus	CreateConfiguration(const char *inConfiguration);
-		OSStatus	GetConfigString(char *outConfigString);
+		NMErr	CreateConfiguration(const char *inConfiguration);
+		NMErr	GetConfigString(char *outConfigString);
 		
 		inline	NMUInt32 GetID(void) { return mID;}
 		inline	NMUInt32 GetMaxRTT(void) { return mMaxRTT;}
@@ -88,7 +88,7 @@
 		inline	void	*GetCustomData(void) {return mCustomData;}
 		
 	protected:
-		OSStatus	ParseConfigString(const char *inConfigString);
+		NMErr	ParseConfigString(const char *inConfigString);
 
 		NMUInt32		mID;
 		NMUInt32		mMaxRTT;
@@ -110,9 +110,9 @@
 
 		NMUInt32			GetCount(void);
 		NSpProtocolPriv		*GetIndexedItem(NMUInt32	inIndex);
-		OSStatus			Append(NSpProtocolPriv *inProtocol);
-		OSStatus			Remove(NSpProtocolPriv *inProtocol);
-		OSStatus			RemoveIndexedItem(NMUInt32 inIndex);
+		NMErr			Append(NSpProtocolPriv *inProtocol);
+		NMErr			Remove(NSpProtocolPriv *inProtocol);
+		NMErr			RemoveIndexedItem(NMUInt32 inIndex);
 		
 	protected:	
 		TPointerArray	*mList;

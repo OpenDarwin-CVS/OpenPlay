@@ -60,7 +60,7 @@
 
 	typedef struct NMDialogData
 	{
-		InetPort	port;
+		NMInetPort	port;
 		InetHost	host;
 		Str32		portText;
 		Str255		hostText;

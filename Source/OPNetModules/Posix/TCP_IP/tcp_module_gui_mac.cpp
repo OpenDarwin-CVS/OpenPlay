@@ -259,7 +259,7 @@ NMBoolean NMTeardownDialog(	DIALOGPTR 			dialog,
 	DEBUG_ENTRY_EXIT("NMTeardownDialog");
 
 	NMProtocolConfigPriv	*theConfig = (NMProtocolConfigPriv *) ioConfig;
-	OSStatus		status;
+	NMErr		status;
 	//InetAddress		addr;
 	Str255			hostText;
 	Str255			portText;

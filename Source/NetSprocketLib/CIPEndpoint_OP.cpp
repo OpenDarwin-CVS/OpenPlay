@@ -62,9 +62,9 @@ COTIPEndpoint::~COTIPEndpoint()
 // COTIPEndpoint::InitAdvertiser
 //----------------------------------------------------------------------------------------
 
-OSStatus COTIPEndpoint::InitAdvertiser(NSpProtocolPriv *inProt)
+NMErr COTIPEndpoint::InitAdvertiser(NSpProtocolPriv *inProt)
 {
-	OSStatus		status;
+	NMErr		status;
 //	InetAddress		addr;
 //	TNetbuf			netBuf;
 //	IPInfo			*info = (IPInfo *)inProt->GetCustomData();
@@ -89,7 +89,7 @@ OSStatus COTIPEndpoint::InitAdvertiser(NSpProtocolPriv *inProt)
 // COTIPEndpoint::InitNonAdvertiser
 //----------------------------------------------------------------------------------------
 
-OSStatus COTIPEndpoint::InitNonAdvertiser(NSpProtocolPriv *inProt)
+NMErr COTIPEndpoint::InitNonAdvertiser(NSpProtocolPriv *inProt)
 {
 //	return Init(0, kTCPName, kUDPName, NULL);
 	return Init(0, (PConfigRef)inProt);

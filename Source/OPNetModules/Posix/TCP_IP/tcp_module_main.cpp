@@ -38,7 +38,7 @@ void _fini(void);
 
 //	------------------------------ Variables
 static NMModuleInfo		gModuleInfo;
-NMUInt32 moduleID = 'Inet';
+static const NMUInt32 moduleID = 'Inet';
 static const char *kModuleName = "TCP/IP";
 static const char *kModuleCopyright = "1996-1999 Apple Computer, Inc.";
 
@@ -47,7 +47,7 @@ NMUInt32 endpointListState = 0;
 machine_lock *endpointListLock; //dont access the list without locking it!
 machine_lock *notifierLock; //dont call the user back without locking it!
 
-NMBoolean module_inited = false;
+NMSInt32 module_inited = 0;
 
 #if (windows_build)
 	HINSTANCE application_instance;
@@ -75,7 +75,15 @@ void _init(void)
 {
 	DEBUG_ENTRY_EXIT("_init");
 	
-	op_assert(module_inited == false);
+	
+	// ecf - on the OSX bundle based builds, we don't seem to be re-initialized
+	// so we have to share globals and _init may be called multiple times on the same
+	// instance of our module - we must be prepared.
+	module_inited++;
+	if (module_inited != 1)
+		return;
+	//op_assert(module_inited == false);
+	
 	gModuleInfo.size= sizeof (NMModuleInfo);
 	gModuleInfo.type = moduleID;
 	strcpy(gModuleInfo.name, kModuleName);
@@ -86,9 +94,7 @@ void _init(void)
 
 	//create the lock for our main list
 	endpointListLock = new machine_lock;
-	notifierLock = new machine_lock;
-		
-	module_inited = true;
+	notifierLock = new machine_lock;	
 } /* _init */
 
 
@@ -111,7 +117,13 @@ void _fini(void)
 {
 	DEBUG_ENTRY_EXIT("_fini");
 
-	op_assert(module_inited == true);
+	module_inited--;
+	op_assert(module_inited >= 0);
+	if (module_inited != 0)
+		return;
+			
+	//op_assert(module_inited == true);
+
 	//if we have a worker thread, kill it
 	#if USE_WORKER_THREAD
 		killWorkerThread();
@@ -122,7 +134,9 @@ void _fini(void)
 		shutdownWinsock();
 	#endif
 	
-	module_inited = false;
+	delete endpointListLock;
+	delete notifierLock;
+	
 } /* _fini */
 
 
@@ -195,8 +209,7 @@ DllMain(
 NMErr NMGetModuleInfo(NMModuleInfo *module_info)
 {
 	DEBUG_ENTRY_EXIT("NMGetModuleInfo");
-
-	if (module_inited == false){
+	if (module_inited < 1){
 		op_warn("NMGetModuleInfo called when module not inited");
 		return kNMInternalErr;
 	}

@@ -67,9 +67,9 @@ NSpGame *NSpGamePrivate::GetGameObject(void)
 // NSpGamePrivate::PrepareForDeletion
 //----------------------------------------------------------------------------------------
 
-OSStatus NSpGamePrivate::PrepareForDeletion(NSpFlags inFlags)
+NMErr NSpGamePrivate::PrepareForDeletion(NSpFlags inFlags)
 {
-	OSStatus	status = kNMNoError;
+	NMErr	status = kNMNoError;
 	
 	if (mMaster)
 		status = mMaster->PrepareForDeletion(inFlags);

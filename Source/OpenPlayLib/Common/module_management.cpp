@@ -25,11 +25,12 @@
  * Revision: $Id$
  */
 
+#include "portable_files.h"
+
 #ifndef __OPENPLAY__
 #include "OpenPlay.h"
 #endif
 #include "OPUtils.h"
-#include "portable_files.h"
 
 #include "NetModule.h"
 #include "NetModulePrivate.h"
@@ -95,7 +96,7 @@ NMErr bind_to_protocol(
 				*connection= loaded_module->connection;
 			} else {
 				free_library(new_connection);
-				err= errNoMemory;
+				err= kNMOutOfMemoryErr;
 			}
 		}
 	}

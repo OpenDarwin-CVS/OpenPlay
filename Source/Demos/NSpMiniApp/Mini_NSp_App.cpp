@@ -71,23 +71,23 @@ ProtocolType  gProtocolSelected = kNone;
 TestMessage  *gDataToSend = new TestMessage;
 TestMessage  *gDataReceived = NULL;
 
-Str31  NBPName = "\pDogCow";
-Str31  NBPType = "\pNSpT";		// Must be a 4 character string.  CRT, July 2, 2000
-Str31  kConstPlayerName = "\pClarus";
-Str31  kGameName = "\pDogCow";
-Str31  kPlayerName = "\pClarus";
-Str31  kMyPassword = "\pMoof";
+NMStr31  NBPName = "\pDogCow";
+NMStr31  NBPType = "\pNSpT";		// Must be a 4 character string.  CRT, July 2, 2000
+NMStr31  kConstPlayerName = "\pClarus";
+NMStr31  kGameName = "\pDogCow";
+NMStr31  kPlayerName = "\pClarus";
+NMStr31  kMyPassword = "\pMoof";
 
 NSpPlayerType    kPlayerType = 0;
 NSpPlayerID      kPlayerID = 0;
 
-const InetPort  kTCP_Port = 25710;
+const NMInetPort  kTCP_Port = 25710;
 const NMUInt32    kMaxPlayers = 16;
 
 
 /* --------------  Function Prototypes  -------------- */
 
-NMBoolean  Check_Error( const char* errMessage, OSStatus error );
+NMBoolean  Check_Error( const char* errMessage, NMErr error );
 
 
     /* --------------  Game Object Management -------------- */
@@ -156,7 +156,7 @@ main( void )
 	NMBoolean done = false;
 	NMBoolean success;
 	
-	OSStatus error = NSpInitialize( 0, 0, 0, d_GAME_ID, 0 );
+	NMErr error = NSpInitialize( 0, 0, 0, d_GAME_ID, 0 );
 	success = Check_Error( "Error: Init_NetSprocket(), initing NSp.", error );
 	
 	if ( !success ) {
@@ -167,7 +167,7 @@ main( void )
 	cout << "NetSprocket initialized..." << endl;
 	
 	// Print version info
-	NumVersion  v = NSpGetVersion();
+	NMNumVersion  v = NSpGetVersion();
 	cout << endl << "NSp Version " 
 	     << hex << (short) v.majorRev << "."
 	     << hex << (short) v.minorAndBugRev << endl;
@@ -233,7 +233,7 @@ main( void )
 
 
 NMBoolean
-Check_Error( const char* errMessage, OSStatus error )
+Check_Error( const char* errMessage, NMErr error )
 {
 	NMBoolean  noError = true;
 
@@ -430,7 +430,7 @@ Host_Game( NSpGameReference  &gGameObject,
 		return( false );
 	}
 
-	OSStatus error = NSpGame_Host( &gGameObject, 
+	NMErr error = NSpGame_Host( &gGameObject, 
 	                               gProtocolListRef, 
 	                               kMaxPlayers, 
 	                               kGameName,
@@ -463,7 +463,7 @@ Join_Game( NSpGameReference  &gGameObject, NSpAddressReference  addressRef )
 
 	cout << "\nAttempting to join game..." << endl;
 
-	OSStatus error = NSpGame_Join( &gGameObject, 
+	NMErr error = NSpGame_Join( &gGameObject, 
 	                               addressRef, 
 	                               kPlayerName, 
 	                               kMyPassword,
@@ -662,7 +662,7 @@ Dispose_Game( NSpGameReference  &gGameObject )
 		return( false );
 	}
 
-	OSStatus error = NSpGame_Dispose( gGameObject, 
+	NMErr error = NSpGame_Dispose( gGameObject, 
 	                                  kNSpGameFlag_ForceTerminateGame
 	                                );
 
@@ -690,7 +690,7 @@ Get_Game_Info( NSpGameReference  gGameObject )
 		return( false );
 	}
 
-	OSStatus error = NSpGame_GetInfo( gGameObject, &gameInfo);
+	NMErr error = NSpGame_GetInfo( gGameObject, &gameInfo);
 
 	noError = Check_Error( "Error: Get_Game_Info(), getting game info.", error );
 	
@@ -741,7 +741,7 @@ Send_Message( NSpGameReference  gGameObject )
 	strcpy( gDataToSend->dataStr, kCannedMessage );
 	
 	
-	OSStatus error = NSpMessage_Send(gGameObject, &gDataToSend->header,
+	NMErr error = NSpMessage_Send(gGameObject, &gDataToSend->header,
 	                                    kNSpSendFlag_Registered);
 	                                
 	result = Check_Error( "Error: Send_Message(), sending message.", error );
@@ -882,7 +882,7 @@ Release_Message( NSpGameReference  gGameObject, TestMessage  *message )
 NMBoolean
 Print_Players( NSpGameReference  gGameObject )
 {
-	OSStatus					error;
+	NMErr						error;
 	NSpPlayerInfoPtr			playerInfoPtr;
 	NSpPlayerEnumerationPtr		playerEnumPtr;
 	int							playerIndex;
@@ -942,7 +942,7 @@ Create_Empty_Protocol_List( NSpProtocolListReference  &gProtocolListRef )
 		cerr << "Warning: Create_Empty_Protocol_List(), overwriting existing protocol list." << endl;
 	}
 	
-	OSStatus  error = NSpProtocolList_New( NULL, &gProtocolListRef );
+	NMErr  error = NSpProtocolList_New( NULL, &gProtocolListRef );
 	
 	result = Check_Error( "Error: Create_Empty_Protocol_List(), creating list.", error );
 
@@ -963,7 +963,7 @@ Append_To_Protocol_List( NSpProtocolListReference  gProtocolListRef,
 		return( false );
 	}
 
-	OSStatus  error = NSpProtocolList_Append( gProtocolListRef, gProtocolRef );
+	NMErr  error = NSpProtocolList_Append( gProtocolListRef, gProtocolRef );
 	
 	result = Check_Error( "Error: Append_To_Protocol_List(), appending to list.", error );
 

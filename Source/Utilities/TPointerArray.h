@@ -54,8 +54,8 @@
 							TPointerArray(NMUInt32 growBy = 0);
 		virtual				~TPointerArray();
 
-		OSStatus			AddItem(void* theItem);
-		OSStatus			InsertItem(void* theItem, NMUInt32 ndx);
+		NMErr			AddItem(void* theItem);
+		NMErr			InsertItem(void* theItem, NMUInt32 ndx);
 
 		NMBoolean			FindItemIndex(void* item, NMUInt32* index);
 		
@@ -66,13 +66,13 @@
 		
 		void*				operator[](NMUInt32	 ndx) const		{ return GetIndexedItem(ndx) ;};
 		void*				GetIndexedItem(NMUInt32	 ndx) const;
-		OSStatus			SetIndexedItem(NMUInt32	 ndx, void* theItem);
+		NMErr			SetIndexedItem(NMUInt32	 ndx, void* theItem);
 		
 		NMUInt32			Count() const						{ return fNumberOfItems; };
 		
 	private:
 
-		OSStatus			GrowBy(NMUInt32	 numNewItems);
+		NMErr			GrowBy(NMUInt32	 numNewItems);
 		void				Shrink();
 		
 

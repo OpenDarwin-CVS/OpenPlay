@@ -107,8 +107,8 @@ static pascal void OffsetLDEFProc(short lMessage, NMBoolean lSelect, Rect *lRect
 static NMErr SetSearchZonesFromList(ListHandle whatList);
 static NMErr NMRestartEnumeration(NMConfigRef inConfig);
 
-pascal void ZLNotifier(void* contextPtr, ATEventCode code, OSStatus result, void* cookie);
-pascal void NotifyProc(void* contextPtr, ATEventCode code, OSStatus result, void* cookie);
+pascal void ZLNotifier(void* contextPtr, ATEventCode code, NMErr result, void* cookie);
+pascal void NotifyProc(void* contextPtr, ATEventCode code, NMErr result, void* cookie);
 
 //	------------------------------	Public Variables
 
@@ -238,7 +238,7 @@ __myterminate(void)
 NMErr
 NMStartup(void)
 {
-OSStatus	status = kNMNoError;
+NMErr	status = kNMNoError;
 
 	//	Make sure we have the necessary libraries available for this module
 
@@ -496,6 +496,54 @@ NMErr	err = kNMNoError;
 }
 
 //----------------------------------------------------------------------------------------
+// NMFreeAddress
+//----------------------------------------------------------------------------------------
+
+NMErr
+NMFreeAddress(NMEndpointRef inEndpoint, void **outAddress)
+{
+	DEBUG_ENTRY_EXIT("NMFreeAddress")
+
+	NMErr				err = noErr;
+	NMATEndpointPriv	*epRef = (NMATEndpointPriv *)inEndpoint;
+	OTEndpoint 			*ep;
+
+	op_vassert_return((epRef != NULL),"Endpoint is NIL!",kNMParameterErr);
+	op_vassert_return((epRef->id == kModuleID),"Endpoint id is not mine!",kNMParameterErr);
+
+	ep = (OTEndpoint *) epRef->ep;
+	op_vassert_return((ep != NULL),"Private endpoint is NIL!",kNMParameterErr);
+
+	err = ep->FreeAddress( outAddress );
+
+	return( err );
+}
+
+//----------------------------------------------------------------------------------------
+// NMGetAddress
+//----------------------------------------------------------------------------------------
+
+NMErr
+NMGetAddress(NMEndpointRef inEndpoint, NMAddressType addressType, void **outAddress)
+{
+	DEBUG_ENTRY_EXIT("NMGetAddress")
+
+	NMErr				err = noErr;
+	NMATEndpointPriv	*epRef = (NMATEndpointPriv *)inEndpoint;
+	OTEndpoint 			*ep;
+
+	op_vassert_return((epRef != NULL),"Endpoint is NIL!",kNMParameterErr);
+	op_vassert_return((epRef->id == kModuleID),"Endpoint id is not mine!",kNMParameterErr);
+
+	ep = (OTEndpoint *) epRef->ep;
+	op_vassert_return((ep != NULL),"Private endpoint is NIL!",kNMParameterErr);
+
+	err = ep->GetAddress( addressType, outAddress );
+
+	return( err );
+}
+
+//----------------------------------------------------------------------------------------
 // NMIsAlive
 //----------------------------------------------------------------------------------------
 
@@ -554,6 +602,8 @@ Endpoint 			*ep = (Endpoint *) epRef->ep;
 NMErr
 NMIdle(NMEndpointRef inEndpoint)
 {
+	UNUSED_PARAMETER(inEndpoint);
+
 	EndpointHander::CleanupEndpoints();
 
 	return kNMNoError;
@@ -1136,6 +1186,9 @@ RoutineDescriptor			inPlace =
 	BlockMove(&inPlace,*LDEFResource,sizeof (inPlace));	
 
 	// Don't you dare call changed resource on this resource, okay?
+#else
+	UNUSED_PARAMETER(whichID);
+	UNUSED_PARAMETER(whatProc);
 
 #endif // carbon_build
 
@@ -1168,6 +1221,9 @@ OffsetLDEFProc(short lMessage, NMBoolean lSelect, Rect *lRect, Cell lCell,
                short lDataOffset, short lDataLen, ListHandle lHandle)
 {
 NMUInt8  *dataStart = (NMUInt8 *) (*lHandle)->refCon;
+
+	UNUSED_PARAMETER(lDataOffset);
+	UNUSED_PARAMETER(lDataLen);
 
 	switch (lMessage)
 	{
@@ -1226,6 +1282,8 @@ CreateListItemFromZoneList(
 {
 GWorldPtr				oldGWorld;
 GDHandle				oldGDevice;
+
+	UNUSED_PARAMETER(LDEFID);
 
 	GetGWorld(&oldGWorld,& oldGDevice);
 	
@@ -1550,11 +1608,11 @@ NMGetRequiredDialogFrame(RECT *r, NMConfigRef inConfig)
 //----------------------------------------------------------------------------------------
 
 pascal void
-NotifyProc(void* contextPtr, ATEventCode code, OSStatus result, void* cookie)
+NotifyProc(void* contextPtr, ATEventCode code, NMErr result, void* cookie)
 {
 	NMUInt32				count;
 	NMBoolean				allFound;
-	//OSStatus				status;
+	//NMErr				status;
 	ATEnumerationItemPriv	*item = NULL;
 	Str32					name, zone, type;
 	ATAddress				addr;
@@ -1601,7 +1659,7 @@ NotifyProc(void* contextPtr, ATEventCode code, OSStatus result, void* cookie)
 							doConcatPStr(item->name, zone);
 						}
 
-						item->userEnum.id = (NMHostID) item;
+						item->userEnum.id = (NMType) item;
 						p2cstr(item->name);
 						item->userEnum.name = (char *) item->name;
 						item->userEnum.customEnumDataLen = 0;
@@ -1646,7 +1704,7 @@ NMErr
 NMRestartEnumeration(NMConfigRef inConfig)
 {
 NMATConfigPriv	*theConfig = (NMATConfigPriv *) inConfig;
-OSStatus		status = kNMNoError;
+NMErr		status = kNMNoError;
 StringPtr		zone;
 StringPtr		name;
 StringPtr		type;
@@ -2303,7 +2361,7 @@ NMUInt8		*zoneSkip = zones;
 //----------------------------------------------------------------------------------------
 
 pascal void
-ZLNotifier(void* contextPtr, ATEventCode code, OSStatus result, void* cookie)
+ZLNotifier(void* contextPtr, ATEventCode code, NMErr result, void* cookie)
 {
 	UNUSED_PARAMETER(contextPtr);
 	UNUSED_PARAMETER(result);
@@ -2413,7 +2471,7 @@ InternalDisposeZoneList(unsigned char *inPB)
 NMErr
 InternalGetMyZone(unsigned char *zoneStore)
 {
-OSStatus status;
+NMErr status;
 	
 	COTZonesEnumerator *enumerator = new COTZonesEnumerator();
 

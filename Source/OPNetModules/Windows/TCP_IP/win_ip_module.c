@@ -1368,7 +1368,7 @@ NMErr		err = kNMNoError;
 						if (err != WSAEWOULDBLOCK)
 						{
 							DEBUG_NETWORK_API("Connect", err);
-							err = kNMOpenEndpointFailedErr;
+							err = kNMOpenFailedErr;
 						}
 						else // this will call our callback...
 							err = kNMNoError;
@@ -1390,7 +1390,7 @@ NMErr		err = kNMNoError;
 		else
 		{
 			DEBUG_NETWORK_API("Bind Socket", err);
-			err = kNMOpenEndpointFailedErr;
+			err = kNMOpenFailedErr;
 		}
 	}
 	else
@@ -1399,7 +1399,7 @@ NMErr		err = kNMNoError;
 		DEBUG_NETWORK_API("Creating Socket",err);
 
 		// standard error codes.
-		err= kNMOpenEndpointFailedErr;
+		err= kNMOpenFailedErr;
 	}
 	
 	return err;

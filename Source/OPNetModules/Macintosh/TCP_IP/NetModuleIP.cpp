@@ -205,7 +205,7 @@ NMIPEndpointPriv	*epRef = (NMIPEndpointPriv *) inEndpoint;
 NMErr
 NMStartup(void)
 {
-OSStatus	status = kNMNoError;
+NMErr	status = kNMNoError;
 
 	gModuleInfo.size= sizeof (NMModuleInfo);
 	gModuleInfo.type = kModuleID;
@@ -294,6 +294,8 @@ NMOpen(NMConfigRef inConfig, NMEndpointCallbackFunction *inCallback, void *inCon
 	op_vassert_return((outEndpoint != NULL),"outEndpoint is NIL!",kNMParameterErr);
 	op_vassert_return((inCallback != NULL),"Callback function is NIL!",kNMParameterErr);
 
+	*outEndpoint = NULL;	// assume an error
+
 	//	if this is a passive endpoint, we need to ignore the address specified in the
 	//	config
 	if (! inActive)
@@ -309,45 +311,29 @@ NMOpen(NMConfigRef inConfig, NMEndpointCallbackFunction *inCallback, void *inCon
 	if (kNMNoError != status)
 		return (status);
 		
-	//Try_
+	//	Either connect or listen (passive = listen, active = connect)
+	if (inActive)
 	{
-		//	Either connect or listen (passive = listen, active = connect)
-		if (inActive)
-		{
-			status = epRef->ep->Connect();
-			//ThrowIfOSErr_(status);
-			if (status)
-				goto error;
-		}
-		else
-		{
-			status = epRef->ep->Listen();
-			//ThrowIfOSErr_(status);
-			if (status)
-				goto error;
-		}
+		status = epRef->ep->Connect();
+		if (status)
+			goto error;
+	}
+	else
+	{
+		status = epRef->ep->Listen();
+		if (status)
+			goto error;
+	}
 
-		*outEndpoint = (NMEndpointRef) epRef;
+	*outEndpoint = (NMEndpointRef) epRef;
+	
+	if (inActive)
+		epRef->ep->mState = Endpoint::kRunning;
+	else
+		epRef->ep->mState = Endpoint::kListening;
 		
-		if (inActive)
-			epRef->ep->mState = Endpoint::kRunning;
-		else
-			epRef->ep->mState = Endpoint::kListening;
-			
-		return (status);
-	}
-	//Catch_(code)
-	error:
-	if (status)
-	{
-		NMErr code = status;
-		//	The endpoint was already disposed by the ep itself
-		//	DisposeEndpointPriv(epRef);
-			
-		*outEndpoint = NULL;
-		return (code);
-	}
-	return status;
+error:
+	return (status);
 }
 
 //----------------------------------------------------------------------------------------
@@ -362,6 +348,8 @@ NMClose(NMEndpointRef inEndpoint, NMBoolean inOrderly)
 
 NMIPEndpointPriv	*epRef;
 Endpoint *ep;
+
+	UNUSED_PARAMETER(inOrderly);
 
 	op_vassert_return((inEndpoint != NULL),"Endpoint is NIL!",kNMParameterErr);
 
@@ -404,30 +392,13 @@ NMAcceptConnection(
 	op_vassert_return((ep != NULL),"Private endpoint is NIL!",kNMParameterErr);
 	op_vassert_return((epRef->id == kModuleID),"Endpoint id is not mine!",kNMParameterErr);
 		
-	//Try_
-	{
-		// First, we need to create a new endpoint that will be returned to the user
-		status = MakeNewIPEndpointPriv(NULL, inCallback, inContext, ep->mMode, ep->mNetSprocketMode, &newEPRef);
-		//ThrowIfOSErr_(status);
-		if (status)
-			goto error;
+	// First, we need to create a new endpoint that will be returned to the user
+	status = MakeNewIPEndpointPriv(NULL, inCallback, inContext, ep->mMode, ep->mNetSprocketMode, &newEPRef);
 
+	if( !status )
 		status = ep->AcceptConnection(newEPRef->ep, inCookie);	// Hands off the new connection async
-		//ThrowIfOSErr_(status);			
-		if (status)
-			goto error;
 
-		return (status);
-	}
-	//Catch_(code)
-	error:
-	if (status)
-	{
-		NMErr code = status;
-		DEBUG_PRINT("caught exception: %p", code);
-		return (code);
-	}
-	return status;
+	return (status);
 }
 
 //----------------------------------------------------------------------------------------
@@ -452,19 +423,8 @@ NMRejectConnection(NMEndpointRef inEndpoint, void *inCookie)
 	op_vassert_return((ep != NULL),"Private endpoint is NIL!",kNMParameterErr);
 	op_vassert_return((epRef->id == kModuleID),"Endpoint id is not mine!",kNMParameterErr);
 		
-	//Try_
-	{
-		status = ep->RejectConnection(inCookie);			
-		return (status);
-	}
-	//Catch_(code)
-	error:
-	if (status)
-	{
-		NMErr code = status;
-		return (code);
-	}
-	return status;
+	status = ep->RejectConnection(inCookie);			
+	return (status);
 }
 
 //----------------------------------------------------------------------------------------
@@ -494,6 +454,54 @@ NMErr	err = kNMNoError;
 }
 
 //----------------------------------------------------------------------------------------
+// NMFreeAddress
+//----------------------------------------------------------------------------------------
+
+NMErr
+NMFreeAddress(NMEndpointRef inEndpoint, void **outAddress)
+{
+	DEBUG_ENTRY_EXIT("NMFreeAddress")
+
+	NMErr				err = noErr;
+	NMIPEndpointPriv	*epRef = (NMIPEndpointPriv *)inEndpoint;
+	OTEndpoint 			*ep;
+
+	op_vassert_return((epRef != NULL),"Endpoint is NIL!",kNMParameterErr);
+	op_vassert_return((epRef->id == kModuleID),"Endpoint id is not mine!",kNMParameterErr);
+
+	ep = (OTEndpoint *) epRef->ep;
+	op_vassert_return((ep != NULL),"Private endpoint is NIL!",kNMParameterErr);
+
+	err = ep->FreeAddress( outAddress );
+
+	return( err );
+}
+
+//----------------------------------------------------------------------------------------
+// NMGetAddress
+//----------------------------------------------------------------------------------------
+
+NMErr
+NMGetAddress(NMEndpointRef inEndpoint, NMAddressType addressType, void **outAddress)
+{
+	DEBUG_ENTRY_EXIT("NMGetAddress")
+
+	NMErr				err = noErr;
+	NMIPEndpointPriv	*epRef = (NMIPEndpointPriv *)inEndpoint;
+	OTEndpoint 			*ep;
+
+	op_vassert_return((epRef != NULL),"Endpoint is NIL!",kNMParameterErr);
+	op_vassert_return((epRef->id == kModuleID),"Endpoint id is not mine!",kNMParameterErr);
+
+	ep = (OTEndpoint *) epRef->ep;
+	op_vassert_return((ep != NULL),"Private endpoint is NIL!",kNMParameterErr);
+
+	err = ep->GetAddress( addressType, outAddress );
+
+	return( err );
+}
+
+//----------------------------------------------------------------------------------------
 // NMIsAlive
 //----------------------------------------------------------------------------------------
 
@@ -513,20 +521,8 @@ NMIsAlive(NMEndpointRef inEndpoint)
 	op_vassert_return((ep != NULL),"Private endpoint is NIL!",kNMParameterErr);
 	op_vassert_return((epRef->id == kModuleID),"Endpoint id is not mine!",kNMParameterErr);
 		
-	//Try_
-	{
-		result = ep->IsAlive();
-		return (result);
-	}
-	//catch(...)
-	error:
-	if (status)
-	{
-		NMErr code = status;
-		//DEBUG_PRINT("An exception was thrown, but not caught.  This is bad.");
-		return (false);
-	}
-	return false;
+	result = ep->IsAlive();
+	return (result);
 }
 
 //----------------------------------------------------------------------------------------
@@ -575,19 +571,8 @@ NMIdle(NMEndpointRef inEndpoint)
 	OTEndpoint::ServiceEPCaches();
 	EndpointHander::CleanupEndpoints();
 
-	//Try_
-	{
-		status = ep->Idle();
-		return (status);
-	}
-	//Catch_(code)
-	error:
-	if (status)
-	{
-		NMErr code = status;
-		return (code);
-	}
-	return status;
+	status = ep->Idle();
+	return (status);
 }
 
 //----------------------------------------------------------------------------------------
@@ -614,19 +599,8 @@ NMFunctionPassThrough(
 	op_vassert_return((ep != NULL),"Private endpoint is NIL!",kNMParameterErr);
 	op_vassert_return((epRef->id == kModuleID),"Endpoint id is not mine!",kNMParameterErr);
 		
-	//Try_
-	{
-		status = ep->FunctionPassThrough(inSelector, inParamBlock);
-		return (status);
-	}
-	//Catch_(code)
-	error:
-	if (status)
-	{
-		NMErr code = status;
-		return (code);
-	}
-	return status;
+	status = ep->FunctionPassThrough(inSelector, inParamBlock);
+	return (status);
 }
 
 //----------------------------------------------------------------------------------------
@@ -666,19 +640,8 @@ NMSendDatagram(
 	op_vassert_return((ep != NULL),"Private endpoint is NIL!",kNMParameterErr);
 	op_vassert_return((epRef->id == kModuleID),"Endpoint id is not mine!",kNMParameterErr);
 		
-	//Try_
-	{
-		status = ep->SendDatagram(inData, inSize, inFlags);
-		return (status);
-	}
-	//Catch_(code)
-	error:
-	if (status)
-	{
-		NMErr code = status;
-		return (code);
-	}
-	return status;
+	status = ep->SendDatagram(inData, inSize, inFlags);
+	return (status);
 }
 
 //----------------------------------------------------------------------------------------
@@ -710,19 +673,8 @@ NMReceiveDatagram(
 	op_vassert_return((ep != NULL),"Private endpoint is NIL!",kNMParameterErr);
 	op_vassert_return((epRef->id == kModuleID),"Endpoint id is not mine!",kNMParameterErr);
 		
-	//Try_
-	{
-		status = ep->ReceiveDatagram(ioData, ioSize, outFlags);
-		return (status);
-	}
-	//Catch_(code)
-	error:
-	if (status)
-	{
-		NMErr code = status;
-		return (code);
-	}
-	return status;
+	status = ep->ReceiveDatagram(ioData, ioSize, outFlags);
+	return (status);
 }
 
 //----------------------------------------------------------------------------------------
@@ -753,20 +705,9 @@ NMSend(
 	op_vassert_return((ep != NULL),"Private endpoint is NIL!",kNMParameterErr);
 	op_vassert_return((epRef->id == kModuleID),"Endpoint id is not mine!",kNMParameterErr);
 		
-	//Try_
-	{
-		//	Send returns the number of bytes actually sent, or an error
-		rv = ep->Send(inData, inSize, inFlags);
-		return (rv);
-	}
-	//Catch_(code)
-	error:
-	if (status)
-	{
-		NMErr code = status;
-		return (code);
-	}
-	return status;
+	//	Send returns the number of bytes actually sent, or an error
+	rv = ep->Send(inData, inSize, inFlags);
+	return (rv);
 }
 
 //----------------------------------------------------------------------------------------
@@ -798,19 +739,8 @@ NMReceive(
 	op_vassert_return((ep != NULL),"Private endpoint is NIL!",kNMParameterErr);
 	op_vassert_return((epRef->id == kModuleID),"Endpoint id is not mine!",kNMParameterErr);
 		
-	//Try_
-	{
-		status = ep->Receive(ioData, ioSize, outFlags);
-		return (status);
-	}
-	//Catch_(code)
-	error:
-	if (status)
-	{
-		NMErr code = status;
-		return (code);
-	}
-	return status;
+	status = ep->Receive(ioData, ioSize, outFlags);
+	return (status);
 }
 
 //	--------------------	NMEnterNotifier
@@ -822,7 +752,13 @@ NMEnterNotifier(NMEndpointRef inEndpoint, NMEndpointMode endpointMode)
 
 NMErr				err = noErr;
 NMIPEndpointPriv	*epRef = (NMIPEndpointPriv *)inEndpoint;
-Endpoint 			*ep = (Endpoint *) epRef->ep;
+Endpoint 			*ep;
+
+	op_vassert_return((epRef != NULL),"Endpoint is NIL!",kNMParameterErr);
+	op_vassert_return((epRef->id == kModuleID),"Endpoint id is not mine!",kNMParameterErr);
+
+	ep = (Endpoint *) epRef->ep;
+	op_vassert_return((ep != NULL),"Private endpoint is NIL!",kNMParameterErr);
 
 	err = ep->EnterNotifier(endpointMode);
 	
@@ -839,7 +775,13 @@ NMLeaveNotifier(NMEndpointRef inEndpoint, NMEndpointMode endpointMode)
 
 NMErr				err = noErr;
 NMIPEndpointPriv	*epRef = (NMIPEndpointPriv *)inEndpoint;
-Endpoint 			*ep = (Endpoint *) epRef->ep;
+Endpoint 			*ep;
+
+	op_vassert_return((epRef != NULL),"Endpoint is NIL!",kNMParameterErr);
+	op_vassert_return((epRef->id == kModuleID),"Endpoint id is not mine!",kNMParameterErr);
+
+	ep = (Endpoint *) epRef->ep;
+	op_vassert_return((ep != NULL),"Private endpoint is NIL!",kNMParameterErr);
 
 	err = ep->LeaveNotifier(endpointMode);
 	
@@ -872,34 +814,23 @@ NMCreateConfig(
 
 	op_vassert_return((outConfig != NULL),"outConfig pointer is NIL!",kNMParameterErr);
 		
-	//Try_
-	{
-		config = new NMIPConfigPriv;
-		//ThrowIfNil_(config);
-		if (config == NULL){
-			status = err_NilPointer;
-			goto error;
-		}
-
-		status = ParseConfigString(inConfigStr, inGameID, inGameName, inEnumData, inDataLen, config);
-		//ThrowIfOSErr_(status);
-		if (status)
-			goto error;
-	
-		if (status == kNMNoError)
-			*outConfig = (NMConfigRef) config;
-
-		return (status);
+	config = new NMIPConfigPriv;
+	if (config == NULL){
+		status = kNMOutOfMemoryErr;
+		goto error;
 	}
-	//Catch_(code)
-	error:
+
+	status = ParseConfigString(inConfigStr, inGameID, inGameName, inEnumData, inDataLen, config);
 	if (status)
 	{
-		NMErr code = status;
 		delete config;
-		return (code);
+		goto error;
 	}
-	return status;
+	else
+		*outConfig = (NMConfigRef) config;
+
+error:
+	return (status);
 }
 
 //----------------------------------------------------------------------------------------
@@ -1193,7 +1124,7 @@ NMTeardownDialog(
 	DEBUG_ENTRY_EXIT("NMTeardownDialog");
 
 NMIPConfigPriv	*theConfig = (NMIPConfigPriv *) ioConfig;
-OSStatus		status;
+NMErr		status;
 InetAddress		addr;
 Str255			hostText;
 Str255			portText;
@@ -1244,6 +1175,8 @@ void
 NMGetRequiredDialogFrame(RECT *r, NMConfigRef inConfig)
 {
 	DEBUG_ENTRY_EXIT("NMGetRequiredDialogFrame");
+
+	UNUSED_PARAMETER(inConfig);
 
 	//	I don't know of any reason why the config is going to affect the size of the frame
 	*r = kFrameSize;
@@ -1414,8 +1347,8 @@ ParseConfigString(
 	NMUInt32			inDataLen,
 	NMIPConfigPriv	*outConfig)
 {
-	OSStatus	status = kNMNoError;
-	InetPort	port = GenerateDefaultPort(inGameID);
+	NMErr	status = kNMNoError;
+	NMInetPort	port = GenerateDefaultPort(inGameID);
 	InetHost	host = 0x7f000001;		// loopback address
 	NMBoolean	gotToken;
 	NMSInt32	tokenLen;
@@ -1475,14 +1408,12 @@ ParseConfigString(
 		//	Read the type
 		tokenLen = sizeof (NMType);
 		gotToken = get_token(inConfigStr, kConfigModuleType, LONG_DATA, &outConfig->type, &tokenLen);
-		//op_warn(gotToken);
 		if (!gotToken)
 			outConfig->type = kModuleID;
 
 		//	Read the version
 		tokenLen = sizeof (NMUInt32);
 		gotToken = get_token(inConfigStr, kConfigModuleVersion, LONG_DATA, &outConfig->version, &tokenLen);
-		//op_warn(gotToken);
 
 		if (!gotToken)
 			outConfig->version = kVersion;
@@ -1490,7 +1421,6 @@ ParseConfigString(
 		//	Read the game id
 		tokenLen = sizeof (NMUInt32);
 		gotToken = get_token(inConfigStr, kConfigGameID, LONG_DATA, &outConfig->gameID, &tokenLen);
-		//op_warn(gotToken);
 
 		if (!gotToken)
 			outConfig->gameID = 0;
@@ -1500,7 +1430,6 @@ ParseConfigString(
 		{
 			tokenLen = kMaxGameNameLen;
 			gotToken = get_token(inConfigStr, kConfigGameName, STRING_DATA, &outConfig->name, &tokenLen);
-			//op_warn(gotToken);
 
 			if (!gotToken)
 				strcpy(outConfig->name, "unknown");
@@ -1509,7 +1438,6 @@ ParseConfigString(
 		//	Read the connection mode
 		tokenLen = sizeof (NMUInt32);
 		gotToken = get_token(inConfigStr, kConfigEndpointMode, LONG_DATA, &outConfig->connectionMode, &tokenLen);
-		//op_warn(gotToken);
 
 		if (! gotToken)
 			outConfig->connectionMode = kNMNormalMode;
@@ -1517,7 +1445,6 @@ ParseConfigString(
 		//	Read the netSprocketMode mode
 		tokenLen = sizeof (NMBoolean);
 		gotToken = get_token(inConfigStr, kConfigNetSprocketMode, BOOLEAN_DATA, &outConfig->netSprocketMode, &tokenLen);
-		//op_warn(gotToken);
 
 		if (!gotToken)
 			outConfig->netSprocketMode = kDefaultNetSprocketMode;	
@@ -1537,7 +1464,6 @@ ParseConfigString(
 		//	Read the dotted quad IP address
 		tokenLen = kMaxHostNameLen;
 		gotToken = get_token(inConfigStr, kIPConfigAddress, STRING_DATA, workString, &tokenLen);
-		//op_warn(gotToken);
 
 		if (! gotToken)
 		{

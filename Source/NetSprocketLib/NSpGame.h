@@ -82,7 +82,7 @@
 		
 		NMUInt32	mObjectID;			// An ID used to confirm object type
 
-					NSpGame(NMUInt32 inMaxPlayers, ConstStr31Param inGameName, ConstStr31Param inPassword, NSpTopology inTopology, NSpFlags inFlags);
+					NSpGame(NMUInt32 inMaxPlayers, NMConstStr31Param inGameName, NMConstStr31Param inPassword, NSpTopology inTopology, NSpFlags inFlags);
 		virtual		~NSpGame();
 
 	//	Methods for handling message buffers
@@ -97,39 +97,39 @@
 	//	Methods for iterating through players and getting info
 		inline	NMUInt32	GetPlayerCount(void) { return mGameInfo.currentPlayers;}
 		inline 	NMUInt32	GetGroupCount(void) {return mGameInfo.currentGroups;}
-				OSStatus	NSpPlayer_GetInfo(NSpPlayerID inID, NSpPlayerInfoPtr *outInfo);
+				NMErr	NSpPlayer_GetInfo(NSpPlayerID inID, NSpPlayerInfoPtr *outInfo);
 				void		NSpPlayer_ReleaseInfo(NSpPlayerInfoPtr inInfo);
-				OSStatus	NSpPlayer_GetEnumeration(NSpPlayerEnumerationPtr *outPlayers);
+				NMErr	NSpPlayer_GetEnumeration(NSpPlayerEnumerationPtr *outPlayers);
 				void		NSpPlayer_ReleaseEnumeration(NSpPlayerEnumerationPtr inPlayers);		
 				NMUInt32	GetRTT(NSpPlayerID inPlayer);
 				NMUInt32	GetThruput(NSpPlayerID inPlayer);
 				
 	//	Group management
-		virtual	OSStatus	NSpGroup_Create(NSpGroupID *outGroupID);
-		virtual	OSStatus	NSpGroup_Delete(NSpGroupID inGroupID);
-		virtual	OSStatus	NSpGroup_AddPlayer(NSpGroupID inGroupID, NSpPlayerID inPlayerID);
-		virtual	OSStatus 	NSpGroup_RemovePlayer(NSpGroupID inGroupID, NSpPlayerID inPlayerID);
-				OSStatus	NSpGroup_GetInfo(NSpGroupID inGroupID, NSpGroupInfoPtr *outInfo);
+		virtual	NMErr	NSpGroup_Create(NSpGroupID *outGroupID);
+		virtual	NMErr	NSpGroup_Delete(NSpGroupID inGroupID);
+		virtual	NMErr	NSpGroup_AddPlayer(NSpGroupID inGroupID, NSpPlayerID inPlayerID);
+		virtual	NMErr 	NSpGroup_RemovePlayer(NSpGroupID inGroupID, NSpPlayerID inPlayerID);
+				NMErr	NSpGroup_GetInfo(NSpGroupID inGroupID, NSpGroupInfoPtr *outInfo);
 				void		NSpGroup_ReleaseInfo(NSpGroupInfoPtr inInfo);
-				OSStatus	NSpGroup_GetEnumeration(NSpGroupEnumerationPtr *outGroups);
+				NMErr	NSpGroup_GetEnumeration(NSpGroupEnumerationPtr *outGroups);
 				void		NSpGroup_ReleaseEnumeration(NSpGroupEnumerationPtr inGroups);
 				NMBoolean	HandleCreateGroupMessage(TCreateGroupMessage *inMessage);
 				NMBoolean	HandleDeleteGroupMessage(TDeleteGroupMessage *inMessage);
-				OSStatus	DoDeleteGroup(NSpGroupID inID);
+				NMErr	DoDeleteGroup(NSpGroupID inID);
 				NMBoolean	HandleAddPlayerToGroupMessage(TAddPlayerToGroupMessage *inMessage);
 				NMBoolean 	HandleRemovePlayerFromGroupMessage(TRemovePlayerFromGroupMessage *inMessage);
 				NMBoolean	HandlePlayerTypeChangedMessage(NSpPlayerTypeChangedMessage *inMessage);
 				
 	//	Methods that need to be overridden by the subclass
-		virtual OSStatus	SendUserMessage(NSpMessageHeader *inMessage, NSpFlags inFlags) = 0;
+		virtual NMErr	SendUserMessage(NSpMessageHeader *inMessage, NSpFlags inFlags) = 0;
 		
 		//ecf - allows idling op endpoints
 		virtual void		IdleEndpoints(void) = 0;
-		virtual OSStatus	SendTo(NSpPlayerID inTo, NMSInt32 inWhat, void *inData, NMUInt32 inLen, NSpFlags inFlags) = 0;
+		virtual NMErr	SendTo(NSpPlayerID inTo, NMSInt32 inWhat, void *inData, NMUInt32 inLen, NSpFlags inFlags) = 0;
 		virtual	void		HandleNewEvent(ERObject *inERObject, CEndpoint *inEndpoint, void *inCookie) = 0;
-		virtual OSStatus	PrepareForDeletion(NSpFlags inFlags) = 0;
+		virtual NMErr	PrepareForDeletion(NSpFlags inFlags) = 0;
 				NMBoolean	NSpMessage_Get(NSpMessageHeader **outMessage);
-		virtual	OSStatus	HandleEndpointDisconnected(CEndpoint *inEndpoint) = 0;
+		virtual	NMErr	HandleEndpointDisconnected(CEndpoint *inEndpoint) = 0;
 		
 	//	Accessors
 		inline 	NSpPlayerID	NSpPlayer_GetMyID(void) { return mPlayerID;}
@@ -152,7 +152,7 @@
 		virtual	NMBoolean	AddPlayer(NSpPlayerInfo *inInfo, CEndpoint *inEndpoint);
 		virtual	NMBoolean	RemovePlayer(NSpPlayerID inPlayer, NMBoolean inDisconnect) = 0;
 				PlayerListItem *GetPlayerListItem(NSpPlayerID inPlayerID);
-				OSStatus	DoSelfSend(NSpMessageHeader *inMessage, void *inBody, NSpFlags inFlags, NMBoolean inCopy = true);
+				NMErr	DoSelfSend(NSpMessageHeader *inMessage, void *inBody, NSpFlags inFlags, NMBoolean inCopy = true);
 				void		HandleEventForSelf(ERObject *inERObject, CEndpoint *inEndpoint);
 				NMBoolean	HandlePlayerLeft(NSpPlayerLeftMessage *inMessage);
 

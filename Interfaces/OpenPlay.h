@@ -50,7 +50,7 @@
 		#undef  has_unused_pragma	/* unused pragma can't be used in define 8-( */
 	
 	#elif defined(PROJECT_BUILDER_CARBON) 	/* project builder doing a carbon build as opposed */
-		#define macintosh_build 1			/* to a posix build which comes up under POSIX_BUILD below*/
+		#define macintosh_build 1			/* to a posix build which comes up below*/
 		#define big_endian 1
 		
 	#elif defined(_MSC_VER)			/* microsoft compiler */
@@ -75,12 +75,16 @@
 		#define has_unused_pragma 1
 		#define has_byte_type
 	
-	#elif defined (POSIX_BUILD)		/* Posix -- linux, unix, etc. */
-		
+	#else	/* lump everything else under Posix -- linux, unix, etc. */		
 		#define posix_build 1
 
 		#ifdef linux
 			#include <endian.h>
+		#else
+			#include <machine/endian.h> /*bsd,osx,etc*/
+		#endif 		
+
+		#ifdef linux
 			#if __BYTE_ORDER == __BIG_ENDIAN
 				#define big_endian 1
 			#endif
@@ -98,8 +102,6 @@
 		
 		#undef  has_unused_pragma
 		#undef  has_byte_type			
-	#else
-	  	#error "Unsupported compiler target"
 	#endif
 		
 	/* make sure we've defined one and only one endian type */
@@ -114,27 +116,37 @@
 	#endif
 	
 /*-------------------------------------------------------------------------------------------
-	basic types
+	basic types - we may need to do some redefining for 64-bit systems eventually...
 */
-
-		/* ecf 020104 do any of these vary across platforms?  when 64 bit comes around or whatnot... */
+	#if (!DOXYGEN)
 		typedef unsigned char	NMBoolean;
 
 		typedef unsigned long	NMUInt32;
 		typedef signed long		NMSInt32;
 
-		typedef signed short	NMSInt16;
 		typedef unsigned short	NMUInt16;
+		typedef signed short	NMSInt16;
 
 		typedef unsigned char	NMUInt8;
 		typedef signed char		NMSInt8;
+	#endif
+	
+	typedef NMUInt16						NMInetPort;
+	typedef unsigned char 					NMStr31[32];
+	typedef const unsigned char *			NMConstStr31Param;
+											
+	struct NMNumVersion {
+											/* Numeric version part of 'vers' resource */
+		NMUInt8 		majorRev;			/* 1st part of version number in BCD */
+		NMUInt8 		minorAndBugRev;		/* 2nd & 3rd part of version number share a byte */
+		NMUInt8 		stage;				/* stage code: dev, alpha, beta, final */
+		NMUInt8 		nonRelRev;			/* revision level of non-released version */
+	};
 
-		typedef NMSInt32		NMType;
-		typedef NMSInt32    	NMErr;
-		typedef NMUInt32		NMFlags;
-
+	typedef struct NMNumVersion	NMNumVersion;	
+	
 /*-------------------------------------------------------------------------------------------
-	Specify and specific platfrom settings.
+	Specify any specific platfrom settings.
 */
 
 	#if PRAGMA_ONCE
@@ -143,7 +155,6 @@
 	
 	#if defined(macintosh_build)
 
-	
 		#if TARGET_API_MAC_CARBON
 			#define carbon_build 1
 		#endif
@@ -171,7 +182,6 @@
 		typedef  Rect         RECT;
 		typedef  DialogPtr    DIALOGPTR;
 
-		#define OPENPLAY_CALLBACK 	void
 
 		#define OP_CALLBACK_API CALLBACK_API
 		#define OP_DEFINE_API_C DEFINE_API_C
@@ -182,7 +192,6 @@
 	
 		#include <Windows.h>
 	
-		#define OPENPLAY_CALLBACK 	void
 		#define FATAL_EXIT        	FatalExit(0)
 		typedef HWND				DIALOGPTR;
 
@@ -204,7 +213,6 @@
 
 	#elif defined (posix_build)
 	
-		#define OPENPLAY_CALLBACK   void
 		#define FATAL_EXIT          exit(EXIT_FAILURE)
 		typedef  unsigned short  	word;
 
@@ -238,30 +246,6 @@
 	#endif 
 	
 
-	/* the basic mac types required if MacTypes.h is not available */
-	#ifndef __MACTYPES__
-
-
-		/* We should get rid of this part!!!!. BEGIN BEGIN BEGIN BEGIN BEGIN BEGIN BEGIN BEGIN BEGIN */
-
-		typedef NMSInt32						OSStatus;
-		typedef NMUInt16						InetPort;
-		typedef unsigned char 					Str31[32];
-		typedef const unsigned char *			ConstStr31Param;
-												
-		struct NumVersion {
-												/* Numeric version part of 'vers' resource */
-			NMUInt8 		majorRev;			/* 1st part of version number in BCD */
-			NMUInt8 		minorAndBugRev;		/* 2nd & 3rd part of version number share a byte */
-			NMUInt8 		stage;				/* stage code: dev, alpha, beta, final */
-			NMUInt8 		nonRelRev;			/* revision level of non-released version */
-		};
-
-		typedef struct NumVersion	NumVersion;	
-
-		/* We should get rid of this part!!!!. END END END END END END END END END END END END END */
-
-	#endif
 		
 /*-------------------------------------------------------------------------------------------
 	define parameters
@@ -277,148 +261,274 @@
 	  #define  BYTE  unsigned char
 	#endif
 		
+	
+/** @addtogroup TypesAndConstants
+ * @{
+ */
+
+	/*define all platform-dependent types once in a generalized manner for the documentation*/
+	#if (DOXYGEN)
+		/**Basic boolean type.*/
+		typedef  unsigned char NMBoolean;
+		/**32-bit unsigned integer.*/
+		typedef na NMUInt32;
+		/**32-bit signed integer.*/
+		typedef na NMSInt32;
+		/**16-bit unsigned integer.*/
+		typedef na NMUInt16;
+		/**16-bit signed integer.*/
+		typedef na NMSInt16;
+		/**8-bit unsigned integer.*/
+		typedef unsigned char NMUInt8;
+		/**8-bit signed integer.*/
+		typedef char NMSInt8;
+		/**Platform specific integer-based rect type */
+		typedef struct RECT
+		{
+			/**top*/
+			na top;
+			/**left*/
+			na left;
+			/**bottom*/
+			na bottom;
+			/**right*/
+			na right;
+		} RECT;
+		/**Platform specific event struct*/
+		typedef struct na EVENT;
+		/**Platform specific pointer to a dialog object*/
+		typedef struct na DIALOGPTR;
+	#endif
+		
 /*-------------------------------------------------------------------------------------------
 	Define Openplay types and defines
 */
 	
+	/**4-char code type used throughout OpenPlay.*/
+	typedef NMSInt32		NMType;
+	/**OpenPlay error code.*/
+	typedef NMSInt32    	NMErr;
+	/**Used for flags throughout OpenPlay.*/
+	typedef NMUInt32		NMFlags;
+	/**Host identification for enumeration.*/
+	typedef NMUInt32 		NMHostID;
+	
+	/**Callback codes passed to an endpoint's notifier function by OpenPlay.*/
 	typedef enum
 	{
+		/**The endpoint has received a connection request - you should call either \ref ProtocolAcceptConnection() or \ref ProtocolRejectConnection() in response, though you do not have to do so immediately.*/
 		kNMConnectRequest	= 1,
+		/**One or more datagram messages have arrived at the endpoint - to receive them, you can call \ref ProtocolReceivePacket(). */
 		kNMDatagramData		= 2,
+		/**New stream data is available to read at the endpoint - to receive data from the stream, you can call \ref ProtocolReceive(). */
 		kNMStreamData		= 3,
+		/**An endpoint which had been flow-blocked (unable to send more data, generally due to saturated bandwidth) is now able to send again. */
 		kNMFlowClear		= 4,
+		/**Sent to a passive(host) endpoint when it has successfully accepted a connection and "handed it off" as a new endpoint, which is used to communicate with the connected client */
 		kNMAcceptComplete	= 5,
+		/**Sent to a new endpoint spawned from a passive(host) endpoint once it has been successfully formed */
 		kNMHandoffComplete	= 6,
+		/**Sent when an endpoint "dies"; generally when the connection is lost or the remote machine disconnects.  You should call \ref ProtocolCloseEndpoint() on the endpoint after receiving this message, and then wait for its \ref kNMCloseComplete message.*/
 		kNMEndpointDied		= 7,
+		/**The final message sent to an endpoint.  After closing an endpoint, you should wait for this message to be sure that no more straggling messages will arrive at the endpoint.  Calling \ref ProtocolIsAlive() can be used with the same purpose.*/
 		kNMCloseComplete	= 8
 	} NMCallbackCode;
 	
-	/* Special number for max players.
-		kNMNoPassiveEndpoints means you can't host on a workstation (e.g. AOL module) */
-
-	enum
-	{
-		kNMNoEndpointLimit	= 0xFFFFFFFF,
-		kNMNoPassiveEndpoints	= 0
-	};
-	
-	enum
-	{
-		kNMNameLength	= 32,
-		kNMCopyrightLen	= 32
-	};
-	
-	typedef NMUInt32 NMHostID;
-	
-	enum
-	{
-		kNMModuleHasStream			= 0x00000001,
-		kNMModuleHasDatagram		= 0x00000002,
-		kNMModuleHasExpedited		= 0x00000004,
-		kNMModuleRequiresIdleTime	= 0x00000008
-	};
-	
-	typedef struct NMModuleInfo
-	{
-		NMUInt32	size;
-		NMType		type;
-		char		name[kNMNameLength];
-		char		copyright[kNMCopyrightLen];
-		NMUInt32	maxPacketSize;
-		NMUInt32	maxEndpoints;
-		NMFlags		flags;
-	} NMModuleInfo;
-	
+	/**Special values for a \ref NMModuleInfoStruct 's maxEndpoints member.*/
 	typedef enum
 	{
+		/**Any number of endpoints of this type may be created.*/
+		kNMNoEndpointLimit	= 0xFFFFFFFF,
+		/**This module is not able to host (e.g. an AOL module).*/
+		kNMNoPassiveEndpoints	= 0
+	} NMMaxEndpointsValue;
+	
+	/**Max lengths for various string types.*/
+	typedef enum
+	{
+		/**Maximum length for a \ref NMModuleInfoStruct 's name.*/
+		kNMNameLength	= 32,
+		/**Maximum length for a \ref NMModuleInfoStruct 's copyright string.*/
+		kNMCopyrightLen	= 32
+	} NMMaxStringLength;
+		
+	/**A \ref NMModuleInfoStruct 's flags member may contain one or more of the following values.*/
+	typedef enum
+	{
+		/**This NetModule can create endpoints with stream functionality.*/
+		kNMModuleHasStream			= 0x00000001,
+		/**This NetModule can create endpoints with datagram(packet) functionality.*/
+		kNMModuleHasDatagram		= 0x00000002,
+		/**???*/
+		kNMModuleHasExpedited		= 0x00000004,
+		/**For this NetModule to function correctly, \ref ProtocolIdle() must be called regularly.*/
+		kNMModuleRequiresIdleTime	= 0x00000008
+	} NMNetModuleFlag;
+	
+	/**Struct describing an OpenPlay NetModule in detail - used with \ref ProtocolGetEndpointInfo().*/
+	struct NMModuleInfoStruct
+	{
+		/**Initialize this to the size of the struct*/
+		NMUInt32	size;
+		/**The NetModule's unique type.*/
+		NMType		type;
+		/**The NetModule's full name.*/
+		char		name[kNMNameLength];
+		/**The NetModule's copyright string.*/
+		char		copyright[kNMCopyrightLen];
+		/**The maximum size packets this NetModule can send.*/
+		NMUInt32	maxPacketSize;
+		/**The maximum number of concurrent endpoints this NetModule supports - may be set to the special values \ref kNMNoEndpointLimit or \ref kNMNoPassiveEndpoints.*/
+		NMUInt32	maxEndpoints;
+		/**Flags.*/
+		NMFlags		flags;
+	};
+	typedef struct NMModuleInfoStruct NMModuleInfo;
+
+	typedef enum
+	{
+		/* Get an IP Address string (ie, 127.0.0.1:128) */
+		kNMIPAddressType,
+		/* Get an OT Address of type AF_INET, AF_DNS, etc. */
+		kNMOTAddressType
+
+	}NMAddressType;
+
+	/**Commands sent to the \ref NMEnumerationCallbackPtr function passed to \ref ProtocolStartEnumeration(); */
+	typedef enum
+	{
+		/**The accompanying \ref NMEnumItemStruct denotes a new host has been found on the network.*/
 		kNMEnumAdd	= 1,
+		/**The accompanying \ref NMEnumItemStruct denotes a host that is no longer available on the network.*/
 		kNMEnumDelete,
+		/**The list of available hosts should be cleared.*/
 		kNMEnumClear
 	} NMEnumerationCommand;
 	
 	typedef enum
 	{
+		/**Neither packet nor stream functionality.*/
 		kNMModeNone = 0,
+		/**Packet functionality.*/
 		kNMDatagramMode = 1,
+		/**Stream functionality.*/
 		kNMStreamMode = 2,
+		/**Both packet and stream functionality.*/
 		kNMNormalMode = kNMStreamMode + kNMDatagramMode
 	} NMEndpointMode;
 	
-	typedef struct NMEnumerationItem
+	/**Struct which is filled out for you by OpenPlay when enumerating hosts on the network.*/
+	struct NMEnumItemStruct
 	{
+		/**Id of the host.  This value is passed to \ref ProtocolBindEnumerationToConfig() to set a \ref PConfigRef to the address of given host.*/
 		NMHostID	id;
+		/**Name of the NetModule.*/
 		char 		*name;
+		/**Length of the custom enumeration data which was passed to \ref ProtocolCreateConfig() when creating the \ref PConfigRef used for this emumeration.*/
 		NMUInt32	customEnumDataLen;
+		/**Custom enumeration data which was passed to \ref ProtocolCreateConfig() when creating the \ref PConfigRef used for this enumeration.*/
 		void		*customEnumData;
-	} NMEnumerationItem;
+	};
+	typedef struct NMEnumItemStruct NMEnumerationItem;
 	
-	typedef OPENPLAY_CALLBACK (*NMEnumerationCallbackPtr)(
+	/**Function pointer type passed to \ref ProtocolStartEnumeration() to be called back by OpenPlay when new hosts appear,disappear,etc until \ref ProtocolEndEnumeration() is called to end enumeration.*/
+	typedef void (*NMEnumerationCallbackPtr)(
 									void 				*	inContext,
 									NMEnumerationCommand	inCommand, 
 									NMEnumerationItem		*item);
 	
 	
-	/* Flags that a module has to obey */
-	enum
+	/**Flags that can be passed to endpoint functions.*/
+	typedef enum
 	{
+		/**Specifies the function is not to return until the operation is complete - waiting if necessary for data to come in, etc.  OpenPlay by default is a non-blocking system*/
 		kNMBlocking	= 0x00000001
-	};
+	}NMDataTranferFlag;
 	
 	/* OpenPlay Error Codes */
-	enum
+	typedef enum
 	{
-		kNMOpenEndpointFailedErr	= -5000,
+		/**OpenPlay has run out of memory. Ouch.*/
 		kNMOutOfMemoryErr			= -4999,
+		/**Invalid parameter passed.*/
 		kNMParameterErr				= -4998,
+		/**Operation timed out before completing.*/
 		kNMTimeoutErr				= -4997,
+		/**An invalid or corrupt \ref PConfigRef was passed.*/
 		kNMInvalidConfigErr			= -4996,
+		/**Version is too new*/
 		kNMNewerVersionErr			= -4995,
+		/**The endpoint could not be opened.*/
 		kNMOpenFailedErr			= -4994,
+		/**The host rejected the connection attempt.*/
 		kNMAcceptFailedErr			= -4993,
+		/**The provided config string is not large enough.*/
 		kNMConfigStringTooSmallErr	= -4992,
+		/**A required resource could not be found/loaded.*/
 		kNMResourceErr				= -4991,
+		/**The provided \ref PConfigRef is already enumerating.*/
 		kNMAlreadyEnumeratingErr	= -4990,
+		/**The provided \ref PConfigRef is not enumerating.*/
 		kNMNotEnumeratingErr		= -4989,
+		/**The provided \ref PConfigRef is unable to enumerate.*/
 		kNMEnumerationFailedErr		= -4988,
+		/**There is no more data to be retrieved. This is normal.*/
 		kNMNoDataErr				= -4987,
+		/**The protocol was not able to init.  It may not be able to run on the system.*/
 		kNMProtocolInitFailedErr	= -4985,
+		/**An internal error occurred.  Uh oh.*/
 		kNMInternalErr				= -4984,
+		/**?? - this may only be internal.*/
 		kNMMoreDataErr				= -4983,
+		/**The provided selector is not recognized by the item's pass-through function.*/
 		kNMUnknownPassThrough		= -4982,
+		/**Provided address was not found.*/
 		kNMAddressNotFound			= -4981,
+		/**Provided address not yet valid.*/
 		kNMAddressNotValidYet		= -4980,
+		/**The endpoint is not in the proper mode.  You may have tried to receive stream data from an endpoint with only packet functionality, etc.*/
 		kNMWrongModeErr				= -4979,
+		/**The endpoint is in a bad state.*/
 		kNMBadStateErr				= -4978,
+		/**Too much data provided.*/
 		kNMTooMuchDataErr			= -4977,
+		/**Can't block in the current state.*/
 		kNMCantBlockErr				= -4976,
-		kNMInitFailedErr			= -4975,
+		/**The endpoint is currently flow-blocked. (clogged)  You will be notified with a \ref kNMFlowClear message when it is clear, or you can keep sending until you get no error.*/
 		kNMFlowErr					= -4974,
+		/**An error occurred within the protocol during the operation.*/
 		kNMProtocolErr				= -4793,
+		/**The provided \ref NMModuleInfo is too small*/
 		kNMModuleInfoTooSmall		= -4792,
+		/**Internal use only... a carbon module was found on OSX that only functions in classic (such as appletalk).*/
 		kNMClassicOnlyModuleErr		= -4791,	
+		/**??*/
+		kNMBadPacketDefinitionErr		= -4790,
+		/**??*/
+		kNMBadShortAlignmentErr			= -4789,
+		/**??*/
+		kNMBadLongAlignmentErr			= -4788,
+		/**??*/
+		kNMBadPacketDefinitionSizeErr	= -4787,
+		/**The NetModule was not of a compatible or legal version.*/
+		kNMBadVersionErr				= -4786,
+		/**There is no NetModule with given index.*/
+		kNMNoMoreNetModulesErr			= -4785,
+		/**Given NetModule was not found.*/
+		kNMModuleNotFoundErr			= -4784,
+		/**The function does not seem to exist in the NetModule.*/
+		kNMFunctionNotBoundErr			= -4783,
+
+		/**No error! woohoo!*/
 		kNMNoError					= 0
-	};
-	
-	enum
-	{
-		errBadPacketDefinition		= -1000,
-		errBadShortAlignment		= -1001,
-		errBadLongAlignment			= -1002,
-		errBadPacketDefinitionSize	= -1003,
-		errBadVersion				= -1004,
-		errParamErr					= -1005,
-		errNoMoreNetModules			= -1006,
-		errModuleNotFound			= -1007,
-		errBadConfig				= -1008,
-		errFunctionNotBound			= -1009,
-		errNoMemory					= -1010
-	};
+	} NMErrorCode;
 	
 /*	------------------------------	Public Definitions */
 
 	
-	#define MAXIMUM_NETMODULES			(64)
+	/**When creating a NetModule on mac (classic/carbon versions), set its creator code to this.*/
 	#define NET_MODULE_CREATOR			'OPLY'
+	/**Before passing a NMProtocol to GetIndexedProtocol(), initialize its \ref version member to this.*/
 	#define CURRENT_OPENPLAY_VERSION	(1)
 	
 /*	------------------------------	Public Types */
@@ -426,43 +536,59 @@
 	
 	typedef NMSInt16 _packet_data_size;
 	
-	enum
+	typedef enum
 	{
+		/**Two! Two bytes! ... ah ah ah ah!*/
 		k2Byte	= -1,
+		/**Four! Four bytes! ... ah ah ah ah!*/
 		k4Byte	= -2
-	};
+	} NMByteCount;
 	
-	typedef struct protocol_identifier
+	/**Struct describing a specific OpenPlay protocol, obtained from \ref GetIndexedProtocol().*/
+	struct NMProtocolStruct
 	{
+		/**Must be initialized to \ref CURRENT_OPENPLAY_VERSION before using the struct.*/
 		NMSInt32	version;
+		/**The protocol's unique type identifier.*/
 		NMType		type;
+		/**The protocol's name (a c string).*/
 		char		name[kNMNameLength];
-	} NMProtocol;
-	
+	};
+	typedef struct NMProtocolStruct NMProtocol;
+		
+	/**Opaque reference to an OpenPlay Endpoint. All data sending/receiving in OpenPlay occurs through Endpoints.*/
 	typedef struct Endpoint *PEndpointRef;
 	
+	/**Opaque reference to a protocol configuration.  Stores the NetModule type, game name, etc, as well as any custom settings for the protocol (addresses, port numbers, etc). Required in order to create a \ref PEndpointRef.*/
 	typedef struct ProtocolConfig *PConfigRef;
 	
-	typedef OPENPLAY_CALLBACK (*PEndpointCallbackFunction)(
+	/**Function pointer type passed to \ref ProtocolOpenEndpoint() or ProtocolAcceptConnection() to be called back by OpenPlay when events occur such as data arrival.*/	
+	typedef void (*PEndpointCallbackFunction)(
 								PEndpointRef	 		inEndpoint, 
 								void 					*inContext,
 								NMCallbackCode			inCode, 
 								NMErr		 			inError, 
 								void 					*inCookie);
 	
+	/**Flags passed when creating an endpoint.*/
 	typedef enum
 	{
+		/**Blank value - passed alone will open a passive(host) endpoint.*/
 		kOpenNone	= 0x00,
-		kOpenActive	= 0x01 /* open it active (dial for a connection, etc.) */
+		/**Create an active (client) endpoint.  Without this flag, a passive(host) endpoint is created.*/
+		kOpenActive	= 0x01
 	} NMOpenFlags;
 
-	/* Module types for OpenPlay Modules */
-	enum
+	/**A few established NetModule types.*/
+	typedef enum
 	{
+		/**AppleTalk NetModule type.*/
 		kATModuleType = 'Atlk',
+		/**TCPIP NetModule type.*/
 		kIPModuleType = 'Inet'
-	};
+	} NMEstablishedModuleTypes;
 	
+/** @}*/	
 /*	------------------------------	Public Variables */
 
 /*	------------------------------	Public Functions */	
@@ -573,7 +699,7 @@
 
 	struct NSpErrorMessage {
 		NSpMessageHeader 				header;
-		OSStatus 						error;
+		NMErr	 						error;
 	};
 
 	typedef struct NSpErrorMessage		NSpErrorMessage;
@@ -711,7 +837,6 @@
 		kNSpHostOnly				= (NMSInt32)0xFFFFFFFF
 	};
 	
-	
 	#ifndef __MACTYPES__
 	
 		/* NetSprocket Error Codes */
@@ -811,10 +936,6 @@ extern "C" {
 											NMSInt16 *		length);
 										
 		OP_DEFINE_API_C(NMErr) 
-		ProtocolBindEnumerationToConfig	(	PConfigRef 	config, 
-											NMHostID 	inID);
-											
-		OP_DEFINE_API_C(NMErr) 
 		ProtocolConfigPassThrough		(	PConfigRef 	config, 
 											NMUInt32 inSelector, 
 											void *inParamBlock);
@@ -833,6 +954,9 @@ extern "C" {
 		OP_DEFINE_API_C(NMErr)
 		ProtocolEndEnumeration			(	PConfigRef config);
 		
+		OP_DEFINE_API_C(NMErr) 
+		ProtocolBindEnumerationToConfig	(	PConfigRef 	config, 
+											NMHostID 	inID);		
 		OP_DEFINE_API_C(void) 
 		ProtocolStartAdvertising		(	PEndpointRef endpoint);	// [Edmark/PBE] 11/8/99 changed parameter from PConfigRef to PEndpointRef
 
@@ -929,9 +1053,17 @@ extern "C" {
 		OP_DEFINE_API_C(NMErr) 
 		ProtocolGetEndpointInfo			(	PEndpointRef endpoint, 
 											NMModuleInfo *info);
-	
-	
-	/* ----------- prototypes */
+
+		OP_DEFINE_API_C(NMErr)
+		ProtocolGetEndpointAddress		(	PEndpointRef endpoint,
+											NMAddressType addressType,
+											void **outAddress);
+
+		OP_DEFINE_API_C(NMErr)
+		ProtocolFreeEndpointAddress		(	PEndpointRef endpoint,
+											void **outAddress);
+
+	/* ----------- miscellaneous */
 	
 		OP_DEFINE_API_C(NMErr)
 		ValidateCrossPlatformPacket		(	_packet_data_size *		packet_definition, 
@@ -977,7 +1109,7 @@ extern "C" {
 */
 	
 	/************************  Initialization  ************************/
-	OP_DEFINE_API_C( OSStatus )
+	OP_DEFINE_API_C( NMErr )
 	NSpInitialize					(NMUInt32 				inStandardMessageSize,
 									 NMUInt32 				inBufferSize,
 									 NMUInt32 				inQElements,
@@ -987,35 +1119,35 @@ extern "C" {
 	
 	/**************************  Protocols  **************************/
 	/* Programmatic protocol routines */
-	OP_DEFINE_API_C( OSStatus )
+	OP_DEFINE_API_C( NMErr )
 	NSpProtocol_New					(const char *			inDefinitionString,
 									 NSpProtocolReference *	outReference);
 	
 	OP_DEFINE_API_C( void )
 	NSpProtocol_Dispose				(NSpProtocolReference 	inProtocolRef);
 	
-	OP_DEFINE_API_C( OSStatus )
+	OP_DEFINE_API_C( NMErr )
 	NSpProtocol_ExtractDefinitionString (NSpProtocolReference  inProtocolRef,
 										 char *					outDefinitionString);
 	
 	
 	/* Protocol list routines */
-	OP_DEFINE_API_C( OSStatus )
+	OP_DEFINE_API_C( NMErr )
 	NSpProtocolList_New				(NSpProtocolReference 	inProtocolRef,
 									 NSpProtocolListReference * outList);
 	
 	OP_DEFINE_API_C( void )
 	NSpProtocolList_Dispose			(NSpProtocolListReference  inProtocolList);
 	
-	OP_DEFINE_API_C( OSStatus )
+	OP_DEFINE_API_C( NMErr )
 	NSpProtocolList_Append			(NSpProtocolListReference  inProtocolList,
 									 NSpProtocolReference 	inProtocolRef);
 	
-	OP_DEFINE_API_C( OSStatus )
+	OP_DEFINE_API_C( NMErr )
 	NSpProtocolList_Remove			(NSpProtocolListReference  inProtocolList,
 									 NSpProtocolReference 	inProtocolRef);
 	
-	OP_DEFINE_API_C( OSStatus )
+	OP_DEFINE_API_C( NMErr )
 	NSpProtocolList_RemoveIndexed	(NSpProtocolListReference  inProtocolList,
 									 NMUInt32 				inIndex);
 	
@@ -1064,7 +1196,7 @@ extern "C" {
 									 NSpEventProcPtr 			inEventProcPtr);
 		
 	/*********************  Hosting and Joining  **********************/
-	OP_DEFINE_API_C( OSStatus )
+	OP_DEFINE_API_C( NMErr )
 	NSpGame_Host					(NSpGameReference *		outGame,
 									 NSpProtocolListReference  inProtocolList,
 									 NMUInt32 				inMaxPlayers,
@@ -1075,7 +1207,7 @@ extern "C" {
 									 NSpTopology 			inTopology,
 									 NSpFlags 				inFlags);
 	
-	OP_DEFINE_API_C( OSStatus )
+	OP_DEFINE_API_C( NMErr )
 	NSpGame_Join					(NSpGameReference *		outGame,
 									 NSpAddressReference 	inAddress,
 									 const unsigned char 	inName[kNSpStr32Len],
@@ -1085,21 +1217,21 @@ extern "C" {
 									 NMUInt32 				inCustomDataLen,
 									 NSpFlags 				inFlags);
 	
-	OP_DEFINE_API_C( OSStatus )
+	OP_DEFINE_API_C( NMErr )
 	NSpGame_EnableAdvertising		(NSpGameReference 		inGame,
 									 NSpProtocolReference 	inProtocol,
 									 NMBoolean 				inEnable);
 	
-	OP_DEFINE_API_C( OSStatus )
+	OP_DEFINE_API_C( NMErr )
 	NSpGame_Dispose					(NSpGameReference 		inGame,
 									 NSpFlags 				inFlags);
 	
-	OP_DEFINE_API_C( OSStatus )
+	OP_DEFINE_API_C( NMErr )
 	NSpGame_GetInfo					(NSpGameReference 		inGame,
 									 NSpGameInfo *			ioInfo);
 	
 	/**************************  Messaging  **************************/
-	OP_DEFINE_API_C( OSStatus )
+	OP_DEFINE_API_C( NMErr )
 	NSpMessage_Send					(NSpGameReference 		inGame,
 									 NSpMessageHeader *		inMessage,
 									 NSpFlags 				inFlags);
@@ -1112,7 +1244,7 @@ extern "C" {
 									 NSpMessageHeader *		inMessage);
 	
 	/* Helpers */
-	OP_DEFINE_API_C( OSStatus )
+	OP_DEFINE_API_C( NMErr )
 	NSpMessage_SendTo				(NSpGameReference 		inGame,
 									 NSpPlayerID 			inTo,
 									 NMSInt32 				inWhat,
@@ -1122,12 +1254,12 @@ extern "C" {
 	
 	
 	/*********************  Player Information  **********************/
-	OP_DEFINE_API_C( OSStatus )
+	OP_DEFINE_API_C( NMErr )
 	NSpPlayer_ChangeType			(NSpGameReference 		inGame,
 									 NSpPlayerID 			inPlayerID,
 									 NSpPlayerType 			inNewType);
 	
-	OP_DEFINE_API_C( OSStatus )
+	OP_DEFINE_API_C( NMErr )
 	NSpPlayer_Remove				(NSpGameReference 		inGame,
 									 NSpPlayerID 			inPlayerID);
 	
@@ -1135,7 +1267,7 @@ extern "C" {
 	OP_DEFINE_API_C( NSpPlayerID )
 	NSpPlayer_GetMyID				(NSpGameReference 		inGame);
 	
-	OP_DEFINE_API_C( OSStatus )
+	OP_DEFINE_API_C( NMErr )
 	NSpPlayer_GetInfo				(NSpGameReference 		inGame,
 									 NSpPlayerID 			inPlayerID,
 									 NSpPlayerInfoPtr *		outInfo);
@@ -1144,7 +1276,7 @@ extern "C" {
 	NSpPlayer_ReleaseInfo			(NSpGameReference 		inGame,
 									 NSpPlayerInfoPtr 		inInfo);
 	
-	OP_DEFINE_API_C( OSStatus )
+	OP_DEFINE_API_C( NMErr )
 	NSpPlayer_GetEnumeration		(NSpGameReference 		inGame,
 									 NSpPlayerEnumerationPtr * outPlayers);
 	
@@ -1162,25 +1294,25 @@ extern "C" {
 	
 	
 	/*********************  Group Management  **********************/
-	OP_DEFINE_API_C( OSStatus )
+	OP_DEFINE_API_C( NMErr )
 	NSpGroup_New					(NSpGameReference 		inGame,
 									 NSpGroupID *			outGroupID);
 	
-	OP_DEFINE_API_C( OSStatus )
+	OP_DEFINE_API_C( NMErr )
 	NSpGroup_Dispose				(NSpGameReference 		inGame,
 									 NSpGroupID 			inGroupID);
 	
-	OP_DEFINE_API_C( OSStatus )
+	OP_DEFINE_API_C( NMErr )
 	NSpGroup_AddPlayer				(NSpGameReference 		inGame,
 									 NSpGroupID 			inGroupID,
 									 NSpPlayerID 			inPlayerID);
 	
-	OP_DEFINE_API_C( OSStatus )
+	OP_DEFINE_API_C( NMErr )
 	NSpGroup_RemovePlayer			(NSpGameReference 		inGame,
 									 NSpGroupID 			inGroupID,
 									 NSpPlayerID 			inPlayerID);
 	
-	OP_DEFINE_API_C( OSStatus )
+	OP_DEFINE_API_C( NMErr )
 	NSpGroup_GetInfo				(NSpGameReference 		inGame,
 									 NSpGroupID 			inGroupID,
 									 NSpGroupInfoPtr *		outInfo);
@@ -1189,7 +1321,7 @@ extern "C" {
 	NSpGroup_ReleaseInfo			(NSpGameReference 		inGame,
 									 NSpGroupInfoPtr 		inInfo);
 	
-	OP_DEFINE_API_C( OSStatus )
+	OP_DEFINE_API_C( NMErr )
 	NSpGroup_GetEnumeration			(NSpGameReference 		inGame,
 									 NSpGroupEnumerationPtr * outGroups);
 	
@@ -1199,7 +1331,7 @@ extern "C" {
 	
 	
 	/**************************  Utilities  ***************************/
-	OP_DEFINE_API_C( NumVersion )
+	OP_DEFINE_API_C( NMNumVersion )
 	NSpGetVersion					(void);
 	
 	OP_DEFINE_API_C( void )
@@ -1221,20 +1353,24 @@ extern "C" {
 										char *	inIPPort);
 	
 	OP_DEFINE_API_C( void )
-	NSpReleaseAddressReference		(NSpAddressReference 	inAddress);
-	
-	OP_DEFINE_API_C( OSStatus )
-	NSpPlayer_GetIPAddress			(NSpGameReference 		inGame,
-									 NSpPlayerID 			inPlayerID,
-									 char *					outAddress);
+	NSpReleaseAddressReference		(	NSpAddressReference inAddress);
+
+	OP_DEFINE_API_C(NMErr)
+	NSpPlayer_FreeAddress			(	NSpGameReference	inGame,
+										void				**outAddress);
+
+	OP_DEFINE_API_C( NMErr )
+	NSpPlayer_GetIPAddress			(	NSpGameReference 	inGame,
+										NSpPlayerID 		inPlayerID,
+										char **				outAddress);
 	
 	
 	/************************ Mac-CFM-Versions-Only routines ****************/
 	#if mac_cfm_build
-		OP_DEFINE_API_C( OSStatus )
-		NSpPlayer_GetAddress			(NSpGameReference 		inGame,
-										 NSpPlayerID 			inPlayerID,
-										 OTAddress **			outAddress);
+		OP_DEFINE_API_C( NMErr )
+		NSpPlayer_GetOTAddress		(	NSpGameReference 	inGame,
+										NSpPlayerID 		inPlayerID,
+										OTAddress **		outAddress);
 		
 		OP_DEFINE_API_C( NSpAddressReference )
 		NSpConvertOTAddrToAddressReference (OTAddress *			inAddress);
@@ -1251,10 +1387,10 @@ extern "C" {
 	typedef OP_CALLBACK_API( void , NSpCallbackProcPtr )(	NSpGameReference inGame, 
 														void *inContext, 
 														NSpEventCode inCode, 
-														OSStatus inStatus, 
+														NMErr inStatus, 
 														void *inCookie);
 	
-	OP_DEFINE_API_C( OSStatus )
+	OP_DEFINE_API_C( NMErr )
 	NSpInstallCallbackHandler		(NSpCallbackProcPtr 	inHandler,
 									 void *					inContext);
 	
@@ -1264,7 +1400,7 @@ extern "C" {
 																		void *					inContext, 
 																		unsigned char *			outReason);
 	
-	OP_DEFINE_API_C( OSStatus )
+	OP_DEFINE_API_C( NMErr )
 	NSpInstallJoinRequestHandler	(NSpJoinRequestHandlerProcPtr  inHandler,
 									 void *							inContext);
 	
@@ -1273,7 +1409,7 @@ extern "C" {
 																	NSpMessageHeader *	inMessage, 
 																	void *				inContext);
 	
-	OP_DEFINE_API_C( OSStatus )
+	OP_DEFINE_API_C( NMErr )
 	NSpInstallAsyncMessageHandler	(NSpMessageHandlerProcPtr  inHandler,
 									 void *						inContext);
 

@@ -54,7 +54,7 @@
 		
 				NSpGame		*GetGameObject(void);
 				
-				OSStatus	PrepareForDeletion(NSpFlags inFlags);
+				NMErr	PrepareForDeletion(NSpFlags inFlags);
 				NMBoolean	NSpMessage_Get(NSpMessageHeader **outMessage);
 
 	protected:

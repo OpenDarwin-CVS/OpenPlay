@@ -281,7 +281,7 @@ void NetworkHandleMessage( void )
 					strcpy( cname, "UNKOWN -- error!" );
 
 				sprintf( str, "Player #%d, %s, answered with '%c', which is %s", mhp->from, cname, ((AnswerPacketPtr)mhp)->answer,
-					GameCheckAnswer( ((AnswerPacketPtr)mhp)->answer ) ? "Correct!" : "WRONG!" );
+							GameCheckAnswer( ((AnswerPacketPtr)mhp)->answer ) ? "Correct!" : "WRONG!" );
 
 				NetworkSendInformation( str );
 			}
@@ -677,7 +677,7 @@ NMErr NetworkStartup( void )
 	/* First, make sure that NetSprockets is available (we weak linked to OpenPlayStubLib) */
 
 	if( NULL == NSpInitialize )	/*|| NULL == ProtocolAcceptConnection )*/
-		return( errModuleNotFound );
+		return( kNMModuleNotFoundErr );
 
 	/* Initialize NetSprockets, 0 == use defaults & NSe1 stands for "NetSprocket Example 1" 
 			It is an identifier for games of our type on the network */

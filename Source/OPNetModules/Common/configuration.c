@@ -142,7 +142,7 @@ const char	*p = s;
 					if (*io_length < data_len / 2)
 						return false;
 					
-					ascii_to_hex(p, data_len, token_data);
+					ascii_to_hex(p, data_len, (char *)token_data);
 					*io_length = data_len / 2;
 				}
 				break;
@@ -212,7 +212,7 @@ const char	*put_string;
 			if (data_len > MAX_BIN_DATA_LEN)
 			  return false;	/* the data is more than we can handle */
 
-			hex_to_ascii(token_data, data_len, temp_string);
+			hex_to_ascii((const char *)token_data, data_len, temp_string);
 			put_string = temp_string;
 		}
 		break;

@@ -63,10 +63,10 @@ COTATEndpoint::~COTATEndpoint()
 // COTATEndpoint::InitAdvertiser
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 COTATEndpoint::InitAdvertiser(NSpProtocolPriv *inProt)
 {
-//OSStatus		status = kNMNoError;
+//NMErr		status = kNMNoError;
 		
 //	mMaxRTT = inProt->GetMaxRTT();
 //	mMinThruput = inProt->GetMinThruput();
@@ -79,7 +79,7 @@ COTATEndpoint::InitAdvertiser(NSpProtocolPriv *inProt)
 //----------------------------------------------------------------------------------------
 // COTATEndpoint::InitNonAdvertiser
 //----------------------------------------------------------------------------------------
-OSStatus
+NMErr
 COTATEndpoint::InitNonAdvertiser(NSpProtocolPriv *inProt)
 {
 //	return Init(0, kADSPName, kDDPName, NULL);
@@ -130,7 +130,7 @@ NMBoolean COTATEndpoint::Host(NMBoolean inAdvertise)
 {
 	/*
 //	MapperRef	mapper;
-//	OSStatus	status;
+//	NMErr	status;
 //	TRegisterRequest	req;
 //	TRegisterReply		rep;
 	

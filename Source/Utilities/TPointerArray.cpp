@@ -70,10 +70,10 @@ TPointerArray::~TPointerArray()
 // TPointerArray::AddItem
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 TPointerArray::AddItem(void* theItem)
 {
-OSStatus	theErr = GrowBy(1);
+NMErr	theErr = GrowBy(1);
 	
 	if (theErr == kNMNoError)
 	{
@@ -88,7 +88,7 @@ OSStatus	theErr = GrowBy(1);
 // TPointerArray::InsertItem
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 TPointerArray::InsertItem(void* theItem, NMUInt32 ndx)
 {
 	if (ndx > fNumberOfItems)
@@ -96,7 +96,7 @@ TPointerArray::InsertItem(void* theItem, NMUInt32 ndx)
 		ndx = fNumberOfItems;
 	}
 	
-	OSStatus theErr = GrowBy(1);
+	NMErr theErr = GrowBy(1);
 	
 	if (theErr == kNMNoError)	// room available
 	{
@@ -118,10 +118,10 @@ TPointerArray::InsertItem(void* theItem, NMUInt32 ndx)
 // TPointerArray::SetIndexedItem
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 TPointerArray::SetIndexedItem(NMUInt32 ndx, void* theItem)
 {
-OSStatus	theErr = kNMNoError;
+NMErr	theErr = kNMNoError;
 	
 	if (ndx > fNumberOfItems)
 	{
@@ -263,10 +263,10 @@ TPointerArray::RemoveAllItems()
 // TPointerArray::GrowBy
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 TPointerArray::GrowBy(NMUInt32 numNewItems)
 {
-OSStatus	theErr = kNMNoError;
+NMErr	theErr = kNMNoError;
 
 	if ((fNumberOfItems + numNewItems) > fMaxItems)	// do we really need to grow?
 	{

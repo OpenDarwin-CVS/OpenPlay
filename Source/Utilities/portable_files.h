@@ -28,6 +28,12 @@
 #ifndef __PORTABLE_FILES__
 #define __PORTABLE_FILES__
 
+#if (macho_build)
+	#if (project_builder)
+		#include <CoreServices/CoreServices.h>	
+	#endif
+#endif
+
 #include "OpenPlay.h"
 
 /*--------------------------------Windows Section-----------------------------*/
@@ -71,7 +77,7 @@
   #define d_ERR_FILE_EOF       -39
   #define d_ERR_FILE_NOTFOUND  -43
 
-/*----------------------------------Linux Section-----------------------------*/
+/*----------------------------------Posix Section-----------------------------*/
 #elif defined(posix_build)
 
 #include <sys/types.h>
@@ -80,9 +86,14 @@
 #include <unistd.h>
 #include <errno.h>
 
+
   typedef struct
   {
-    char name[PATH_MAX];
+  	#if (project_builder)
+		CFBundleRef bundle;
+	#else
+   		char name[PATH_MAX];
+	#endif
   } FileDesc;
 
 
@@ -106,10 +117,13 @@
 	typedef NMSInt16 fileref;            /* File descriptor, for portability */
 
 //defined in the mac precomp header
-#if !macintosh_build
-typedef NMUInt32 FileType;   /* same as an OSType. For DOS, this is the extension... */
-typedef NMErr FileError;          /* same as NMErr */
-#endif //macintosh_build
+
+	#if !macintosh_build
+
+		typedef NMUInt32	FileType;   /* same as an OSType. For DOS, this is the extension... */
+		typedef NMErr 		FileError;          /* same as NMErr */
+
+	#endif /* macintosh_build */
 
 /* FIXME - this enum needs a name! */
 enum

@@ -403,7 +403,7 @@ static NMErr _setup_socket(NMEndpointRef new_endpoint, int index,
 		DEBUG_NETWORK_API("Creating Socket",status);
 		
 		//standard error codes
-		status = kNMOpenEndpointFailedErr;
+		status = kNMOpenFailedErr;
 	}
 	
     return(status);
@@ -672,9 +672,11 @@ static NMErr _receive_data(NMEndpointRef inEndpoint, int which_socket,
 	
 	result = recv(inEndpoint->sockets[which_socket], (char *)ioData, *ioSize, 0);
 
-	//we should never get a result of zero here (meaning the socket died) since we should be verifying
-	//data availability before giving the user a chance to get at it.
-	op_warn(result != 0);
+	if (result == 0)
+	{
+		inEndpoint->needToDie = true;
+		return kNMNoDataErr;
+	}
 	
 	//should be more detailed here
 	if (result == -1)
@@ -941,7 +943,7 @@ NMErr NMOpen(NMConfigRef Config,
 
 	DEBUG_ENTRY_EXIT("NMOpen");
 
-	if (module_inited == false)
+	if (module_inited < 1)
 		return kNMInternalErr;
 
 	if (!Config || !Callback || !Endpoint)
@@ -1028,7 +1030,7 @@ NMErr NMClose(NMEndpointRef Endpoint, NMBoolean Orderly)
 
 	DEBUG_ENTRY_EXIT("NMClose");
 
-	if (module_inited == false)
+	if (module_inited < 1)
 		return kNMInternalErr;
 
 	if (!Endpoint)
@@ -1134,7 +1136,7 @@ NMAcceptConnection(
 
 	UNUSED_PARAMETER(inCookie)
 
-	if (module_inited == false)
+	if (module_inited < 1)
 		return kNMInternalErr;
 
 	op_vassert_return((inCallback != NULL),"Callback is NULL!",kNMParameterErr);
@@ -1266,7 +1268,7 @@ NMErr NMRejectConnection(NMEndpointRef Endpoint, void *Cookie)
 	
 	UNUSED_PARAMETER(Cookie);
 	
-	if (module_inited == false)
+	if (module_inited < 1)
 		return kNMInternalErr;
 	
 	#if (os_darwin)
@@ -1335,7 +1337,7 @@ NMErr NMRejectConnection(NMEndpointRef Endpoint, void *Cookie)
 NMBoolean NMIsAlive(NMEndpointRef Endpoint)
 {
 
-	if (module_inited == false)
+	if (module_inited < 1)
 		return false;
 
 	if (!Endpoint || Endpoint->cookie != kModuleID)
@@ -1366,7 +1368,7 @@ NMErr NMSetTimeout(NMEndpointRef Endpoint, unsigned long Timeout)
 
 	DEBUG_ENTRY_EXIT("NMSetTimeout");
 
-	if (module_inited == false)
+	if (module_inited < 1)
 		return kNMInternalErr;
 
 	DEBUG_PRINT("setting timeout to %d",Timeout);
@@ -1403,7 +1405,7 @@ NMErr NMIdle(NMEndpointRef Endpoint)
 
 	//DEBUG_ENTRY_EXIT("NMIdle");
 
-	if (module_inited == false)
+	if (module_inited < 1)
 		return kNMInternalErr;
 
 	//we call this passing NULL sometimes....  should be up to OP to keep NULL endpoints out
@@ -1450,7 +1452,7 @@ NMErr NMFunctionPassThrough(NMEndpointRef Endpoint, unsigned long Selector, void
 
 	DEBUG_ENTRY_EXIT("NMFunctionPassThrough");
 
-	if (module_inited == false)
+	if (module_inited < 1)
 		return kNMInternalErr;
 
 	if (!Endpoint || !ParamBlock)
@@ -1496,7 +1498,7 @@ NMErr NMSendDatagram(NMEndpointRef Endpoint, NMUInt8 *Data, unsigned long Size, 
 {
 	DEBUG_ENTRY_EXIT("NMSendDatagram");
 
-	if (module_inited == false)
+	if (module_inited < 1)
 		return kNMInternalErr;
 
 	long result;
@@ -1548,7 +1550,7 @@ NMErr NMReceiveDatagram(NMEndpointRef Endpoint, NMUInt8 *Data, unsigned long *Si
 
 	DEBUG_ENTRY_EXIT("NMReceiveDatagram");
 
-	if (module_inited == false)
+	if (module_inited < 1)
 		return kNMInternalErr;
 
 	Endpoint->newDataCallbackSent[_datagram_socket] = false; //we should start telling them of incoming data again
@@ -1589,7 +1591,7 @@ NMErr NMSend(NMEndpointRef Endpoint, void *Data, unsigned long Size, NMFlags Fla
 {
 	DEBUG_ENTRY_EXIT("NMSend");
 
-	if (module_inited == false)
+	if (module_inited < 1)
 		return kNMInternalErr;
 
 
@@ -1635,7 +1637,7 @@ NMErr NMReceive(NMEndpointRef Endpoint, void *Data, unsigned long *Size, NMFlags
 
 	DEBUG_ENTRY_EXIT("NMReceive");
 
-	if (module_inited == false)
+	if (module_inited < 1)
 		return kNMInternalErr;
 
 	Endpoint->newDataCallbackSent[_stream_socket] = false; //we should start telling them of incoming data again
@@ -1663,7 +1665,10 @@ NMEnterNotifier(NMEndpointRef inEndpoint, NMEndpointMode endpointMode)
 {
 	DEBUG_ENTRY_EXIT("NMEnterNotifier");
 
-	if (module_inited == false)
+	UNUSED_PARAMETER(inEndpoint);
+	UNUSED_PARAMETER(endpointMode);
+	
+	if (module_inited < 1)
 		return kNMInternalErr;
 
 	//we're a wee bit sloppy here - whenever anyone calls this, we halt any callbacks.
@@ -1683,9 +1688,12 @@ NMLeaveNotifier(NMEndpointRef inEndpoint, NMEndpointMode endpointMode)
 {
 	DEBUG_ENTRY_EXIT("NMLeaveNotifier");
 
+	UNUSED_PARAMETER(inEndpoint);
+	UNUSED_PARAMETER(endpointMode);
+
 	op_assert(notifierLockCount > 0);
 
-	if (module_inited == false)
+	if (module_inited < 1)
 		return kNMInternalErr;
 
 	if (notifierLockCount == 1)
@@ -1716,7 +1724,7 @@ NMBoolean NMStartAdvertising(NMEndpointRef Endpoint)
 {
 	DEBUG_ENTRY_EXIT("NMStartAdvertising");
 
-	if (module_inited == false)
+	if (module_inited < 1)
 		return kNMInternalErr;
 
 	if (!Endpoint)
@@ -1749,7 +1757,7 @@ NMBoolean NMStopAdvertising(NMEndpointRef Endpoint)
 {
 	DEBUG_ENTRY_EXIT("NMStopAdvertising");
 
-	if (module_inited == false)
+	if (module_inited < 1)
 		return kNMInternalErr;
 
 	if (!Endpoint)
@@ -2247,6 +2255,8 @@ void killWorkerThread(void)
 	DWORD WINAPI worker_thread_func(LPVOID arg)
 #endif
 {
+	UNUSED_PARAMETER(arg);
+
 	NMBoolean done = false;
 
 	DEBUG_PRINT("worker_thread is now running");

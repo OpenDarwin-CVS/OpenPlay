@@ -25,8 +25,8 @@
  * Revision: $Id$
  */
 
-#include "OPUtils.h"
 #include "portable_files.h"
+#include "OPUtils.h"
 
 #include "op_definitions.h"
 #include "op_globals.h"

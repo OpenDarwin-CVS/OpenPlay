@@ -97,12 +97,12 @@ EndpointDisposer::~EndpointDisposer()
 // EndpointDisposer::DoIt
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 EndpointDisposer::DoIt(void)
 {
 	DEBUG_ENTRY_EXIT("EndpointDisposer::DoIt");
 
-OSStatus status;
+NMErr status;
 NMBoolean entered;
 	
 	//	Add us to the zombie list in case things go to hell and they try to unload the module
@@ -174,12 +174,12 @@ NMBoolean entered;
 // EndpointDisposer::Process
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 EndpointDisposer::Process()
 {
 	DEBUG_ENTRY_EXIT("EndpointDisposer::Process");
 
-OSStatus	status;
+NMErr	status;
 	
 	if (! OTAcquireLock(&mLock))	
 		return kNMNoError;	// we're already in this funcion, don't reenter
@@ -213,12 +213,12 @@ OSStatus	status;
 // EndpointDisposer::DoDisconnect
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 EndpointDisposer::DoDisconnect(NMBoolean inOrderly)
 {
 	DEBUG_ENTRY_EXIT("EndpointDisposer::DoDisconnect");
 
-OSStatus		status;
+NMErr		status;
 NMBoolean		didEnter = OTEnterNotifier(mEP->mStreamEndpoint->mEP);
 
 	if (inOrderly)
@@ -251,12 +251,12 @@ NMBoolean		didEnter = OTEnterNotifier(mEP->mStreamEndpoint->mEP);
 // EndpointDisposer::TransitionEP
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 EndpointDisposer::TransitionEP(PrivateEndpoint *inEP)
 {
 	DEBUG_ENTRY_EXIT("EndpointDisposer::TransitionEP");
 
-OSStatus	status;
+NMErr	status;
 NMUInt32		elapsedMilliseconds;
 		
 	//	if the ep is NULL, just set the flag
@@ -367,12 +367,12 @@ theSwitch:
 // EndpointDisposer::PrepForClose
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 EndpointDisposer::PrepForClose(PrivateEndpoint *inPrivEP)
 {
 	DEBUG_ENTRY_EXIT("EndpointDisposer::PrepForClose");
 
-OSStatus status;
+NMErr status;
 	
 	op_assert(inPrivEP);
 	
@@ -389,7 +389,7 @@ OSStatus status;
 // EndpointDisposer::Finish
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 EndpointDisposer::Finish(void)
 {
 	DEBUG_ENTRY_EXIT("EndpointDisposer::Finish");
@@ -433,12 +433,15 @@ EndpointDisposer::Notifier(
 {
 	DEBUG_ENTRY_EXIT("EndpointDisposer::Notifier");
 
-OSStatus			status;
+NMErr			status;
 NotifierContext		*context = (NotifierContext *) contextPtr;
 EndpointDisposer	*epDisposer = context->disposer;
 PrivateEndpoint		*epStuff = context->ep;
 	
 	op_assert(epDisposer);
+	UNUSED_PARAMETER(result);
+	UNUSED_PARAMETER(cookie);
+	
 
 	switch (code)
 	{

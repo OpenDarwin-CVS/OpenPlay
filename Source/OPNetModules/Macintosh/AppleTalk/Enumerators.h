@@ -43,11 +43,11 @@
 								CZonesEnumerator()														{};
 			virtual				~CZonesEnumerator()														{};
 							
-			virtual	OSStatus	Initialize(ATPortRef port, OTNotifyUPP notifier, void* contextPtr)	= 0;	
-			virtual OSStatus	GetCount(NMBoolean* allFound, NMUInt32* count)								= 0;
-			virtual OSStatus	GetMachineZone(StringPtr zoneName)										= 0;
-			virtual OSStatus	GetIndexedZone(OneBasedIndex index, StringPtr zoneName)					= 0;
-			virtual OSStatus	Sort()																	= 0;
+			virtual	NMErr	Initialize(ATPortRef port, OTNotifyUPP notifier, void* contextPtr)	= 0;	
+			virtual NMErr	GetCount(NMBoolean* allFound, NMUInt32* count)								= 0;
+			virtual NMErr	GetMachineZone(StringPtr zoneName)										= 0;
+			virtual NMErr	GetIndexedZone(OneBasedIndex index, StringPtr zoneName)					= 0;
+			virtual NMErr	Sort()																	= 0;
 
 		private:
 	};
@@ -59,12 +59,12 @@
 								CEntitiesEnumerator()																						{};
 			virtual				~CEntitiesEnumerator()																						{};
 								
-			virtual	OSStatus	Initialize(ATPortRef port, OTNotifyUPP notifier, void* contextPtr)										= 0;
-			virtual OSStatus	StartLookup(Str32 zone, Str32 type, Str32 prefix, NMBoolean clearPreviousResults)								= 0;
-			virtual OSStatus	GetCount(NMBoolean* allFound, NMUInt32* count)																	= 0;
-			virtual OSStatus	GetIndexedEntity(OneBasedIndex index, StringPtr zone, StringPtr type, StringPtr name, ATAddress* address)	= 0;
-			virtual OSStatus	Sort()																										= 0;
-			virtual OSStatus	CancelLookup()																								= 0;
+			virtual	NMErr	Initialize(ATPortRef port, OTNotifyUPP notifier, void* contextPtr)										= 0;
+			virtual NMErr	StartLookup(Str32 zone, Str32 type, Str32 prefix, NMBoolean clearPreviousResults)								= 0;
+			virtual NMErr	GetCount(NMBoolean* allFound, NMUInt32* count)																	= 0;
+			virtual NMErr	GetIndexedEntity(OneBasedIndex index, StringPtr zone, StringPtr type, StringPtr name, ATAddress* address)	= 0;
+			virtual NMErr	Sort()																										= 0;
+			virtual NMErr	CancelLookup()																								= 0;
 
 
 		private:

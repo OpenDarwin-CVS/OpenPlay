@@ -71,7 +71,7 @@ enum
 #define kUberMode		3
 
 
-static NumVersion		gVersion;
+static NMNumVersion		gVersion;
 NMUInt32				gEndpointConnectTimeout = 0;
 
 // These globals are initialized on a per-library-connection basis
@@ -109,7 +109,7 @@ void					*gCallbackContext;
 // NSpInitialize
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 NSpInitialize(NMUInt32 inStandardMessageSize, NMUInt32 inBufferSize, NMUInt32 inQElements, NSpGameID inGameID, NMUInt32 inTimeout)
 {
 	//SetupLibraryState	state;
@@ -122,7 +122,7 @@ NSpInitialize(NMUInt32 inStandardMessageSize, NMUInt32 inBufferSize, NMUInt32 in
 		return (kNSpAlreadyInitializedErr);
 	
 #if macintosh_build
-	OSStatus			status = kNMNoError;
+	NMErr			status = kNMNoError;
 
 	NMErr		theErr;
 	NMSInt32	result;
@@ -192,11 +192,11 @@ NSpInitialize(NMUInt32 inStandardMessageSize, NMUInt32 inBufferSize, NMUInt32 in
 // NSpProtocol_New
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 NSpProtocol_New(const char *inDefinitionString, NSpProtocolReference *outReference)
 {
 	PConfigRef		theRef;	
-	OSStatus		status;
+	NMErr			status;
 	char			customConfig[256];
 	char			tempString[256];
 	NMType			netModuleType;
@@ -264,7 +264,7 @@ NSpProtocol_Dispose(NSpProtocolReference inProtocolRef)
 // NSpProtocol_ExtractDefinitionString
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 NSpProtocol_ExtractDefinitionString(NSpProtocolReference inProtocolRef, char *outDefinitionString)
 {
 
@@ -292,11 +292,11 @@ NSpProtocol_ExtractDefinitionString(NSpProtocolReference inProtocolRef, char *ou
 // NSpProtocolList_New
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 NSpProtocolList_New(NSpProtocolReference inProtocolRef, NSpProtocolListReference *outList)
 {
 NSpProtocolListPriv	*theList = NULL;
-OSStatus			status = kNMNoError;
+NMErr			status = kNMNoError;
 
 	//Try_
 	{
@@ -348,12 +348,12 @@ NSpProtocolListPriv	*theList = (NSpProtocolListPriv *) inProtocolList;
 // NSpProtocolList_Append
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 NSpProtocolList_Append(NSpProtocolListReference inProtocolList, NSpProtocolReference inProtocolRef)
 {
 NSpProtocolListPriv	*theList = (NSpProtocolListPriv *) inProtocolList;
 NSpProtocolPriv		*theProtocol = (NSpProtocolPriv *)  inProtocolRef;
-OSStatus			status;
+NMErr			status;
 	
 	op_vassert_return(NULL != theList, "NSpProtocolList_Append: inProtocolList == NULL", kNSpInvalidProtocolRefErr);
 	op_vassert_return(NULL != theProtocol, "NSpProtocolList_Append: inProtocolRef == NULL", kNSpInvalidProtocolRefErr);
@@ -367,12 +367,12 @@ OSStatus			status;
 // NSpProtocolList_Remove
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 NSpProtocolList_Remove(NSpProtocolListReference inProtocolList, NSpProtocolReference inProtocolRef)
 {
 NSpProtocolListPriv	*theList = (NSpProtocolListPriv *) inProtocolList;
 NSpProtocolPriv		*theProtocol = (NSpProtocolPriv *)  inProtocolRef;
-OSStatus			status;
+NMErr			status;
 	
 	op_vassert_return(NULL != theList, "NSpProtocolList_Remove: inProtocolList == NULL", kNSpInvalidProtocolListErr);
 	op_vassert_return(NULL != theProtocol, "NSpProtocolList_Remove: inProtocolRef == NULL", kNSpInvalidProtocolRefErr);
@@ -386,11 +386,11 @@ OSStatus			status;
 // NSpProtocolList_RemoveIndexed
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 NSpProtocolList_RemoveIndexed(NSpProtocolListReference inProtocolList, NMUInt32 inIndex)
 {
 NSpProtocolListPriv	*theList = (NSpProtocolListPriv *) inProtocolList;
-OSStatus			status;
+NMErr			status;
 	
 	op_vassert_return(NULL != theList, "NSpProtocolList_RemoveIndexed: inProtocolList == NULL", kNSpInvalidProtocolListErr);
 
@@ -435,14 +435,14 @@ NSpProtocolPriv		*theProtocol;
 //----------------------------------------------------------------------------------------
 
 NSpProtocolReference
-NSpProtocol_CreateAppleTalk(ConstStr31Param inNBPName, ConstStr31Param inNBPType, NMUInt32 inMaxRTT, NMUInt32 inMinThruput)
+NSpProtocol_CreateAppleTalk(NMConstStr31Param inNBPName, NMConstStr31Param inNBPType, NMUInt32 inMaxRTT, NMUInt32 inMinThruput)
 {
 #if macintosh_build
 
 	UNUSED_PARAMETER(inMaxRTT);
 	UNUSED_PARAMETER(inMinThruput);
 
-	OSStatus				status;
+	NMErr				status;
 	NMType					netModuleType;
 	NMUInt32				gameID;
 	char					gameName[32];
@@ -505,12 +505,12 @@ NSpProtocol_CreateAppleTalk(ConstStr31Param inNBPName, ConstStr31Param inNBPType
 //----------------------------------------------------------------------------------------
 
 NSpProtocolReference
-NSpProtocol_CreateIP(InetPort inPort, NMUInt32 inMaxRTT, NMUInt32 inMinThruput)
+NSpProtocol_CreateIP(NMInetPort inPort, NMUInt32 inMaxRTT, NMUInt32 inMinThruput)
 {
 	UNUSED_PARAMETER(inMaxRTT);
 	UNUSED_PARAMETER(inMinThruput);
 
-	OSStatus				status;
+	NMErr				status;
 	NMType					netModuleType;
 	NMUInt32				gameID;
 	char					customConfig[256];
@@ -584,6 +584,12 @@ NSpDoModalJoinDialog			(const unsigned char 	inGameType[32],
 								 unsigned char 			ioPassword[32],
 								 NSpEventProcPtr 		inEventProcPtr)
 {
+	UNUSED_PARAMETER(inGameType)
+	UNUSED_PARAMETER(inEntityListLabel)
+	UNUSED_PARAMETER(ioName)
+	UNUSED_PARAMETER(ioPassword)
+	UNUSED_PARAMETER(inEventProcPtr)
+
 	return NULL;
 }
 
@@ -597,6 +603,12 @@ NSpDoModalHostDialog			(NSpProtocolListReference	ioProtocolList,
 								 unsigned char 				ioPassword[32],
 								 NSpEventProcPtr 			inEventProcPtr)
 {
+	UNUSED_PARAMETER(ioProtocolList)
+	UNUSED_PARAMETER(ioGameName)
+	UNUSED_PARAMETER(ioPlayerName)
+	UNUSED_PARAMETER(ioPassword)
+	UNUSED_PARAMETER(inEventProcPtr)
+
 	return false;
 }
 
@@ -640,6 +652,12 @@ NSpDoModalHostDialog			(NSpProtocolListReference	ioProtocolList,
 								 unsigned char 				ioPassword[32],
 								 NSpEventProcPtr 			inEventProcPtr)
 {
+	UNUSED_PARAMETER(ioProtocolList)
+	UNUSED_PARAMETER(ioGameName)
+	UNUSED_PARAMETER(ioPlayerName)
+	UNUSED_PARAMETER(ioPassword)
+	UNUSED_PARAMETER(inEventProcPtr)
+
 	return true;
 }
 								 
@@ -661,14 +679,14 @@ NSpDoModalHostDialog			(NSpProtocolListReference	ioProtocolList,
 // NSpGame_Host
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 NSpGame_Host(
 		NSpGameReference			*outGame,
 		NSpProtocolListReference	inProtocolList,
 		NMUInt32					inMaxPlayers,
-		ConstStr31Param				inGameName,
-		ConstStr31Param				inPassword,
-		ConstStr31Param				inPlayerName,
+		NMConstStr31Param				inGameName,
+		NMConstStr31Param				inPassword,
+		NMConstStr31Param				inPlayerName,
 		NSpPlayerType				inPlayerType,
 		NSpTopology					inTopology,
 		NSpFlags					inFlags)
@@ -882,13 +900,17 @@ NSpGame_Host(
 // NSpGame_EnableAdvertising
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 NSpGame_EnableAdvertising(NSpGameReference inGame, NSpProtocolReference inProtocol, NMBoolean inEnable)
 {
+	UNUSED_PARAMETER(inGame);
+	UNUSED_PARAMETER(inProtocol);
+	UNUSED_PARAMETER(inEnable);
+
 	return (kNSpFeatureNotImplementedErr);
 
 /*
-OSStatus		err = kNMNoError;
+NMErr		err = kNMNoError;
 NSpGameMaster	*theGame;	//LR good way to crash w/NULL = ((NSpGamePrivate *)inGame)->GetMaster();
 NSpProtocolPriv	*theProt = (NSpProtocolPriv *) inProtocol;
 NMBoolean		didOne = false;
@@ -949,12 +971,12 @@ NMType ptype;
 // NSpGame_Join
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 NSpGame_Join(
 		NSpGameReference	*outGame,
 		NSpAddressReference	inAddress,
-		ConstStr31Param		inName, 
-		ConstStr31Param		inPassword,
+		NMConstStr31Param		inName, 
+		NMConstStr31Param		inPassword,
 		NSpPlayerType		inType, 
 		void				*inCustomData,
 		NMUInt32			inCustomDataLen,
@@ -1017,8 +1039,7 @@ NSpGame_Join(
 		info->maxPlayers = 0;
 		info->topology = kNSpClientServer;		//Ä HACK!!!!
 
-		//Ä	TBD: Get the game name
-
+		//*	Get password, game name sent in JoinAccepted message (2.2 or later only!)
 		if (inPassword)
 			doCopyPStrMax(inPassword, info->password, 31);
 	}
@@ -1027,10 +1048,9 @@ NSpGame_Join(
 	error:
 	if (status)
 	{
-		NMErr code = status;
-		if (code == err_NilPointer)
+		if (status == err_NilPointer)
 		{
-			code = kNSpMemAllocationErr;
+			status = kNSpMemAllocationErr;
 		}	
 //		if (code == kOTBadAddressErr)
 //			code = kNSpInvalidAddressErr;
@@ -1043,7 +1063,7 @@ NSpGame_Join(
 			
 		*outGame = NULL;
 
-		return (code);
+		return (status);
 	}
 	
 	return (status);
@@ -1053,60 +1073,47 @@ NSpGame_Join(
 // NSpGame_Dispose
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 NSpGame_Dispose(NSpGameReference inGame, NSpFlags inFlags)
 {
 	NSp_InterruptSafeListIterator	iter(*gGameList);
 	NSp_InterruptSafeListMember	*item;
 	UInt32ListMember			*member;
-	OSStatus					err = kNMNoError;
+	NMErr						err = kNMNoError;
 	NSpGamePrivate				*theGame = (NSpGamePrivate *)inGame;
-	NMErr						status = kNMNoError;	
 		
 	op_vassert_return(NULL != inGame, "NSpGame_Dispose: inGame == NULL", kNSpInvalidGameRefErr);
 
-	//Try_
+	while (iter.Next(&item))
 	{
-		while (iter.Next(&item))
-		{
-			member = (UInt32ListMember *) item;
+		member = (UInt32ListMember *) item;
 
-			if (member->GetValue() == (NMUInt32) theGame)
+		if (member->GetValue() == (NMUInt32) theGame)
+		{
+			err = theGame->PrepareForDeletion(inFlags);
+			
+			if (err == kNMNoError)
 			{
-				err = theGame->PrepareForDeletion(inFlags);
-				
-				if (err == kNMNoError)
-				{
-					gGameList->Remove(item);
-					delete theGame;
-					delete member;
-				}
-				//ECF- is there a reason we'd need to clump all returned errors together?
-				//else
-				//	err = kNSpInvalidGameRefErr;
-					
-				break;
+				gGameList->Remove(item);
+				delete theGame;
+				delete member;
 			}
+			//ECF- is there a reason we'd need to clump all returned errors together?
+			//else
+			//	err = kNSpInvalidGameRefErr;
+				
+			break;
 		}
 	}
 	
-	//Catch_(err)
-	error:
-	if (status)
-	{
-		NMErr code = status;
-		return (err);
-	}
-	
-	return (err);
-	
+	return (err);	
 }
 
 //----------------------------------------------------------------------------------------
 // NSpGame_GetInfo
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 NSpGame_GetInfo(NSpGameReference inGame, NSpGameInfo  *ioInfo)
 {
 	NSpGamePrivate	*theGame = (NSpGamePrivate *)inGame;
@@ -1132,10 +1139,10 @@ NSpGame_GetInfo(NSpGameReference inGame, NSpGameInfo  *ioInfo)
 // NSpMessage_Send
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 NSpMessage_Send(NSpGameReference inGame, NSpMessageHeader *inMessage, NSpFlags inFlags)
 {
-OSStatus		err = kNMNoError;
+NMErr		err = kNMNoError;
 NSpGamePrivate	*theGame = (NSpGamePrivate *)inGame;
 NSpGame			*game;
 	
@@ -1164,7 +1171,7 @@ NSpGame			*game;
 // NSpMessage_SendTo
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 NSpMessage_SendTo(
 		NSpGameReference	inGame,
 		NSpPlayerID			inTo,
@@ -1173,7 +1180,7 @@ NSpMessage_SendTo(
 		NMUInt32			inDataLen, 
 		NSpFlags 			inFlags)
 {
-OSStatus		err = kNMNoError;
+NMErr		err = kNMNoError;
 NSpGamePrivate	*theGame = (NSpGamePrivate *)inGame;
 NSpGame			*game;
 	
@@ -1277,26 +1284,14 @@ NSpGamePrivate	*theGame = (NSpGamePrivate *)inGame;
 // NSpPlayer_GetInfo
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 NSpPlayer_GetInfo(NSpGameReference inGame, NSpPlayerID inPlayerID, NSpPlayerInfoPtr *outInfo)
 {
-	OSStatus 		err = kNMNoError;
+	NMErr 			err = kNMNoError;
 	NSpGamePrivate	*theGame = (NSpGamePrivate *)inGame;
-	NMErr status = kNMNoError;
 	op_vassert_return(NULL != inGame, "NSpPlayer_GetInfo: inGame == NULL", kNSpInvalidGameRefErr);
 
-	//Try_
-	{
-		err = (theGame->GetGameObject())->NSpPlayer_GetInfo(inPlayerID, outInfo);
-	}
-	//Catch_(err)
-	error:
-	if (status)
-	{
-		NMErr code = status;
-		return (err);
-	}
-
+	err = (theGame->GetGameObject())->NSpPlayer_GetInfo(inPlayerID, outInfo);
 	return (err);
 }
 
@@ -1312,44 +1307,22 @@ NSpPlayer_ReleaseInfo(NSpGameReference inGame, NSpPlayerInfoPtr inInfo)
 	op_vassert_justreturn(NULL != inGame, "NSpPlayer_ReleaseInfo: inGame == NULL");
 	op_vassert_justreturn(NULL != inInfo, "NSpPlayer_ReleaseInfo:  inInfo == NULL");
 
-	//Try_
-	{
-		(theGame->GetGameObject())->NSpPlayer_ReleaseInfo(inInfo);
-	}
-	//Catch_(err)
-	error:
-	if (status)
-	{
-		NMErr code = status;
-		//(void) err;
-	}
+	(theGame->GetGameObject())->NSpPlayer_ReleaseInfo(inInfo);
 }
 
 //----------------------------------------------------------------------------------------
 // NSpPlayer_GetEnumeration
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 NSpPlayer_GetEnumeration(NSpGameReference inGame, NSpPlayerEnumerationPtr *outPlayers)
 {
-	OSStatus	 	err = kNMNoError;
+	NMErr		 	err = kNMNoError;
 	NSpGamePrivate	*theGame = (NSpGamePrivate *)inGame;
-	NMErr status = kNMNoError;
 	
 	op_vassert_return(NULL != inGame, "NSpPlayer_GetEnumeration: inGame == NULL", kNSpInvalidGameRefErr);
 
-	//Try_
-	{
-		err = (theGame->GetGameObject())->NSpPlayer_GetEnumeration(outPlayers);
-	}
-	//Catch_(err)
-	error:
-	if (status)
-	{
-		NMErr code = status;
-		return (err);
-	}
-
+	err = (theGame->GetGameObject())->NSpPlayer_GetEnumeration(outPlayers);
 	return (err);
 }
 
@@ -1405,7 +1378,7 @@ NSpPlayer_GetThruput(NSpGameReference inGame, NSpPlayerID inPlayer)
 {
 	UNUSED_PARAMETER(inPlayer);
 
-//OSStatus	 	err = kNMNoError;
+//NMErr	 	err = kNMNoError;
 //NSpGamePrivate	*theGame = (NSpGamePrivate *)inGame;
 	
 	op_vassert_return(NULL != inGame, "NSpPlayer_GetThruput: inGame == NULL", kNSpInvalidGameRefErr);
@@ -1419,7 +1392,7 @@ NSpPlayer_GetThruput(NSpGameReference inGame, NSpPlayerID inPlayer)
 // NSpPlayer_ChangeType
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 NSpPlayer_ChangeType(
 		NSpGameReference	inGame,
 		NSpPlayerID 		inPlayerID,
@@ -1444,7 +1417,7 @@ NSpGameMaster	*server;
 // NSpPlayer_Remove
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 NSpPlayer_Remove(NSpGameReference inGame, NSpPlayerID inPlayerID)
 {
 NSpGamePrivate	*theGame = (NSpGamePrivate *) inGame;
@@ -1470,27 +1443,15 @@ NSpGameMaster	*server;
 // NSpGroup_New
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 NSpGroup_New(NSpGameReference inGame, NSpGroupID *outGroupID)
 {
-	OSStatus	 	err = kNMNoError;
+	NMErr		 	err = kNMNoError;
 	NSpGamePrivate	*theGame = (NSpGamePrivate *)inGame;
-	NMErr status = kNMNoError;
 	
 	op_vassert_return(NULL != inGame, "NSpGroup_New: inGame == NULL", kNSpInvalidGameRefErr);
 
-	//Try_
-	{
-		err = (theGame->GetGameObject())->NSpGroup_Create(outGroupID);
-	}
-	//Catch_(err)
-	error:
-	if (status)
-	{
-		NMErr code = status;
-		return (err);
-	}
-
+	err = (theGame->GetGameObject())->NSpGroup_Create(outGroupID);
 	return (err);
 }
 
@@ -1498,27 +1459,15 @@ NSpGroup_New(NSpGameReference inGame, NSpGroupID *outGroupID)
 // NSpGroup_Dispose
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 NSpGroup_Dispose(NSpGameReference inGame, NSpGroupID inGroupID)
 {
-	OSStatus	 	err = kNMNoError;
+	NMErr		 	err = kNMNoError;
 	NSpGamePrivate	*theGame = (NSpGamePrivate *)inGame;
-	NMErr status = kNMNoError;
 	
 	op_vassert_return(NULL != inGame, "NSpGroup_Dispose: inGame == NULL", kNSpInvalidGameRefErr);
 
-	//Try_
-	{
-		err = (theGame->GetGameObject())->NSpGroup_Delete(inGroupID);
-	}
-	//Catch_(err)
-	error:
-	if (status)
-	{
-		NMErr code = status;
-		return (err);
-	}
-
+	err = (theGame->GetGameObject())->NSpGroup_Delete(inGroupID);
 	return (err);
 }
 
@@ -1526,27 +1475,15 @@ NSpGroup_Dispose(NSpGameReference inGame, NSpGroupID inGroupID)
 // NSpGroup_AddPlayer
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 NSpGroup_AddPlayer(NSpGameReference inGame, NSpGroupID inGroupID, NSpPlayerID inPlayerID)
 {
-	OSStatus	 	err = kNMNoError;
+	NMErr		 	err = kNMNoError;
 	NSpGamePrivate	*theGame = (NSpGamePrivate *)inGame;
-	NMErr status = kNMNoError;
 
 	op_vassert_return(NULL != inGame, "NSpGroup_AddPlayer: inGame == NULL", kNSpInvalidGameRefErr);
 
-	//Try_
-	{
-		err = (theGame->GetGameObject())->NSpGroup_AddPlayer(inGroupID, inPlayerID);
-	}
-	//Catch_(err)
-	error:
-	if (status)
-	{
-		NMErr code = status;
-		return (err);
-	}
-
+	err = (theGame->GetGameObject())->NSpGroup_AddPlayer(inGroupID, inPlayerID);
 	return (err);
 }
 
@@ -1554,27 +1491,15 @@ NSpGroup_AddPlayer(NSpGameReference inGame, NSpGroupID inGroupID, NSpPlayerID in
 // NSpGroup_RemovePlayer
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 NSpGroup_RemovePlayer(NSpGameReference inGame, NSpGroupID inGroupID, NSpPlayerID inPlayerID)
 {
-	OSStatus	 	err = kNMNoError;
+	NMErr		 	err = kNMNoError;
 	NSpGamePrivate	*theGame = (NSpGamePrivate *)inGame;
-	NMErr status = kNMNoError;
 	
 	op_vassert_return(NULL != inGame, "NSpGroup_RemovePlayer: inGame == NULL", kNSpInvalidGameRefErr);
 
-	//Try_
-	{
-		err = (theGame->GetGameObject())->NSpGroup_RemovePlayer(inGroupID, inPlayerID);
-	}
-	//Catch_(err)
-	error:
-	if (status)
-	{
-		NMErr code = status;
-		return (err);
-	}
-
+	err = (theGame->GetGameObject())->NSpGroup_RemovePlayer(inGroupID, inPlayerID);
 	return (err);
 }
 
@@ -1582,27 +1507,15 @@ NSpGroup_RemovePlayer(NSpGameReference inGame, NSpGroupID inGroupID, NSpPlayerID
 // NSpGroup_GetInfo
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 NSpGroup_GetInfo(NSpGameReference inGame, NSpGroupID inGroupID, NSpGroupInfoPtr *outInfo)
 {
-	OSStatus	 	err = kNMNoError;
 	NSpGamePrivate	*theGame = (NSpGamePrivate *)inGame;
-	NMErr status = kNMNoError;
+	NMErr err = kNMNoError;
 	
 	op_vassert_return(NULL != inGame, "NSpGroup_GetInfo: inGame == NULL", kNSpInvalidGameRefErr);
 
-	//Try_
-	{
-		err = (theGame->GetGameObject())->NSpGroup_GetInfo(inGroupID, outInfo);
-	}
-	//Catch_(err)
-	error:
-	if (status)
-	{
-		NMErr code = status;
-		return (err);
-	}
-
+	err = (theGame->GetGameObject())->NSpGroup_GetInfo(inGroupID, outInfo);
 	return (err);
 }
 
@@ -1618,44 +1531,22 @@ NSpGroup_ReleaseInfo(NSpGameReference inGame, NSpGroupInfoPtr inInfo)
 	op_vassert_justreturn(NULL != inGame, "NSpGroup_ReleaseInfo: inGame == NULL");
 	op_vassert_justreturn(NULL != inInfo, "NSpGroup_ReleaseInfo: inInfo == NULL");
 
-	//Try_
-	{
-		(theGame->GetGameObject())->NSpGroup_ReleaseInfo(inInfo);
-	}
-	//Catch_(err)
-	error:
-	if (status)
-	{
-		NMErr code = status;
-		//(void) err;
-	}
+	(theGame->GetGameObject())->NSpGroup_ReleaseInfo(inInfo);
 }
 
 //----------------------------------------------------------------------------------------
 // NSpGroup_GetEnumeration
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 NSpGroup_GetEnumeration(NSpGameReference inGame, NSpGroupEnumerationPtr *outGroups)
 {
-	OSStatus 		err = kNMNoError;
 	NSpGamePrivate	*theGame = (NSpGamePrivate *)inGame;
-	NMErr status = kNMNoError;
+	NMErr err = kNMNoError;
 	
 	op_vassert_return(NULL != inGame, "NSpGroup_GetEnumeration: inGame == NULL", kNSpInvalidGameRefErr);
 
-	//Try_
-	{
-		err = (theGame->GetGameObject())->NSpGroup_GetEnumeration(outGroups);
-	}
-	//Catch_(code)
-	error:
-	if (status)
-	{
-		NMErr code = status;
-		return (code);
-	}
-
+	err = (theGame->GetGameObject())->NSpGroup_GetEnumeration(outGroups);
 	return (err);
 }
 
@@ -1671,17 +1562,7 @@ NSpGroup_ReleaseEnumeration(NSpGameReference inGame, NSpGroupEnumerationPtr inGr
 	op_vassert_justreturn(NULL != inGame, "NSpGroup_ReleaseEnumeration: inGame == NULL");
 	op_vassert_justreturn(NULL != inGroups, "NSpGroup_ReleaseEnumeration: inGroups == NULL");
 
-	//Try_
-	{
-		(theGame->GetGameObject())->NSpGroup_ReleaseEnumeration(inGroups);
-	}
-	//Catch_(code)
-	error:
-	if (status)
-	{
-		NMErr code = status;
-		(void) code;
-	}
+	(theGame->GetGameObject())->NSpGroup_ReleaseEnumeration(inGroups);
 }
 
 #if defined(__MWERKS__)
@@ -1692,7 +1573,7 @@ NSpGroup_ReleaseEnumeration(NSpGameReference inGame, NSpGroupEnumerationPtr inGr
 // NSpGetVersion
 //----------------------------------------------------------------------------------------
 
-NumVersion
+NMNumVersion
 NSpGetVersion(void)
 {
 
@@ -1707,7 +1588,7 @@ NSpGetVersion(void)
 		versResource = Get1Resource ('vers', 1);
 
 		if (versResource)
-			gVersion = (**((NumVersion**) versResource));
+			gVersion = (**((NMNumVersion**) versResource));
 	
 		CloseResFile (refNum);
 	}
@@ -1768,14 +1649,37 @@ NSpGetCurrentTimeStamp(NSpGameReference inGame)
 }
 
 //----------------------------------------------------------------------------------------
+// NSpPlayer_FreeAddress
+//----------------------------------------------------------------------------------------
+
+NMErr
+NSpPlayer_FreeAddress(
+	NSpGameReference	inGame,
+	void				**outAddress)
+{
+	NSpGamePrivate	*theGame = (NSpGamePrivate *) inGame;
+	NSpGameMaster	*server;
+
+	//Ä	Make sure that this is the server game reference
+	server = theGame->GetMaster();
+	
+	if (NULL == server)
+		return (kNSpInvalidGameRefErr);
+
+	//Ä	Ok, our setup is kosher.  Jump into the server
+	//Ä	game object and free the address
+	return (server->FreePlayerAddress((void **)outAddress));
+}
+
+//----------------------------------------------------------------------------------------
 // NSpPlayer_GetIPAddress
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 NSpPlayer_GetIPAddress(
 	NSpGameReference	inGame,
 	NSpPlayerID			inPlayerID,
-	char				*outAddress)
+	char				**outAddress)
 {
 	NSpGamePrivate	*theGame = (NSpGamePrivate *) inGame;
 	NSpGameMaster	*server;
@@ -1792,14 +1696,14 @@ NSpPlayer_GetIPAddress(
 }
 
 
-#if macintosh_build
+#if mac_cfm_build
 
 //----------------------------------------------------------------------------------------
-// NSpPlayer_GetAddress
+// NSpPlayer_GetOTAddress
 //----------------------------------------------------------------------------------------
 
-OSStatus
-NSpPlayer_GetAddress(
+NMErr
+NSpPlayer_GetOTAddress(
 	NSpGameReference	inGame,
 	NSpPlayerID			inPlayerID,
 	OTAddress			**outAddress)
@@ -1807,8 +1711,8 @@ NSpPlayer_GetAddress(
 NSpGamePrivate	*theGame = (NSpGamePrivate *) inGame;
 NSpGameMaster	*server;
 
-	op_vassert_return(NULL != inGame, "NSpPlayer_GetAddress: inGame == NULL", kNSpInvalidGameRefErr);
-	op_vassert_return(NULL != outAddress, "NSpPlayer_GetAddress: outAddress == NULL", paramErr);
+	op_vassert_return(NULL != inGame, "NSpPlayer_GetOTAddress: inGame == NULL", kNSpInvalidGameRefErr);
+	op_vassert_return(NULL != outAddress, "NSpPlayer_GetOTAddress: outAddress == NULL", paramErr);
 
 	//Ä	Make sure that this is the server game reference
 	server = theGame->GetMaster();
@@ -1853,7 +1757,7 @@ NSpConvertOTAddrToAddressReference(OTAddress *inAddress)
 		else if (AF_INET == inAddress->fAddressType)
 		{
 			InetAddress				*theInetAddressPtr;
-			InetPort				theInetPort;
+			NMInetPort				theInetPort;
 			InetHost				theInetHost;
 			char					theIPAddress[16];
 			char					theIPPort[16];
@@ -1898,7 +1802,7 @@ NSpConvertAddressReferenceToOTAddr(NSpAddressReference inAddress)
 	char			*parsePtr;
 	char			*tokenPtr;
 /*
-	OSStatus		status;
+	NMErr			status;
 	NMSInt16		configStrLen;
 	char			netModuleTypeString[32];
 */
@@ -1914,12 +1818,6 @@ NSpConvertAddressReferenceToOTAddr(NSpAddressReference inAddress)
 
 	//Try_
 	{
-#if !macintosh_build
-		//Throw_(NULL);
-		status = kNSpFeatureNotImplementedErr;
-		goto error;
-#endif		/*	!macintosh_build	*/
-
 		// Get the config string for the protocol...
 
 /*	LR -- added function to return type w/o having to do all this string parsing!
@@ -1999,7 +1897,7 @@ NSpConvertAddressReferenceToOTAddr(NSpAddressReference inAddress)
 				strcpy(portString, tokenPtr);
 
 				sprintf(addrString, "%s:%s", ipAddr, portString);
-				anInetAddress = new InetAddress;	//?? why different from above? where does this get freed?
+				anInetAddress = new InetAddress;	//weird that one new's it for us and the other doesn't, but that's the case...
 				//ThrowIfNULL_(anInetAddress);
 				if (anInetAddress == NULL){
 					status = err_NilPointer;
@@ -2052,7 +1950,7 @@ NSpReleaseOTAddress(OTAddress *inAddress)
 	}
 
 }
-#endif	/*	macintosh_build	*/
+#endif	/*	mac_cfm_build	*/
 
 //----------------------------------------------------------------------------------------
 // NSpCreateATlkAddressReference
@@ -2097,6 +1995,7 @@ NSpAddressReference NSpCreateATlkAddressReference(char *inName, char *inType, ch
 		UNUSED_PARAMETER(inName);
 		UNUSED_PARAMETER(inType);
 		UNUSED_PARAMETER(inZone);
+	
 		return (NULL); 
 		
 	#endif /* macintosh_build	*/
@@ -2108,12 +2007,12 @@ NSpAddressReference NSpCreateATlkAddressReference(char *inName, char *inType, ch
 
 NSpAddressReference NSpCreateIPAddressReference(char *inIPAddress, char *inIPPort)
 {	
-	OSStatus				status;
-	NMType					netModuleType;
-	NMUInt32					gameID;
-	char					customConfig[256];
-	//char					configString[256]="\0";
-	PConfigRef				outConfigRef = NULL;
+	NMErr		status;
+	NMType		netModuleType;
+	NMUInt32	gameID;
+	char		customConfig[256];
+	//char		configString[256]="\0";
+	PConfigRef	outConfigRef = NULL;
 	
 
 	//Ä	Create the configuration...
@@ -2166,7 +2065,7 @@ NSpReleaseAddressReference(NSpAddressReference inAddress)
 // NSpInstallCallbackHandler
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 NSpInstallCallbackHandler(NSpCallbackProcPtr inHandler, void *inContext)
 {
 //	op_vassert_return(NULL != inHandler, "NSpInstallCallbackHandler: inHandler == NULL", paramErr);
@@ -2181,10 +2080,10 @@ NSpInstallCallbackHandler(NSpCallbackProcPtr inHandler, void *inContext)
 // NSpInstallJoinRequestHandler
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 NSpInstallJoinRequestHandler(NSpJoinRequestHandlerProcPtr inHandler, void *inContext)
 {
-OSStatus	err = kNMNoError;
+NMErr	err = kNMNoError;
 	
 //	op_vassert_return(NULL != inHandler, "NSpInstallJoinRequestHandler: inHandler == NULL", paramErr);
 
@@ -2198,10 +2097,10 @@ OSStatus	err = kNMNoError;
 // NSpInstallAsyncMessageHandler
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 NSpInstallAsyncMessageHandler(NSpMessageHandlerProcPtr inHandler, void *inContext)
 {
-OSStatus	err = kNMNoError;
+NMErr	err = kNMNoError;
 	
 //	op_vassert_return(NULL != inHandler, "NSpInstallAsyncMessageHandler: inHandler == NULL", paramErr);
 

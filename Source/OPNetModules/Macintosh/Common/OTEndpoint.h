@@ -127,6 +127,8 @@
 		virtual 	NMErr		Connect(void);
 		virtual		void		Close(void);
 
+		virtual		NMBoolean	FreeAddress(void **outAddress);
+		virtual		NMBoolean	GetAddress(NMAddressType addressType, void **outAddress);
 		virtual 	NMBoolean 	IsAlive(void);
 
 		virtual 	NMErr		Idle(void);
@@ -169,7 +171,7 @@
 		virtual NMBoolean		AddressesEqual(TNetbuf *inAddr1, TNetbuf *inAddr2) = 0;
 		virtual	void	 		ResetAddressForUnreliableTransport(OTAddress *inAddress) = 0;
 		
-		static	OSStatus DoLook(PrivateEndpoint *inEP);
+		static	NMErr DoLook(PrivateEndpoint *inEP);
 		
 		//	These functions all deal with OT events
 		virtual	void	DoCloseComplete(EndpointDisposer *inEPDisposer, NMBoolean inNotifyUser);
@@ -222,7 +224,7 @@
 
 		static pascal void 	CacheNotifier(void* contextPtr, OTEventCode code, OTResult result, void* cookie);
 		static void			ServiceEPCaches(void);
-		static OSStatus		FillEPCache(EPCache *inCache);
+		static NMErr		FillEPCache(EPCache *inCache);
 		static void			CacheHandoffEP(CachedEP *inEP);
 		
 		friend class EndpointHander;

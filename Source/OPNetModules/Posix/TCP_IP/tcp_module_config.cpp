@@ -7,12 +7,7 @@
  *------------------------------------------------------------- 
  *   Author: Kevin Holbrook
  *  Created: June 23, 1999
- *
- * Modified: $Date$
- * Revision: $Id$
- *
- *-------------------------------------------------------------
- */
+*/
 
 /*
  * Copyright (c) 1999-2002 Apple Computer, Inc. All rights reserved.
@@ -382,7 +377,7 @@ NMErr NMCreateConfig(char *ConfigStr,
 {
 	DEBUG_ENTRY_EXIT("NMCreateConfig");
 
-	if (module_inited == false)
+	if (module_inited < 1)
 		return kNMInternalErr;
 
 	NMConfigRef _config;
@@ -473,7 +468,7 @@ short NMGetConfigLen(NMConfigRef Config)
 {
 	DEBUG_ENTRY_EXIT("NMGetConfigLen");
 
-	if (module_inited == false)
+	if (module_inited < 1)
 		return 0;
 
 	if (Config)
@@ -507,7 +502,7 @@ NMErr NMGetConfig(NMConfigRef inConfig, char *outConfigStr, short *ioConfigStrLe
 {
 	DEBUG_ENTRY_EXIT("NMGetConfig");
 
-	if (module_inited == false)
+	if (module_inited < 1)
 		return kNMInternalErr;
 
 	NMErr err;
@@ -552,7 +547,7 @@ NMErr NMDeleteConfig(NMConfigRef inConfig)
 {
 	DEBUG_ENTRY_EXIT("NMDeleteConfig");
 
-	if (module_inited == false)
+	if (module_inited < 1)
 		return kNMInternalErr;
 
 	op_vassert_return((inConfig != NULL),"Config ref is NULL!",kNMParameterErr);

@@ -46,8 +46,8 @@
 		COTATEndpoint(NSpGame *inGame, EPCookie *inUnreliableEndpointCookie, EPCookie *inCookie);
 		~COTATEndpoint();
 				
-		OSStatus		InitAdvertiser(NSpProtocolPriv *inProt);
-		OSStatus		InitNonAdvertiser(NSpProtocolPriv *inProt);
+		NMErr		InitAdvertiser(NSpProtocolPriv *inProt);
+		NMErr		InitNonAdvertiser(NSpProtocolPriv *inProt);
 
 //		virtual	NMBoolean		Host(NMBoolean inAdvertise);
 

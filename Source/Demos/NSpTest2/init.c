@@ -49,7 +49,7 @@ extern short			gWindCount;
 OSErr Initialize(void)
 {
 	OSErr		err = noErr;
-	OSStatus	status;	
+	NMErr	status;	
 	
 	ToolBoxInit();
 	CheckEnvironment();

@@ -88,7 +88,7 @@
 	  config_cookie                      = 0x49506366,  /* "IPcf" */
 	  DEFAULT_TIMEOUT                    = 5*1000,      /* 5 seconds */
 	  MAXIMUM_CONFIG_LENGTH              = 1024,
-	  MAXIMUM_OUTSTANDING_REQUESTS       = 4,
+	  MAXIMUM_OUTSTANDING_REQUESTS       = 4
 	  //TICKS_BETWEEN_ENUMERATION_REQUESTS = (MACHINE_TICKS_PER_SECOND / 2),
 	  //TICKS_BEFORE_GAME_DROPPED          = (2 * MACHINE_TICKS_PER_SECOND)
 	};
@@ -223,5 +223,5 @@
 	extern NMEndpointPriv *endpointList;
 	extern machine_lock *endpointListLock;
 	extern machine_lock *notifierLock;
-	extern NMBoolean	module_inited;
+	extern NMSInt32	module_inited;
 #endif  // __TCP_MODULE__

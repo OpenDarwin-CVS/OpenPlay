@@ -57,17 +57,17 @@ ValidateCrossPlatformPacket(
 			switch(*current)
 			{
 				case k2Byte:
-					if(length & 1) err = errBadShortAlignment;
+					if(length & 1) err = kNMBadShortAlignmentErr;
 					length += 2;
 					break;
 
 				case k4Byte:
-					if(length & 3) err= errBadLongAlignment;
+					if(length & 3) err= kNMBadLongAlignmentErr;
 					length += 4;
 					break;
 					
 				default:
-					err = errBadPacketDefinition;
+					err = kNMBadPacketDefinitionErr;
 					break;
 			}
 		} else {
@@ -78,7 +78,7 @@ ValidateCrossPlatformPacket(
 	
 	if(length != packet_length)
 	{
-		err= errBadPacketDefinitionSize;
+		err= kNMBadPacketDefinitionSizeErr;
 	}
 
 	return err;	
@@ -128,7 +128,7 @@ SwapCrossPlatformPacket(
 					break;
 					
 				default:
-					err = errBadPacketDefinition;
+					err = kNMBadPacketDefinitionErr;
 					break;
 			}
 		} else {

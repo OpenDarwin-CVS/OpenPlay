@@ -27,9 +27,6 @@
 #ifndef __PREFIXDARWIN__
 	#define __PREFIXDARWIN__
 	
-	//we wanna use the posix code
-	#define POSIX_BUILD 1
-	
 	//os_darwin is used for some conditionals within the posix code
 	//this should not be used outside of the posix code (ie: in the carbon codebase)
 	#define os_darwin 1

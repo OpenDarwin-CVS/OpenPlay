@@ -18,15 +18,15 @@ enum {
 extern "C" {
 #endif
 
-OSStatus 	InitNetworking(NSpGameID inGameID);
-void		ShutdownNetworking(void);
-OSStatus	DoHost(void);
-OSStatus 	DoJoin(void);
-void		HandleNetwork(void);
-void		RefreshWindow(WindowPtr inWindow);
-void 		HandleNetMenuChoice(short menu, short item);
-void		AdjustNetMenus();
-void		DoCloseNetWindow(WindowPtr inWindow);
+NMErr 	InitNetworking(NSpGameID inGameID);
+void	ShutdownNetworking(void);
+NMErr	DoHost(void);
+NMErr 	DoJoin(void);
+void	HandleNetwork(void);
+void	RefreshWindow(WindowPtr inWindow);
+void 	HandleNetMenuChoice(short menu, short item);
+void	AdjustNetMenus();
+void	DoCloseNetWindow(WindowPtr inWindow);
 
 #ifdef __cplusplus
 }

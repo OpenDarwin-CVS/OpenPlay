@@ -26,8 +26,8 @@
  */
 
 
-#include "OPUtils.h"
 #include "portable_files.h"
+#include "OPUtils.h"
 
 #define INCLUDE_MODULE_NAMES
 
@@ -55,24 +55,46 @@ extern "C" {
 /* Returns 0 on success, !0 otherwise */ 
 NMErr bind_to_library(FileDesc *file, ConnectionRef *conn_id)
 {
-  void* lib_handle;
+	#if (project_builder)
+	{
+		Boolean didLoad = false;
+		op_assert(file->bundle != NULL);
+		didLoad = CFBundleLoadExecutable(file->bundle);
+		if (didLoad){
+			DEBUG_PRINT("did load executable");
+			void (*initFunc) (void);
+			//search for an "_init" function, and call it if we find one
+			//so we can just use the standard posix configuration
+			initFunc = (void (*) (void))CFBundleGetFunctionPointerForName(file->bundle,CFSTR("_init"));
+			if (initFunc)
+				initFunc();
+			*conn_id = file->bundle;
+			return kNMNoError;
+		}else
+		{
+			DEBUG_PRINT("couldn't load executable");		
+			return 1;
+		}
+	}
+	#else
+		void* lib_handle;
 
+		lib_handle = dlopen((char*)file->name, RTLD_NOW);
 
-  lib_handle = dlopen((char*)file->name, RTLD_NOW);
+		DEBUG_PRINT("dlopen(%s) = %p\n", file->name, lib_handle);
 
-  DEBUG_PRINT("dlopen(%s) = %p\n", file->name, lib_handle);
+		if (lib_handle == NULL)
+		{
+		#ifdef DEBUG
+			printf("%s\n", dlerror());
+		#endif
+			return(1);
+		} 
 
-  if (lib_handle == NULL)
-  {
-#ifdef DEBUG
-    printf("%s\n", dlerror());
-#endif
-    return(1);
-  } 
+		*conn_id = (ConnectionRef)lib_handle;
 
-  *conn_id = (ConnectionRef)lib_handle;
-
-  return(0);
+		return(0);
+	#endif
 }
 
 void *load_proc(ConnectionRef conn_id, short proc_id)
@@ -85,15 +107,23 @@ void *load_proc(ConnectionRef conn_id, short proc_id)
 
 	if ((proc_id >= 0) && (proc_id < NUMBER_OF_MODULES_TO_LOAD))
 	{
-		//we seem to need to prefix an underscore to get them on darwin
-		#if (os_darwin)
-			char symbolName[128];
-			sprintf(symbolName,"_%s",module_names[proc_id]);
+		#if (project_builder)
+			CFStringRef funcName = CFStringCreateWithCString(kCFAllocatorDefault,module_names[proc_id],kCFStringEncodingMacRoman);
+			op_assert(funcName);
+			proc_ptr = (void*)CFBundleGetFunctionPointerForName(conn_id,funcName);
+			CFRelease(funcName);
 		#else
-			char *symbolName = (char*)module_names[proc_id];
-		#endif
+			//we seem to need to prefix an underscore to get them on darwin
+				//i think updating the dlcompat code might fix that.... ecf
+			#if (os_darwin)
+				char symbolName[128];
+				sprintf(symbolName,"_%s",module_names[proc_id]);
+			#else
+				char *symbolName = (char*)module_names[proc_id];
+			#endif
 
-		proc_ptr = dlsym((void *)conn_id, symbolName);
+			proc_ptr = dlsym((void *)conn_id, symbolName);
+		#endif
 	}
 	  
   return(proc_ptr);
@@ -102,6 +132,16 @@ void *load_proc(ConnectionRef conn_id, short proc_id)
 
 void free_library(ConnectionRef conn_id)
 {
-  dlclose((void *)conn_id);
+#if (project_builder)
+	void (*termFunc) (void);
+	//search for a "_fini" function, and call it if we find one
+	//so we can just use the standard posix configuration
+	termFunc = (void (*) (void))CFBundleGetFunctionPointerForName(conn_id,CFSTR("_fini"));
+	if (termFunc)
+		termFunc();
+	CFBundleUnloadExecutable(conn_id);
+#else
+	dlclose((void *)conn_id);
+#endif
 }
 }

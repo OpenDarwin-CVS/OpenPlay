@@ -46,11 +46,11 @@
 // ATCreateZonesEnumerator
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 ATCreateZonesEnumerator(ATPortRef port, OTNotifyUPP notifier, void* contextPtr, ATZonesEnumeratorRef* ref)
 {
 CZonesEnumerator*	enumerator	= NULL;
-OSStatus			err			= kNMNoError;
+NMErr			err			= kNMNoError;
 		
 	enumerator = new COTZonesEnumerator(); 
 	
@@ -70,10 +70,10 @@ OSStatus			err			= kNMNoError;
 // ATGetZonesCount
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 ATGetZonesCount(ATZonesEnumeratorRef ref, NMBoolean* done, NMUInt32* count)
 {
-OSStatus	err = kNMNoError;
+NMErr	err = kNMNoError;
 	
 	if (ref != NULL)
 	{
@@ -97,10 +97,10 @@ OSStatus	err = kNMNoError;
 // ATGetMachineZone
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 ATGetMachineZone(ATZonesEnumeratorRef ref, StringPtr zoneName)
 {
-OSStatus err = kNMNoError;
+NMErr err = kNMNoError;
 	
 	if (ref != NULL)
 	{
@@ -122,10 +122,10 @@ OSStatus err = kNMNoError;
 // ATGetIndexedZone
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 ATGetIndexedZone(ATZonesEnumeratorRef ref, OneBasedIndex index, StringPtr zoneName)
 {
-OSStatus	err = kNMNoError;
+NMErr	err = kNMNoError;
 	
 	if (ref != NULL)
 	{
@@ -148,10 +148,10 @@ OSStatus	err = kNMNoError;
 // ATSortZones
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 ATSortZones(ATZonesEnumeratorRef ref)
 {
-OSStatus	err = kNMNoError;
+NMErr	err = kNMNoError;
 	
 	if (ref != NULL)
 	{
@@ -171,10 +171,10 @@ OSStatus	err = kNMNoError;
 // ATDeleteZonesEnumerator
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 ATDeleteZonesEnumerator(ATZonesEnumeratorRef* ref)
 {
-OSStatus	err = kNMNoError;
+NMErr	err = kNMNoError;
 	
 	if (*ref  != NULL)
 	{
@@ -196,7 +196,7 @@ OSStatus	err = kNMNoError;
 // ATCreateNBPEntitiesEnumerator
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 ATCreateNBPEntitiesEnumerator(
 	ATPortRef					port,
 	OTNotifyUPP					notifier,
@@ -204,7 +204,7 @@ ATCreateNBPEntitiesEnumerator(
 	ATNBPEntitiesEnumeratorRef	*ref)
 {
 CEntitiesEnumerator*	enumerator	= NULL;
-OSStatus				err			= kNMNoError;
+NMErr				err			= kNMNoError;
 	
 	enumerator = new COTEntitiesEnumerator(); 
 	
@@ -224,10 +224,10 @@ OSStatus				err			= kNMNoError;
 // ATStartNBPEntitiesLookup
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 ATStartNBPEntitiesLookup(ATNBPEntitiesEnumeratorRef ref, Str32 zone, Str32 type, Str32 prefix, NMBoolean clearPreviousResults)
 {
-OSStatus	err = kNMNoError;
+NMErr	err = kNMNoError;
 	
 	if (ref != NULL)
 	{
@@ -246,10 +246,10 @@ OSStatus	err = kNMNoError;
 // ATGetNBPEntitiesCount
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 ATGetNBPEntitiesCount(ATNBPEntitiesEnumeratorRef ref, NMBoolean* allFound, NMUInt32* count)
 {
-OSStatus err = kNMNoError;
+NMErr err = kNMNoError;
 	
 	if (ref != NULL)
 	{
@@ -269,10 +269,10 @@ OSStatus err = kNMNoError;
 // ATGetIndexedNBPEntity
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 ATGetIndexedNBPEntity(ATNBPEntitiesEnumeratorRef ref, OneBasedIndex index, StringPtr zone, StringPtr type, StringPtr name, ATAddress* address)
 {
-OSStatus	err = kNMNoError;
+NMErr	err = kNMNoError;
 	
 	if (ref != NULL)
 	{
@@ -292,10 +292,10 @@ OSStatus	err = kNMNoError;
 // ATSortNBPEntities
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 ATSortNBPEntities(ATNBPEntitiesEnumeratorRef ref)
 {
-OSStatus	err = kNMNoError;
+NMErr	err = kNMNoError;
 	
 	if (ref != NULL)
 	{
@@ -316,10 +316,10 @@ OSStatus	err = kNMNoError;
 // ATCancelNBPEntitiesLookup
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 ATCancelNBPEntitiesLookup(ATNBPEntitiesEnumeratorRef ref)
 {
-OSStatus	err = kNMNoError;
+NMErr	err = kNMNoError;
 	
 	if (ref != NULL)
 	{
@@ -340,10 +340,10 @@ OSStatus	err = kNMNoError;
 // ATDeleteNBPEntitiesEnumerator
 //----------------------------------------------------------------------------------------
 
-OSStatus
+NMErr
 ATDeleteNBPEntitiesEnumerator(ATNBPEntitiesEnumeratorRef* ref)
 {
-OSStatus	err = kNMNoError;
+NMErr	err = kNMNoError;
 	
 	if (*ref != NULL)
 	{

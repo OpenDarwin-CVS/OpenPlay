@@ -159,30 +159,28 @@ OTIPEndpoint::DoBind(
 	NMErr	status = kNMNoError;
 	NMBoolean	active;
 	
-	//Try_
+	active = (inRequest->qlen == 0);
+	
+	if (inEP == mStreamEndpoint  && !active)
 	{
-		active = (inRequest->qlen == 0);
-		
-		if (inEP == mStreamEndpoint  && !active)
-		{
-			status = OTUtils::DoNegotiateIPReuseAddrOption(inEP->mEP, true);
-			DEBUG_NETWORK_API(inEP->mEP, "Negotiate Reuse Option", status);	
-			status = OTUtils::DoNegotiateTCPNoDelayOption(inEP->mEP, true);
-			DEBUG_NETWORK_API(inEP->mEP, "Negotiate No Delay Option", status);
-		}			
-		
-		if (inRequest->addr.buf)
-			status = OTBind(inEP->mEP, inRequest, outReturned);
-		else
-			status = OTBind(inEP->mEP, NULL, outReturned);
-		DEBUG_NETWORK_API(inEP->mEP, "OTBind", status);	
-		//ThrowIfOSErr_(status);
-		if (status)
-			goto error;
-
+		status = OTUtils::DoNegotiateIPReuseAddrOption(inEP->mEP, true);
+		DEBUG_NETWORK_API(inEP->mEP, "Negotiate Reuse Option", status);	
+		status = OTUtils::DoNegotiateTCPNoDelayOption(inEP->mEP, true);
+		DEBUG_NETWORK_API(inEP->mEP, "Negotiate No Delay Option", status);
+	}			
+	
+	if (inRequest->addr.buf)
+	{
+		long portNum = ((InetAddress *)inRequest->addr.buf)->fPort;
+		status = OTBind(inEP->mEP, inRequest, outReturned);
+		DEBUG_PRINT("binding; requesting port %d; result: %d; returned port %d",portNum,status,((InetAddress *)outReturned->addr.buf)->fPort);	
 	}
-	//Catch_(code)
-	error:
+	else{
+		status = OTBind(inEP->mEP, NULL, outReturned);
+		DEBUG_PRINT("binding to any port; result: %d; returned port %d",status,((InetAddress *)outReturned->addr.buf)->fPort);	
+	}
+	DEBUG_NETWORK_API(inEP->mEP, "OTBind", status);	
+
 	if (status)
 	{
 		NMErr code = status;
@@ -243,6 +241,8 @@ OTIPEndpoint::AddressesEqual(TNetbuf *inAddr1, TNetbuf *inAddr2)
 void
 OTIPEndpoint::GetConfigAddress(TNetbuf *outBuf, NMBoolean inActive)
 {
+	UNUSED_PARAMETER(inActive);
+
 	outBuf->buf = (NMUInt8 *) &mConfig.address;
 	outBuf->len = outBuf->maxlen = sizeof(InetAddress);
 }
@@ -277,7 +277,7 @@ OTIPEndpoint::MakeEnumerationResponse(void)
 
 	IPEnumerationResponsePacket *theResponse = (IPEnumerationResponsePacket *) mEnumerationResponseData;
 	InetInterfaceInfo info;
-	OSStatus		status;
+	NMErr		status;
 	TNetbuf			addr;
 	NMSInt16		len;
 	
@@ -311,8 +311,8 @@ OTResult 	result;
 	addr = (InetAddress *) addrBuf.buf;
 	data = (NMUInt8 *) &addr->fPort;
 		
-	result = OTSnd(mStreamEndpoint->mEP, data, sizeof (InetPort), 0);
-	op_warn(result == sizeof (InetPort));
+	result = OTSnd(mStreamEndpoint->mEP, data, sizeof (NMInetPort), 0);
+	op_warn(result == sizeof (NMInetPort));
 	
 	return (result  < 0) ? result : kNMNoError;
 }
@@ -352,16 +352,16 @@ OTIPEndpoint::HandleAsyncOpenConfirmation(void)
 
 NMUInt8 	*data;
 InetAddress	*addr;
-InetPort	port;
+NMInetPort	port;
 OTFlags		flags = 0;
 NMBoolean 	finished;
-NMUInt32	ioSize = sizeof (InetPort);
-OSStatus	status = kNMNoError;
+NMUInt32	ioSize = sizeof (NMInetPort);
+NMErr	status = kNMNoError;
 
 	data = (NMUInt8 *) &port;
 	
 	finished = OTReadBuffer(&mStreamEndpoint->mBufferInfo, data, &ioSize);	
-	op_warn(ioSize == sizeof (InetPort));
+	op_warn(ioSize == sizeof (NMInetPort));
 	
 	//	clean up so that our notifier will know the user read all the data
 	if (finished)

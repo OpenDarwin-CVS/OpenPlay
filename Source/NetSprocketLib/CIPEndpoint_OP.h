@@ -48,8 +48,8 @@
 		COTIPEndpoint(NSpGame *inGame,  EPCookie *inUnreliableEndpointCookie, EPCookie *inCookie);
 		~COTIPEndpoint();
 
-		OSStatus 		InitAdvertiser(NSpProtocolPriv *inProt);
-		OSStatus		InitNonAdvertiser(NSpProtocolPriv *inProt);
+		NMErr 		InitAdvertiser(NSpProtocolPriv *inProt);
+		NMErr		InitNonAdvertiser(NSpProtocolPriv *inProt);
 
 	protected:
 	//	virtual	void	 ResetAddressForUnreliableTransport(OTAddress *inAddress);

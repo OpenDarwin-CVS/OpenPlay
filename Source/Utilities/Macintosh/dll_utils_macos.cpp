@@ -78,7 +78,7 @@ NMErr bind_to_library(
 		if (runningOSX){
 			CFragSymbolClass sym_class;
 			char *classicOnly = NULL;
-			OSStatus err2 = FindSymbol(*conn_id,(UInt8*)"\pClassicOnly",&classicOnly,&sym_class);
+			NMErr err2 = FindSymbol(*conn_id,(UInt8*)"\pClassicOnly",&classicOnly,&sym_class);
 			if ((err2 == 0) && (classicOnly != NULL)){
 				//unload the fragment and return an error
 				err = kNMClassicOnlyModuleErr;

@@ -25,18 +25,35 @@
  * Revision: $Id$
  */
 
+#include "portable_files.h"
+
 #ifndef __OPENPLAY__
 #include "OpenPlay.h"
 #endif
 #include "OPUtils.h"
-#include "portable_files.h"
 #include "op_definitions.h"
 
 /* ------------ dialog functions */
 
+ //doxygen instruction:
+/** @addtogroup HumanInterface
+ * @{
+ */
+
 //----------------------------------------------------------------------------------------
 // ProtocolSetupDialog
 //----------------------------------------------------------------------------------------
+/**
+	Set up a dialog.
+	@brief Set up a dialog.
+	@param dialog The dialog object to set up in.
+	@param frame the frame..?
+	@param base the base..?
+	@param config The config to determine base values from.
+	@return \ref kNMNoError if the function succeeds.\n
+	Otherwise, an error code.
+	\n\n\n\n
+ */
 
 /* HWND under windows, DialogPtr on Macs
  * id of ditl item for frame.  Should this be a rect instead?
@@ -59,10 +76,10 @@ NMErr ProtocolSetupDialog(
 		{
 			err= config->NMSetupDialog(dialog, frame, base, (NMProtocolConfigPriv*)config->configuration_data);
 		} else {
-			err= errFunctionNotBound;
+			err= kNMFunctionNotBoundErr;
 		}
 	} else {
-		err= errParamErr;
+		err= kNMParameterErr;
 	}
 
 	return err;
@@ -71,6 +88,16 @@ NMErr ProtocolSetupDialog(
 //----------------------------------------------------------------------------------------
 // ProtocolHandleEvent
 //----------------------------------------------------------------------------------------
+/**
+	Tell the config dialog to handle one event.
+	@brief Tell the config dialog to handle one event.
+	@param dialog The dialog object.
+	@param event The event object.
+	@param config The configuration the dialog belongs to.
+	@return true if the event was handled.\n
+	false otherwise.
+	\n\n\n\n
+ */
 
 /* item_hit is in the DITL's reference space. */
 NMBoolean ProtocolHandleEvent(
@@ -94,6 +121,16 @@ NMBoolean ProtocolHandleEvent(
 //----------------------------------------------------------------------------------------
 // ProtocolHandleItemHit
 //----------------------------------------------------------------------------------------
+/**
+	Handle an item hit.
+	@brief Handle an item hit.
+	@param dialog The dialog object.
+	@param inItemHit The item which was hit.
+	@param config The configuration the dialog belongs to.
+	@return \ref kNMNoError if the function succeeds.\n
+	Otherwise, an error code.
+	\n\n\n\n
+ */
 
 NMErr ProtocolHandleItemHit(
 	DIALOGPTR dialog, 
@@ -111,10 +148,10 @@ NMErr ProtocolHandleItemHit(
 		{
 			err = config->NMHandleItemHit(dialog, inItemHit, (NMProtocolConfigPriv*)config->configuration_data);
 		} else {
-			err= errFunctionNotBound;
+			err= kNMFunctionNotBoundErr;
 		}
 	} else {
-		err= errParamErr;
+		err= kNMParameterErr;
 	}
 
 	return err;
@@ -123,6 +160,16 @@ NMErr ProtocolHandleItemHit(
 //----------------------------------------------------------------------------------------
 // ProtocolDialogTeardown
 //----------------------------------------------------------------------------------------
+/**
+	Dispose of a dialog setup.
+	@brief Dispose of a dialog setup.
+	@param dialog The dialog object.
+	@param update_config Whether or not to update the config with the dialog's values (was "ok" hit?).
+	@param config The configuration the dialog belongs to.
+	@return false if teardown is not possible (ie invalid parameters).\n
+	true otherwise.
+	\n\n\n\n
+ */
 
 /* returns false if teardown is not possible (ie invalid parameters) */
 NMBoolean ProtocolDialogTeardown(
@@ -142,10 +189,10 @@ NMBoolean ProtocolDialogTeardown(
 		{
 			can_teardown= config->NMTeardownDialog(dialog, update_config, (NMProtocolConfigPriv*)config->configuration_data);
 		} else {
-			err= errFunctionNotBound;
+			err= kNMFunctionNotBoundErr;
 		}
 	} else {
-		err= errParamErr;
+		err= kNMParameterErr;
 	}
 
 	return can_teardown;
@@ -154,6 +201,14 @@ NMBoolean ProtocolDialogTeardown(
 //----------------------------------------------------------------------------------------
 // ProtocolGetRequiredDialogFrame
 //----------------------------------------------------------------------------------------
+/**
+	Returns the frame size a dialog setup requires.
+	@brief Returns the frame size a dialog setup requires.
+	@param r Pointer to a RECT containing the size.
+	@param config The configuration the dialog belongs to.
+	@return No return value.
+	\n\n\n\n
+ */
 
 void ProtocolGetRequiredDialogFrame(
 	RECT *r,
@@ -167,45 +222,33 @@ void ProtocolGetRequiredDialogFrame(
 		{
 			config->NMGetRequiredDialogFrame(r, (NMProtocolConfigPriv*)config->configuration_data);
 		} else {
-			err= errFunctionNotBound;
+			err= kNMFunctionNotBoundErr;
 		}
 	} else {
-		err= errParamErr;
+		err= kNMParameterErr;
 	}
 }
+/** @}*/
 
-//----------------------------------------------------------------------------------------
-// ProtocolBindEnumerationToConfig
-//----------------------------------------------------------------------------------------
-
-NMErr ProtocolBindEnumerationToConfig(
-	PConfigRef config, 
-	NMHostID inID)
-{
-	NMErr err= kNMNoError;
-
-	/* call as often as possible (anything that is synchronous) */
-	op_idle_synchronous(); 
-	
-	if(config)
-	{
-		if(config->NMBindEnumerationItemToConfig)
-		{
-/* 19990124 sjb propagate err from bind */
-			err = config->NMBindEnumerationItemToConfig((NMProtocolConfigPriv*)config->configuration_data, inID);
-		} else {
-			err= errFunctionNotBound;
-		}
-	} else {
-		err= errParamErr;
-	}
-
-	return err;
-}
+ //doxygen instruction:
+/** @addtogroup Enumeration
+ * @{
+ */
 
 //----------------------------------------------------------------------------------------
 // ProtocolStartEnumeration
 //----------------------------------------------------------------------------------------
+/**
+	Begin searching for hosts on the network.
+	@brief Begin searching for hosts on the network.
+	@param config The configuration to use when searching.
+	@param inCallback The callback for the enumeration to use.
+	@param inContext Custom context to be passed to the enumeration callback.
+	@param inActive Active enumeration searches the network for games.  Passive only uses stored addresses, etc.
+	@return \ref kNMNoError if the function succeeds.\n
+	Otherwise, an error code.
+	\n\n\n\n
+ */
 
 NMErr ProtocolStartEnumeration(
 	PConfigRef config, 
@@ -225,38 +268,10 @@ NMErr ProtocolStartEnumeration(
 /* 19990124 sjb propagate err from enumeration */
 			err = config->NMStartEnumeration((NMProtocolConfigPriv*)config->configuration_data, inCallback, inContext, inActive);
 		} else {
-			err= errFunctionNotBound;
+			err= kNMFunctionNotBoundErr;
 		}
 	} else {
-		err= errParamErr;
-	}
-
-	return err;
-}
-
-//----------------------------------------------------------------------------------------
-// ProtocolIdleEnumeration
-//----------------------------------------------------------------------------------------
-
-NMErr ProtocolIdleEnumeration(
-	PConfigRef config)
-{
-	NMErr err= kNMNoError;
-
-	/* call as often as possible (anything that is synchronous) */
-	op_idle_synchronous(); 
-	
-	if(config)
-	{
-		if(config->NMIdleEnumeration)
-		{
-/* 19990124 sjb propagate err from idle */
-			err = config->NMIdleEnumeration((NMProtocolConfigPriv*)config->configuration_data);
-		} else {
-			err= errFunctionNotBound;
-		}
-	} else {
-		err= errParamErr;
+		err= kNMParameterErr;
 	}
 
 	return err;
@@ -265,6 +280,14 @@ NMErr ProtocolIdleEnumeration(
 //----------------------------------------------------------------------------------------
 // ProtocolEndEnumeration
 //----------------------------------------------------------------------------------------
+/**
+	Stop searching for hosts on the network.
+	@brief Stop searching for hosts on the network.
+	@param config The configuration to end enumeration for.
+	@return \ref kNMNoError if the function succeeds.\n
+	Otherwise, an error code.
+	\n\n\n\n
+ */
 
 NMErr ProtocolEndEnumeration(
 	PConfigRef config)
@@ -281,11 +304,88 @@ NMErr ProtocolEndEnumeration(
 /* 19990124 sjb propagate err from end enum */
 			err = config->NMEndEnumeration((NMProtocolConfigPriv*)config->configuration_data);
 		} else {
-			err= errFunctionNotBound;
+			err= kNMFunctionNotBoundErr;
 		}
 	} else {
-		err= errParamErr;
+		err= kNMParameterErr;
 	}
 
 	return err;
 }
+
+//----------------------------------------------------------------------------------------
+// ProtocolIdleEnumeration
+//----------------------------------------------------------------------------------------
+/**
+	Provide the enumeration process with processing time.  Call this repeatedly while enumerating.
+	@brief Provide the enumeration process with processing time.
+	@param config The config which is in the process of enumeration.
+	@return \ref kNMNoError if the function succeeds.\n
+	Otherwise, an error code.
+	\n\n\n\n
+ */
+
+NMErr ProtocolIdleEnumeration(
+	PConfigRef config)
+{
+	NMErr err= kNMNoError;
+
+	/* call as often as possible (anything that is synchronous) */
+	op_idle_synchronous(); 
+	
+	if(config)
+	{
+		if(config->NMIdleEnumeration)
+		{
+/* 19990124 sjb propagate err from idle */
+			err = config->NMIdleEnumeration((NMProtocolConfigPriv*)config->configuration_data);
+		} else {
+			err= kNMFunctionNotBoundErr;
+		}
+	} else {
+		err= kNMParameterErr;
+	}
+
+	return err;
+}
+
+//----------------------------------------------------------------------------------------
+// ProtocolBindEnumerationToConfig
+//----------------------------------------------------------------------------------------
+/**
+	Binds a configuration to a host found on the network through enumeration.
+	@brief Binds a configuration to a host found on the network.
+	@param config The config which is in the process of enumeration.
+	@param inID The id of the host to bind to.  The \e id member of an \ref NMEnumItemStruct obtained through enumeration is used.
+	@return \ref kNMNoError if the function succeeds.\n
+	Otherwise, an error code.
+	\n\n\n\n
+ */
+
+NMErr ProtocolBindEnumerationToConfig(
+	PConfigRef config, 
+	NMHostID inID)
+{
+	NMErr err= kNMNoError;
+
+	/* call as often as possible (anything that is synchronous) */
+	op_idle_synchronous(); 
+	
+	if(config)
+	{
+		if(config->NMBindEnumerationItemToConfig)
+		{
+/* 19990124 sjb propagate err from bind */
+			err = config->NMBindEnumerationItemToConfig((NMProtocolConfigPriv*)config->configuration_data, inID);
+		} else {
+			err= kNMFunctionNotBoundErr;
+		}
+	} else {
+		err= kNMParameterErr;
+	}
+
+	return err;
+}
+
+
+/** @}*/

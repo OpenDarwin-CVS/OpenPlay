@@ -124,11 +124,11 @@
 		CEndpoint(NSpGame *inGame, EPCookie *inUnreliableCookie, EPCookie *inCookie);
 		virtual ~CEndpoint();
 
-				OSStatus 	Init(NMUInt32 inConnectionReqCount, PConfigRef inConfig);		
-		virtual	OSStatus	InitNonAdvertiser(NSpProtocolPriv *inProt) = 0;
+				NMErr 	Init(NMUInt32 inConnectionReqCount, PConfigRef inConfig);		
+		virtual	NMErr	InitNonAdvertiser(NSpProtocolPriv *inProt) = 0;
 				
-				OSStatus	WaitForDisconnect(NMUInt32 inWaitTicks);
-				OSStatus	Disconnect(NMBoolean orderly = true);
+				NMErr	WaitForDisconnect(NMUInt32 inWaitTicks);
+				NMErr	Disconnect(NMBoolean orderly = true);
 		virtual	NMBoolean	Host(NMBoolean inAdvertise);
 				void		Advertise(NMBoolean inAdvertise);
 
@@ -147,8 +147,8 @@
 				CEndpoint	*Clone(void *inCookie);
 				void		Veto(void *inCookie, NSpMessageHeader *inMessage);
 				
-				OSStatus	SendMessage(NSpMessageHeader *inHeader, NMUInt8 *inBody, NSpFlags inFlags = 0, NMBoolean swapIt = true);
-				OSStatus	DoReceive(PEndpointRef inEndpoint, EPCookie *inCookie);
+				NMErr	SendMessage(NSpMessageHeader *inHeader, NMUInt8 *inBody, NSpFlags inFlags = 0, NMBoolean swapIt = true);
+				NMErr	DoReceive(PEndpointRef inEndpoint, EPCookie *inCookie);
 				void		Close(void);
 		inline	NMBoolean	IsAlive(void)	{return bConnected;}
 		
@@ -169,23 +169,23 @@
 	protected:
 
 	//			Notifier Handlers
-				OSStatus	HandleNewConnection(PEndpointRef inEndpoint, void *inCookie);
-				OSStatus 	HandOffConnection(PEndpointRef inEndpoint, void *inCookie);
-				OSStatus	HandleOpenEndpointComplete(EPCookie *inCookie, PEndpointRef inEP);
-				OSStatus 	HandleHandoffComplete(EPCookie *inCookie, PEndpointRef inEP);
-				OSStatus 	HandleAcceptComplete(PEndpointRef inEP, EPCookie *inCookie);
-				OSStatus	HandlePassconComplete(EPCookie *inCookie, PEndpointRef inEP);
-				OSStatus	HandleDisconnect(EPCookie *inCookie, PEndpointRef inEndpoint, NMBoolean orderly = true);
-				OSStatus	HandleDisconnectComplete(PEndpointRef inEP, EPCookie *inCookie);
-				OSStatus	HandleUnbindComplete(EPCookie *inCookie);
-				OSStatus	HandleConnectComplete(EPCookie *inCookie);		
-				OSStatus	HandleGoData(PEndpointRef inEP);
-				OSStatus	PostponeSend(SendInfo *inInfo, NSpMessageHeader *inData, NMUInt32 inBytesSent = 0, NMBoolean inAddToTail = true);
-				OSStatus	RunQ(SendInfo *inInfo);
+				NMErr	HandleNewConnection(PEndpointRef inEndpoint, void *inCookie);
+				NMErr 	HandOffConnection(PEndpointRef inEndpoint, void *inCookie);
+				NMErr	HandleOpenEndpointComplete(EPCookie *inCookie, PEndpointRef inEP);
+				NMErr 	HandleHandoffComplete(EPCookie *inCookie, PEndpointRef inEP);
+				NMErr 	HandleAcceptComplete(PEndpointRef inEP, EPCookie *inCookie);
+				NMErr	HandlePassconComplete(EPCookie *inCookie, PEndpointRef inEP);
+				NMErr	HandleDisconnect(EPCookie *inCookie, PEndpointRef inEndpoint, NMBoolean orderly = true);
+				NMErr	HandleDisconnectComplete(PEndpointRef inEP, EPCookie *inCookie);
+				NMErr	HandleUnbindComplete(EPCookie *inCookie);
+				NMErr	HandleConnectComplete(EPCookie *inCookie);		
+				NMErr	HandleGoData(PEndpointRef inEP);
+				NMErr	PostponeSend(SendInfo *inInfo, NSpMessageHeader *inData, NMUInt32 inBytesSent = 0, NMBoolean inAddToTail = true);
+				NMErr	RunQ(SendInfo *inInfo);
 
 		
-				OSStatus	DoReceiveStream(PEndpointRef inEndpoint, EPCookie *inCookie);
-				OSStatus	DoReceiveDatagram(PEndpointRef inEndpoint, EPCookie *inCookie);
+				NMErr	DoReceiveStream(PEndpointRef inEndpoint, EPCookie *inCookie);
+				NMErr	DoReceiveDatagram(PEndpointRef inEndpoint, EPCookie *inCookie);
 				ERObject	*ExchangeForBiggerER(ERObject *inERObject);
 		virtual CEndpoint	*MakeCopy(EPCookie *inReliableCookie) = 0;
 		

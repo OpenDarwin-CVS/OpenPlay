@@ -241,7 +241,7 @@ OTATEndpoint::DoUnregisterName(void)
 {
 	DEBUG_ENTRY_EXIT("OTATEndpoint::DoUnregisterName");
 
-OSStatus 			status = kOTNoError;
+NMErr 			status = kOTNoError;
 
 	if (mNameID == 0)
 		return kOTNoError;
@@ -476,7 +476,7 @@ DDPAddress		*addr;
 OTFlags			flags = 0;
 NMBoolean 		finished;
 NMUInt32			ioSize;
-OSStatus		status = kNMNoError;
+NMErr		status = kNMNoError;
 
 	//	it's possible that we will receive the confirmation in multiple packets
 	//	we therefore need to keep track of how many we expect, and how many we get

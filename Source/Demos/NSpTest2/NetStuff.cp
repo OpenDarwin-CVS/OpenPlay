@@ -93,10 +93,10 @@ enum
 
 //¥	------------------------------	Private Variables
 
-static Str31				gameName;
-static Str31				password;
-static Str31				playerName;
-static Str31				kJoinDialogLabel = "\pChoose a Game:";
+static NMStr31				gameName;
+static NMStr31				password;
+static NMStr31				playerName;
+static NMStr31				kJoinDialogLabel = "\pChoose a Game:";
 static Boolean				gInCallback = false;
 static UInt32				gLastUpdate = 0;
 UInt32						gUpdateFrequency = 2;
@@ -467,10 +467,10 @@ InitNetMenu(MenuHandle menu)
 
 //¥	--------------------	InitNetworking
 
-OSStatus
+NMErr
 InitNetworking(NSpGameID inGameID)
 {
-	OSStatus	status;
+	NMErr	status;
 	
 	printf("Initializing NetSprocket... ");
 	fflush(stdout);
@@ -531,7 +531,7 @@ WindowPtr	w, nextWind;
 void
 ShutdownNetworking(void)
 {
-OSStatus	status;
+NMErr	status;
 	
 	if (gNetGame)
 	{
@@ -809,10 +809,10 @@ AdjustNetMenus(void)
 
 //¥	--------------------	DoHost
 
-OSStatus
+NMErr
 DoHost(void)
 {
-	OSStatus 	status;
+	NMErr 	status;
 	Str255		chooserName;
 	NSpProtocolListReference	theList = NULL;
 	Boolean okHit;
@@ -869,11 +869,11 @@ failure:
 
 //¥	--------------------	DoJoin
 
-OSStatus
+NMErr
 DoJoin(void)
 {
 	NSpAddressReference	theAddress;
-	OSStatus			status;
+	NMErr				status;
 	Str255				chooserName;
 	
 	GetChooserName(chooserName,false);
@@ -909,7 +909,7 @@ static void
 DoSendLeaveMessage(NSpPlayerID inID)
 {
 NSpMessageHeader m;
-OSStatus status;
+NMErr status;
 	
 	NSpClearMessageHeader(&m);
 	
@@ -1194,7 +1194,7 @@ WindowPtr	w;
 void
 HandleNetwork(void)
 {
-OSStatus	status;
+NMErr	status;
 
 	if (!gNetGame)
 		return;
@@ -1277,7 +1277,7 @@ OSStatus	status;
 static void
 GetInfoEnumeratePlayers(void)
 {
-OSStatus				theErr;
+NMErr				theErr;
 NSpPlayerEnumerationPtr	thePlayers;
 UInt32					i;
 
@@ -1305,7 +1305,7 @@ UInt32					i;
 	char				name[sizeof (NSpPlayerName)];
 	NSpPlayerInfoPtr	thePlayer;
 	OTAddress			*address = NULL;
-	OSStatus			theErr;
+	NMErr			theErr;
 	
 		NSpPlayer_GetInfo(gNetGame, thePlayers->playerInfo[i]->id, &thePlayer);
 	
@@ -1318,7 +1318,7 @@ UInt32					i;
 			printf("Unavailable in posix build\n");
 			fflush(stdout);
 		#else
-			theErr = NSpPlayer_GetAddress(gNetGame, thePlayer->id, &address);
+			theErr = NSpPlayer_GetOTAddress(gNetGame, thePlayer->id, &address);
 		
 			if ((noErr != theErr) || (NULL == address))
 			{
@@ -1361,7 +1361,7 @@ UInt32					i;
 static void
 EnumeratePlayers(void)
 {
-OSStatus	theErr;
+NMErr	theErr;
 NSpPlayerEnumerationPtr	thePlayers;
 UInt32		i;
 
@@ -1446,7 +1446,7 @@ void decode_transmission(long fromID, WindowStuff *stuff, UInt8 *data, long leng
 	}
 		
 	//first off, we see if this packet starts where the last left off - if not, we increment out-of-order count
-	#if (!bigEndian)
+	#if (!big_endian)
 		firstValue = SWAP4(firstValue);
 	#endif
 
@@ -1476,7 +1476,7 @@ void decode_transmission(long fromID, WindowStuff *stuff, UInt8 *data, long leng
 	//now go through the packet, incrementing as we go
 	while (counter > 0)
 	{
-		#if (!bigEndian)
+		#if (!big_endian)
 			(*ptr) = SWAP4((*ptr));
 		#endif
 		if (*ptr != *receiveCodeCount)

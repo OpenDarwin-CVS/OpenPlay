@@ -41,6 +41,11 @@ NMErr NMSetupDialog(	DIALOGPTR 			dialog,
 						NMSInt16			inBaseItem, 
 						NMConfigRef			inConfig)
 {
+	UNUSED_PARAMETER(dialog);
+	UNUSED_PARAMETER(frame);
+	UNUSED_PARAMETER(inBaseItem);
+	UNUSED_PARAMETER(inConfig);
+
 	return kNMInternalErr;
 } /* NMSetupDialog */
 
@@ -65,6 +70,10 @@ NMBoolean NMHandleEvent(	DIALOGPTR			dialog,
 							EVENT *				event, 
 							NMConfigRef 		inConfig)
 {
+	UNUSED_PARAMETER(dialog);
+	UNUSED_PARAMETER(event);
+	UNUSED_PARAMETER(inConfig);
+
 	return false;
 } /* NMHandleEvent */
 
@@ -89,6 +98,10 @@ NMErr NMHandleItemHit(	DIALOGPTR			dialog,
 						NMSInt16			inItemHit, 
 						NMConfigRef 		inConfig)
 {
+	UNUSED_PARAMETER(dialog);
+	UNUSED_PARAMETER(inItemHit);
+	UNUSED_PARAMETER(inConfig);
+
 	return kNMInternalErr;
 } /* NMHandleItemHit */
 
@@ -113,6 +126,10 @@ NMBoolean NMTeardownDialog(	DIALOGPTR 			dialog,
 							NMBoolean			inUpdateConfig, 
 							NMConfigRef 		ioConfig)
 {
+	UNUSED_PARAMETER(dialog);
+	UNUSED_PARAMETER(inUpdateConfig);
+	UNUSED_PARAMETER(ioConfig);
+
 	return false;
 } /* NMTeardownDialog */
 
@@ -140,5 +157,7 @@ void NMGetRequiredDialogFrame(	RECT *			r,
 	r->right = 0;
 	r->top = 0;
 	r->bottom = 0;
+	UNUSED_PARAMETER(inConfig);
+
 } /* NMGetRequiredDialogFrame */
 

@@ -26,6 +26,8 @@ ProtocolRejectConnection
 ProtocolSend
 ProtocolReceive
 ProtocolGetEndpointInfo
+ProtocolGetEndpointAddress
+ProtocolFreeEndpointAddress
 ValidateCrossPlatformPacket
 SwapCrossPlatformPacket
 ProtocolStartAdvertising
@@ -55,8 +57,9 @@ NSpMessage_Release
 NSpMessage_SendTo
 NSpPlayer_ChangeType
 NSpPlayer_Remove
-NSpPlayer_GetAddress
+NSpPlayer_FreeAddress
 NSpPlayer_GetIPAddress
+NSpPlayer_GetOTAddress
 NSpPlayer_GetMyID
 NSpPlayer_GetInfo
 NSpPlayer_ReleaseInfo
