@@ -21,8 +21,6 @@
  * 
  * @APPLE_LICENSE_HEADER_END@
  *
- * Modified: $Date$
- * Revision: $Id$
  */
 
 #include "portable_files.h"

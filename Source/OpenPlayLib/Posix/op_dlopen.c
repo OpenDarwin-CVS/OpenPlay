@@ -292,8 +292,7 @@ int mode)
 	}
 
 	/* try to create an object file image from this path */
-	ofile_result_code = NSCreateObjectFileImageFromFile(module_path,
-							    &objectFileImage);
+	ofile_result_code = NSCreateObjectFileImageFromFile(module_path, &objectFileImage);
 	if(ofile_result_code != NSObjectFileImageSuccess){
 	    switch(ofile_result_code){
 	    case NSObjectFileImageFailure:

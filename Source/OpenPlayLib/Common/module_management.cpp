@@ -21,8 +21,6 @@
  * 
  * @APPLE_LICENSE_HEADER_END@
  *
- * Modified: $Date$
- * Revision: $Id$
  */
 
 #include "portable_files.h"
@@ -310,16 +308,23 @@ NMSInt32 count_endpoints_of_type(
 static void remove_loaded_module(
 	loaded_modules_data *loaded_module)
 {
+	/* %% LR -- at times this routine fails calling free() on a non-malloc'd block! */
+	op_assert(loaded_module != NULL);
+
 	/* remove it from the list.. */
-	if(loaded_module==gOp_globals.loaded_modules)
+	if(loaded_module == gOp_globals.loaded_modules)
 	{
-		gOp_globals.loaded_modules= loaded_module->next;
-	} else {
-		loaded_modules_data *previous_module= gOp_globals.loaded_modules;
+		gOp_globals.loaded_modules = loaded_module->next;
+	}
+	else	/* if more than one module, adjust the linked list */
+	{
+		loaded_modules_data *previous_module = gOp_globals.loaded_modules;
 		
-		while(previous_module && previous_module->next != loaded_module) previous_module= previous_module->next;
+		while(previous_module && previous_module->next != loaded_module)
+			previous_module = previous_module->next;
+
 		op_assert(previous_module);
-		previous_module->next= loaded_module->next;
+		previous_module->next = loaded_module->next;
 	}
 
 	/* free the library. */

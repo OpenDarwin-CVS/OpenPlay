@@ -21,12 +21,10 @@
  * 
  * @APPLE_LICENSE_HEADER_END@
  *
- * Modified: $Date$
- * Revision: $Id$
  */
 
 // This demo uses the OpenPlay TCPIP NetModule and "NetSprocketMode" to download a file via a http server.
-//NetSprocketMode was so named because it was created to allow OpenPlay to act as a wrapper for NetSprocket.
+// NetSprocketMode was so named because it was created to allow OpenPlay to act as a wrapper for NetSprocket.
 // By specifying "NetSprocketMode" as true in an endpoint's configuration string, an endpoint will function in a slightly
 // modified mode of operation where all datagram messages sent by a client arrive at the original host endpoint instead of its spawned
 // endpoints.  Thus you lose the ability to see which client sent a datagram message, but there are a few advantages in return:
@@ -34,10 +32,11 @@
 // 2> in this mode, the openplay protocol sends no data over the network itself, enabling openplay to act simply as a wrapper for sockets/Open-Transport.
 
 
-//this second aspect of NetSprocketMode is used in this sample - we simply open a connection to a http server, send out a request, and accept data in return, which
-//shows up as stream data on our OpenPlay endpoint.
+// this second aspect of NetSprocketMode is used in this sample - we simply open a connection to a http server, send out a request, and accept data in return, which
+// shows up as stream data on our OpenPlay endpoint.
 
 //includes
+
 #include "OPUtils.h"
 #include <stdio.h>
 #include <stdlib.h>

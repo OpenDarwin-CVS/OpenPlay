@@ -1,5 +1,4 @@
-# Modified: $Date$
-# Revision: $Id$
+# OpenPlay Make file for Unix targets
 
 #where the makefile is
 TOP = $(PWD)

@@ -22,8 +22,6 @@
  * 
  * @APPLE_LICENSE_HEADER_END@
  *
- * Modified: $Date$
- * Revision: $Id$
  */
 
 #ifdef __cplusplus

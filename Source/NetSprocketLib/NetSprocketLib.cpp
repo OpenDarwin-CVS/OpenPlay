@@ -21,9 +21,8 @@
  * 
  * @APPLE_LICENSE_HEADER_END@
  *
- * Modified: $Date$
- * Revision: $Id$
  */
+
 #ifndef __OPENPLAY__
 #include 			"OpenPlay.h"
 #endif

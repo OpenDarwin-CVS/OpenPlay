@@ -21,10 +21,7 @@
  * 
  * @APPLE_LICENSE_HEADER_END@
  *
- * Modified: $Date$
- * Revision: $Id$
  */
-//    TIMC    7/17/98    Added calls to set the game owner for callback handlers RADAR 2255803
 
 #ifndef __NSPGAMEPRIVATE__
 #define __NSPGAMEPRIVATE__

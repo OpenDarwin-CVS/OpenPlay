@@ -21,8 +21,6 @@
  * 
  * @APPLE_LICENSE_HEADER_END@
  *
- * Modified: $Date$
- * Revision: $Id$
  */
  
 #ifndef __DIALOG_UTILS_H__

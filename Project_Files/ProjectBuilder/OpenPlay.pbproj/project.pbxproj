@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 34;
+	objectVersion = 38;
 	objects = {
 		034768DDFF38A45A11DB9C8B = {
 			children = (
@@ -93,10 +93,10 @@
 				FRAMEWORK_SEARCH_PATHS = "";
 				FRAMEWORK_VERSION = A;
 				HEADER_SEARCH_PATHS = "../../Source/Utilities/posix ../../Source/OPNetModules ../../Source/OPNetModules/Common ../../Source/NetSprocketLib ../../Source/Utilities ../../Source/OpenPlayLib/Common ../../Source/OpenPlayLib/posix ../../Interfaces";
-				IMPLICITLY_INCLUDED_HEADERS = ../../Source/Utilities/posix/prefixDarwin.h;
 				INSTALL_PATH = "@executable_path/../Frameworks";
 				LIBRARY_SEARCH_PATHS = "";
 				OTHER_LDFLAGS = "";
+				PREFIX_HEADER = ../../Source/Utilities/Posix/prefixMach.h;
 				PRODUCT_NAME = OpenPlay;
 				SECTORDER_FLAGS = "";
 				SKIP_INSTALL = YES;
@@ -111,25 +111,31 @@
 			productName = OpenPlay;
 			productReference = 034768DEFF38A45A11DB9C8B;
 			productSettingsXML = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
-<!DOCTYPE plist SYSTEM \"file://localhost/System/Library/DTDs/PropertyList.dtd\">
-<plist version=\"0.9\">
+<!DOCTYPE plist PUBLIC \"-//Apple Computer//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">
+<plist version=\"1.0\">
 <dict>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>English</string>
 	<key>CFBundleExecutable</key>
 	<string>OpenPlay</string>
+	<key>CFBundleGetInfoString</key>
+	<string>© 1999-2002</string>
 	<key>CFBundleIconFile</key>
 	<string></string>
 	<key>CFBundleIdentifier</key>
-	<string></string>
+	<string>com.apple.OpenPlay</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
+	<key>CFBundleName</key>
+	<string>OpenPlay Framework</string>
 	<key>CFBundlePackageType</key>
 	<string>FMWK</string>
+	<key>CFBundleShortVersionString</key>
+	<string>v2.2</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleVersion</key>
-	<string>0.0.1d1</string>
+	<string>2.2b4</string>
 	<key>CSResourcesFileMapped</key>
 	<true/>
 </dict>
@@ -142,7 +148,7 @@
 			files = (
 			);
 			isa = PBXHeadersBuildPhase;
-			name = Headers;
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 		0867D69EFE84028FC02AAC07 = {
 			buildActionMask = 2147483647;
@@ -150,7 +156,7 @@
 				089C1668FE841158C02AAC07,
 			);
 			isa = PBXResourcesBuildPhase;
-			name = "Bundle Resources";
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 		0867D69FFE84028FC02AAC07 = {
 			buildActionMask = 2147483647;
@@ -187,7 +193,7 @@
 				F5679E14026A383B01A80105,
 			);
 			isa = PBXSourcesBuildPhase;
-			name = Sources;
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 		0867D6A0FE84028FC02AAC07 = {
 			buildActionMask = 2147483647;
@@ -195,7 +201,7 @@
 				F5679E15026A38E201A80105,
 			);
 			isa = PBXFrameworksBuildPhase;
-			name = "Frameworks & Libraries";
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 		0867D6A2FE84028FC02AAC07 = {
 			buildActionMask = 2147483647;
@@ -203,7 +209,7 @@
 				F5679E13026A382401A80105,
 			);
 			isa = PBXRezBuildPhase;
-			name = "ResourceManager Resources";
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 		089C1665FE841158C02AAC07 = {
 			children = (
@@ -313,6 +319,18 @@
 //F52
 //F53
 //F54
+		F536EB9D03232CB401A8008C = {
+			isa = PBXFileReference;
+			name = NSpTest2Mach.r;
+			path = /Volumes/IFD/OpenSource/OpenPlay/proj/OpenPlay/Source/Demos/NSpTest2/NSpTest2Mach.r;
+			refType = 0;
+		};
+		F536EB9E03232CB401A8008C = {
+			fileRef = F536EB9D03232CB401A8008C;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
 		F5530D5B0256B46901A80105 = {
 			children = (
 				F5530D5C0256B46901A80105,
@@ -354,7 +372,7 @@
 				F5530D630256BCF801A80105,
 			);
 			isa = PBXCopyFilesBuildPhase;
-			name = "Copy Files";
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 		F5530D630256BCF801A80105 = {
 			fileRef = 034768DEFF38A45A11DB9C8B;
@@ -413,10 +431,10 @@
 			buildSettings = {
 				EXPORTED_SYMBOLS_FILE = ../../Source/OPNetModules/posix/NetModuleDarwin.exp;
 				HEADER_SEARCH_PATHS = "../../Source/Utilities/posix ../../Source/OPNetModules ../../Source/OPNetModules/Common ../../Source/OPNetModules/posix/TCP_IP ../../Source/OPNetModules/ ../../Source/Utilities ../../Source/OpenPlayLib/Common ../../Source/OpenPlayLib/posix ../../Interfaces";
-				IMPLICITLY_INCLUDED_HEADERS = ../../Source/Utilities/posix/prefixDarwin.h;
 				OTHER_CFLAGS = "";
 				OTHER_LDFLAGS = "";
 				OTHER_REZFLAGS = "";
+				PREFIX_HEADER = ../../Source/Utilities/Posix/prefixMach.h;
 				PRODUCT_NAME = tcpip.so;
 				SECTORDER_FLAGS = "";
 				WARNING_CFLAGS = "-Wno-four-char-constants -Wno-unknown-pragmas";
@@ -430,15 +448,15 @@
 			productName = "IP Module";
 			productReference = F5530D670256BEDD01A80105;
 			productSettingsXML = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
-<!DOCTYPE plist SYSTEM \"file://localhost/System/Library/DTDs/PropertyList.dtd\">
-<plist version=\"0.9\">
+<!DOCTYPE plist PUBLIC \"-//Apple Computer//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">
+<plist version=\"1.0\">
 <dict>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>English</string>
 	<key>CFBundleExecutable</key>
 	<string>tcpip.so</string>
 	<key>CFBundleGetInfoString</key>
-	<string></string>
+	<string>© 1999-2002 Apple Computer, Inc.</string>
 	<key>CFBundleIconFile</key>
 	<string></string>
 	<key>CFBundleIdentifier</key>
@@ -446,15 +464,15 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string></string>
+	<string>OpenPlay TCP/IP Module</string>
 	<key>CFBundlePackageType</key>
 	<string>BNDL</string>
 	<key>CFBundleShortVersionString</key>
-	<string></string>
+	<string>v2.2</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleVersion</key>
-	<string>0.0.1d1</string>
+	<string>2.2</string>
 </dict>
 </plist>
 ";
@@ -465,14 +483,14 @@
 			files = (
 			);
 			isa = PBXHeadersBuildPhase;
-			name = Headers;
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 		F5530D6A0256BEDD01A80105 = {
 			buildActionMask = 2147483647;
 			files = (
 			);
 			isa = PBXResourcesBuildPhase;
-			name = "Bundle Resources";
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 		F5530D6B0256BEDD01A80105 = {
 			buildActionMask = 2147483647;
@@ -490,7 +508,7 @@
 				F5679E08026A1E3701A80105,
 			);
 			isa = PBXSourcesBuildPhase;
-			name = Sources;
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 		F5530D6C0256BEDD01A80105 = {
 			buildActionMask = 2147483647;
@@ -498,7 +516,7 @@
 				F5679E0C026A1FA201A80105,
 			);
 			isa = PBXFrameworksBuildPhase;
-			name = "Frameworks & Libraries";
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 		F5530D6D0256BEDD01A80105 = {
 			buildActionMask = 2147483647;
@@ -506,7 +524,7 @@
 				F5679E0A026A1F2001A80105,
 			);
 			isa = PBXRezBuildPhase;
-			name = "ResourceManager Resources";
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 		F5530D6E0256BEDD01A80105 = {
 			isa = PBXTargetDependency;
@@ -732,11 +750,11 @@
 			);
 			buildSettings = {
 				HEADER_SEARCH_PATHS = "../../Source/Utilities ../../Source/Demos/OPExample1 ../../Interfaces";
-				IMPLICITLY_INCLUDED_HEADERS = ../../Source/Utilities/posix/prefixDarwin.h;
 				OTHER_CFLAGS = "";
 				OTHER_LDFLAGS = "";
 				OTHER_REZFLAGS = "";
 				PREBINDING = NO;
+				PREFIX_HEADER = ../../Source/Utilities/Posix/prefixMach.h;
 				PRODUCT_NAME = OPExample1;
 				SECTORDER_FLAGS = "";
 				WARNING_CFLAGS = "-Wno-four-char-constants -Wno-unknown-pragmas";
@@ -750,15 +768,15 @@
 			productName = OPExample1;
 			productReference = F587B67C025C6D4501A80105;
 			productSettingsXML = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
-<!DOCTYPE plist SYSTEM \"file://localhost/System/Library/DTDs/PropertyList.dtd\">
-<plist version=\"0.9\">
+<!DOCTYPE plist PUBLIC \"-//Apple Computer//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">
+<plist version=\"1.0\">
 <dict>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>English</string>
 	<key>CFBundleExecutable</key>
-	<string></string>
+	<string>OPExample1</string>
 	<key>CFBundleGetInfoString</key>
-	<string></string>
+	<string>© 1999-2002 Apple Computer, Inc.</string>
 	<key>CFBundleIconFile</key>
 	<string></string>
 	<key>CFBundleIdentifier</key>
@@ -766,15 +784,15 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string></string>
+	<string>OpenPlay Protocol Example</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string></string>
+	<string>v2.2</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleVersion</key>
-	<string>0.0.1d1</string>
+	<string>2.2</string>
 </dict>
 </plist>
 ";
@@ -785,7 +803,7 @@
 			files = (
 			);
 			isa = PBXHeadersBuildPhase;
-			name = Headers;
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 		F587B67F025C6D4501A80105 = {
 			buildActionMask = 2147483647;
@@ -793,7 +811,7 @@
 				F5679E0B026A1F2001A80105,
 			);
 			isa = PBXResourcesBuildPhase;
-			name = "Bundle Resources";
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 		F587B680025C6D4501A80105 = {
 			buildActionMask = 2147483647;
@@ -802,7 +820,7 @@
 				F587B68A025C6DD401A80105,
 			);
 			isa = PBXSourcesBuildPhase;
-			name = Sources;
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 		F587B681025C6D4501A80105 = {
 			buildActionMask = 2147483647;
@@ -811,14 +829,14 @@
 				F587B68B025C6ECD01A80105,
 			);
 			isa = PBXFrameworksBuildPhase;
-			name = "Frameworks & Libraries";
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 		F587B682025C6D4501A80105 = {
 			buildActionMask = 2147483647;
 			files = (
 			);
 			isa = PBXRezBuildPhase;
-			name = "ResourceManager Resources";
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 		F587B684025C6D9401A80105 = {
 			fileRef = 034768DEFF38A45A11DB9C8B;
@@ -834,7 +852,7 @@
 				F587B686025C6D9401A80105,
 			);
 			isa = PBXCopyFilesBuildPhase;
-			name = "Copy Files";
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 		F587B686025C6D9401A80105 = {
 			fileRef = 034768DEFF38A45A11DB9C8B;
@@ -894,11 +912,11 @@
 			);
 			buildSettings = {
 				HEADER_SEARCH_PATHS = "../../Source/Utilities ../../Source/Demos/OPExample1 ../../Interfaces";
-				IMPLICITLY_INCLUDED_HEADERS = ../../Source/Utilities/posix/prefixDarwin.h;
 				OTHER_CFLAGS = "";
 				OTHER_LDFLAGS = "";
 				OTHER_REZFLAGS = "";
 				PREBINDING = NO;
+				PREFIX_HEADER = ../../Source/Utilities/Posix/prefixMach.h;
 				PRODUCT_NAME = NSpExample1;
 				SECTORDER_FLAGS = "";
 				WARNING_CFLAGS = "-Wno-four-char-constants -Wno-unknown-pragmas";
@@ -912,31 +930,29 @@
 			productName = NSpExample1;
 			productReference = F587B68D025C70BB01A80105;
 			productSettingsXML = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
-<!DOCTYPE plist SYSTEM \"file://localhost/System/Library/DTDs/PropertyList.dtd\">
-<plist version=\"0.9\">
+<!DOCTYPE plist PUBLIC \"-//Apple Computer//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">
+<plist version=\"1.0\">
 <dict>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>English</string>
 	<key>CFBundleExecutable</key>
-	<string></string>
+	<string>NSpExample1</string>
 	<key>CFBundleGetInfoString</key>
-	<string></string>
+	<string>© 1999-2002 Apple Computer, Inc.</string>
 	<key>CFBundleIconFile</key>
-	<string></string>
-	<key>CFBundleIdentifier</key>
 	<string></string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string></string>
+	<string>OpenPlay NSp Example</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string></string>
+	<string>v2.2</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleVersion</key>
-	<string>0.0.1d1</string>
+	<string>2.2</string>
 </dict>
 </plist>
 ";
@@ -947,14 +963,14 @@
 			files = (
 			);
 			isa = PBXHeadersBuildPhase;
-			name = Headers;
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 		F587B690025C70BB01A80105 = {
 			buildActionMask = 2147483647;
 			files = (
 			);
 			isa = PBXResourcesBuildPhase;
-			name = "Bundle Resources";
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 		F587B691025C70BB01A80105 = {
 			buildActionMask = 2147483647;
@@ -963,7 +979,7 @@
 				F587B693025C70BB01A80105,
 			);
 			isa = PBXSourcesBuildPhase;
-			name = Sources;
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 		F587B692025C70BB01A80105 = {
 			fileRef = F587B687025C6DD401A80105;
@@ -984,7 +1000,7 @@
 				F587B695025C70BB01A80105,
 			);
 			isa = PBXFrameworksBuildPhase;
-			name = "Frameworks & Libraries";
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 		F587B695025C70BB01A80105 = {
 			fileRef = 034768DEFF38A45A11DB9C8B;
@@ -997,7 +1013,7 @@
 			files = (
 			);
 			isa = PBXRezBuildPhase;
-			name = "ResourceManager Resources";
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 		F587B697025C70BB01A80105 = {
 			buildActionMask = 2147483647;
@@ -1007,7 +1023,7 @@
 				F587B698025C70BB01A80105,
 			);
 			isa = PBXCopyFilesBuildPhase;
-			name = "Copy Files";
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 		F587B698025C70BB01A80105 = {
 			fileRef = 034768DEFF38A45A11DB9C8B;
@@ -1060,11 +1076,11 @@
 			);
 			buildSettings = {
 				HEADER_SEARCH_PATHS = "../../Source/Utilities ../../Interfaces";
-				IMPLICITLY_INCLUDED_HEADERS = ../../Source/Utilities/posix/prefixDarwin.h;
 				OTHER_CFLAGS = "";
 				OTHER_LDFLAGS = "";
 				OTHER_REZFLAGS = "";
 				PREBINDING = NO;
+				PREFIX_HEADER = ../../Source/Utilities/Posix/prefixMach.h;
 				PRODUCT_NAME = OpenPlayMiniDemo;
 				SECTORDER_FLAGS = "";
 				WARNING_CFLAGS = "-Wno-four-char-constants -Wno-unknown-pragmas";
@@ -1074,19 +1090,18 @@
 			);
 			isa = PBXApplicationTarget;
 			name = OpenPlayMiniDemo;
-			productInstallPath = "$(USER_APPS_DIR)";
 			productName = OpenPlayMiniDemo;
 			productReference = F5A736FD02667C1101A80105;
 			productSettingsXML = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
-<!DOCTYPE plist SYSTEM \"file://localhost/System/Library/DTDs/PropertyList.dtd\">
-<plist version=\"0.9\">
+<!DOCTYPE plist PUBLIC \"-//Apple Computer//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">
+<plist version=\"1.0\">
 <dict>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>English</string>
 	<key>CFBundleExecutable</key>
-	<string></string>
+	<string>OPMiniDemo</string>
 	<key>CFBundleGetInfoString</key>
-	<string></string>
+	<string>© 1999-2002 Apple Computer, Inc.</string>
 	<key>CFBundleIconFile</key>
 	<string></string>
 	<key>CFBundleIdentifier</key>
@@ -1094,15 +1109,15 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string></string>
+	<string>OpenPlay MiniDemo</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string></string>
+	<string>v2.2</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleVersion</key>
-	<string>0.0.1d1</string>
+	<string>2.2</string>
 </dict>
 </plist>
 ";
@@ -1113,14 +1128,14 @@
 			files = (
 			);
 			isa = PBXHeadersBuildPhase;
-			name = Headers;
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 		F5A7370002667C1101A80105 = {
 			buildActionMask = 2147483647;
 			files = (
 			);
 			isa = PBXResourcesBuildPhase;
-			name = "Bundle Resources";
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 		F5A7370102667C1101A80105 = {
 			buildActionMask = 2147483647;
@@ -1128,7 +1143,7 @@
 				F5A7370602667C4501A80105,
 			);
 			isa = PBXSourcesBuildPhase;
-			name = Sources;
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 		F5A7370202667C1101A80105 = {
 			buildActionMask = 2147483647;
@@ -1136,14 +1151,14 @@
 				F5A7370702667CA401A80105,
 			);
 			isa = PBXFrameworksBuildPhase;
-			name = "Frameworks & Libraries";
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 		F5A7370302667C1101A80105 = {
 			buildActionMask = 2147483647;
 			files = (
 			);
 			isa = PBXRezBuildPhase;
-			name = "ResourceManager Resources";
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 		F5A7370402667C1101A80105 = {
 			isa = PBXTargetDependency;
@@ -1175,7 +1190,7 @@
 				F5A7370902667CA401A80105,
 			);
 			isa = PBXCopyFilesBuildPhase;
-			name = "Copy Files";
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 		F5A7370902667CA401A80105 = {
 			fileRef = 034768DEFF38A45A11DB9C8B;
@@ -1564,11 +1579,11 @@
 			);
 			buildSettings = {
 				HEADER_SEARCH_PATHS = "../../Source/Utilities ../../Source/Demos/NSpTestApp ../../Interfaces";
-				IMPLICITLY_INCLUDED_HEADERS = ../../Source/Utilities/posix/prefixDarwin.h;
 				OTHER_CFLAGS = "";
 				OTHER_LDFLAGS = "-lstdc++";
 				OTHER_REZFLAGS = "";
 				PREBINDING = NO;
+				PREFIX_HEADER = ../../Source/Utilities/Macintosh/prefixMacCarbon.h;
 				PRODUCT_NAME = NetSprocketTest;
 				SECTORDER_FLAGS = "";
 				WARNING_CFLAGS = "-Wno-four-char-constants -Wno-unknown-pragmas";
@@ -1582,15 +1597,15 @@
 			productName = NetSprocketTest;
 			productReference = F5CE6DFA025AF5E601A80105;
 			productSettingsXML = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
-<!DOCTYPE plist SYSTEM \"file://localhost/System/Library/DTDs/PropertyList.dtd\">
-<plist version=\"0.9\">
+<!DOCTYPE plist PUBLIC \"-//Apple Computer//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">
+<plist version=\"1.0\">
 <dict>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>English</string>
 	<key>CFBundleExecutable</key>
-	<string></string>
+	<string>NSpTest</string>
 	<key>CFBundleGetInfoString</key>
-	<string></string>
+	<string>© 1999-2002 Apple Computer, Inc.</string>
 	<key>CFBundleIconFile</key>
 	<string></string>
 	<key>CFBundleIdentifier</key>
@@ -1598,15 +1613,15 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string></string>
+	<string>OpenPlay NSp Test Bed</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string></string>
+	<string>v2.2</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleVersion</key>
-	<string>0.0.1d1</string>
+	<string>2.2</string>
 </dict>
 </plist>
 ";
@@ -1617,14 +1632,14 @@
 			files = (
 			);
 			isa = PBXHeadersBuildPhase;
-			name = Headers;
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 		F5CE6DFD025AF5E601A80105 = {
 			buildActionMask = 2147483647;
 			files = (
 			);
 			isa = PBXResourcesBuildPhase;
-			name = "Bundle Resources";
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 		F5CE6DFE025AF5E601A80105 = {
 			buildActionMask = 2147483647;
@@ -1633,7 +1648,7 @@
 				F5A736FB0265070301A80105,
 			);
 			isa = PBXSourcesBuildPhase;
-			name = Sources;
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 		F5CE6DFF025AF5E601A80105 = {
 			buildActionMask = 2147483647;
@@ -1642,14 +1657,14 @@
 				F5CE6E07025AF7AF01A80105,
 			);
 			isa = PBXFrameworksBuildPhase;
-			name = "Frameworks & Libraries";
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 		F5CE6E00025AF5E601A80105 = {
 			buildActionMask = 2147483647;
 			files = (
 			);
 			isa = PBXRezBuildPhase;
-			name = "ResourceManager Resources";
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 		F5CE6E01025AF68701A80105 = {
 			isa = PBXFileReference;
@@ -1677,7 +1692,7 @@
 				F5CE6E05025AF68701A80105,
 			);
 			isa = PBXCopyFilesBuildPhase;
-			name = "Copy Files";
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 		F5CE6E05025AF68701A80105 = {
 			fileRef = 034768DEFF38A45A11DB9C8B;
@@ -1719,10 +1734,10 @@
 			);
 			buildSettings = {
 				HEADER_SEARCH_PATHS = "../../Source/Utilities ../../Interfaces";
-				IMPLICITLY_INCLUDED_HEADERS = ../../Source/Utilities/posix/prefixDarwin.h;
 				OTHER_CFLAGS = "";
 				OTHER_REZFLAGS = "";
 				PREBINDING = NO;
+				PREFIX_HEADER = ../../Source/Utilities/Posix/prefixMach.h;
 				PRODUCT_NAME = OPEnumTest;
 				SECTORDER_FLAGS = "";
 				WARNING_CFLAGS = "-Wno-four-char-constants -Wno-unknown-pragmas";
@@ -1736,15 +1751,15 @@
 			productName = OPEnumTest;
 			productReference = F5CE6E0A025AF81F01A80105;
 			productSettingsXML = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
-<!DOCTYPE plist SYSTEM \"file://localhost/System/Library/DTDs/PropertyList.dtd\">
-<plist version=\"0.9\">
+<!DOCTYPE plist PUBLIC \"-//Apple Computer//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">
+<plist version=\"1.0\">
 <dict>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>English</string>
 	<key>CFBundleExecutable</key>
-	<string></string>
+	<string>OPEnumTest</string>
 	<key>CFBundleGetInfoString</key>
-	<string></string>
+	<string>© 1999-2002 Apple Computer, Inc.</string>
 	<key>CFBundleIconFile</key>
 	<string></string>
 	<key>CFBundleIdentifier</key>
@@ -1752,15 +1767,15 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string></string>
+	<string>OpenPlay Enum Test</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string></string>
+	<string>v2.2</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleVersion</key>
-	<string>0.0.1d1</string>
+	<string>2.2</string>
 </dict>
 </plist>
 ";
@@ -1771,14 +1786,14 @@
 			files = (
 			);
 			isa = PBXHeadersBuildPhase;
-			name = Headers;
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 		F5CE6E0D025AF81F01A80105 = {
 			buildActionMask = 2147483647;
 			files = (
 			);
 			isa = PBXResourcesBuildPhase;
-			name = "Bundle Resources";
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 		F5CE6E0E025AF81F01A80105 = {
 			buildActionMask = 2147483647;
@@ -1786,7 +1801,7 @@
 				F5CE6E12025AF8AC01A80105,
 			);
 			isa = PBXSourcesBuildPhase;
-			name = Sources;
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 		F5CE6E0F025AF81F01A80105 = {
 			buildActionMask = 2147483647;
@@ -1795,14 +1810,14 @@
 				F5CE6E16025AF8E301A80105,
 			);
 			isa = PBXFrameworksBuildPhase;
-			name = "Frameworks & Libraries";
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 		F5CE6E10025AF81F01A80105 = {
 			buildActionMask = 2147483647;
 			files = (
 			);
 			isa = PBXRezBuildPhase;
-			name = "ResourceManager Resources";
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 		F5CE6E11025AF8AC01A80105 = {
 			isa = PBXFileReference;
@@ -1824,7 +1839,7 @@
 				F5CE6E14025AF8AC01A80105,
 			);
 			isa = PBXCopyFilesBuildPhase;
-			name = "Copy Files";
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 		F5CE6E14025AF8AC01A80105 = {
 			fileRef = 034768DEFF38A45A11DB9C8B;
@@ -1873,11 +1888,11 @@
 			);
 			buildSettings = {
 				HEADER_SEARCH_PATHS = "../../Source/Utilities ../../Source/Demos/NSpTest2 ../../Interfaces";
-				IMPLICITLY_INCLUDED_HEADERS = ../../Source/Utilities/Macintosh/prefixMacCarbon.h;
 				OTHER_CFLAGS = "";
 				OTHER_LDFLAGS = "";
 				OTHER_REZFLAGS = "";
 				PREBINDING = NO;
+				PREFIX_HEADER = ../../Source/Utilities/Posix/prefixMach.h;
 				PRODUCT_NAME = NetSprocketTest2;
 				SECTORDER_FLAGS = "";
 				WARNING_CFLAGS = "-Wno-four-char-constants -Wno-unknown-pragmas";
@@ -1891,15 +1906,15 @@
 			productName = NetSprocketTest2;
 			productReference = F5CE6E1A025AFB1901A80105;
 			productSettingsXML = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
-<!DOCTYPE plist SYSTEM \"file://localhost/System/Library/DTDs/PropertyList.dtd\">
-<plist version=\"0.9\">
+<!DOCTYPE plist PUBLIC \"-//Apple Computer//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">
+<plist version=\"1.0\">
 <dict>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>English</string>
 	<key>CFBundleExecutable</key>
-	<string></string>
+	<string>NSpTest2</string>
 	<key>CFBundleGetInfoString</key>
-	<string></string>
+	<string>© 1999-2002 Apple Computer, Inc.</string>
 	<key>CFBundleIconFile</key>
 	<string></string>
 	<key>CFBundleIdentifier</key>
@@ -1907,15 +1922,15 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string></string>
+	<string>OpenPlay NSpTest</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string></string>
+	<string>v2.2</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleVersion</key>
-	<string>0.0.1d1</string>
+	<string>2.2</string>
 </dict>
 </plist>
 ";
@@ -1926,14 +1941,14 @@
 			files = (
 			);
 			isa = PBXHeadersBuildPhase;
-			name = Headers;
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 		F5CE6E1D025AFB1901A80105 = {
 			buildActionMask = 2147483647;
 			files = (
 			);
 			isa = PBXResourcesBuildPhase;
-			name = "Bundle Resources";
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 		F5CE6E1E025AFB1901A80105 = {
 			buildActionMask = 2147483647;
@@ -1943,10 +1958,9 @@
 				F5CE6E29025AFB5301A80105,
 				F5CE6E2A025AFB5301A80105,
 				F5CE6E2B025AFB5301A80105,
-				F5CE6E2C025AFB5301A80105,
 			);
 			isa = PBXSourcesBuildPhase;
-			name = Sources;
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 		F5CE6E1F025AFB1901A80105 = {
 			buildActionMask = 2147483647;
@@ -1955,15 +1969,15 @@
 				F5CE6E31025AFBF001A80105,
 			);
 			isa = PBXFrameworksBuildPhase;
-			name = "Frameworks & Libraries";
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 		F5CE6E20025AFB1901A80105 = {
 			buildActionMask = 2147483647;
 			files = (
-				F5CE6E32025AFBF001A80105,
+				F536EB9E03232CB401A8008C,
 			);
 			isa = PBXRezBuildPhase;
-			name = "ResourceManager Resources";
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 		F5CE6E21025AFB5301A80105 = {
 			isa = PBXFileReference;
@@ -1993,12 +2007,6 @@
 			isa = PBXFileReference;
 			name = NetStuff.cp;
 			path = ../../../OpenPlay/Source/Demos/NSpTest2/NetStuff.cp;
-			refType = 2;
-		};
-		F5CE6E26025AFB5301A80105 = {
-			isa = PBXFileReference;
-			name = windows.c;
-			path = ../../../OpenPlay/Source/Demos/NSpTest2/windows.c;
 			refType = 2;
 		};
 		F5CE6E27025AFB5301A80105 = {
@@ -2031,12 +2039,6 @@
 			settings = {
 			};
 		};
-		F5CE6E2C025AFB5301A80105 = {
-			fileRef = F5CE6E26025AFB5301A80105;
-			isa = PBXBuildFile;
-			settings = {
-			};
-		};
 		F5CE6E2D025AFB7901A80105 = {
 			children = (
 				F5CE6E21025AFB5301A80105,
@@ -2044,7 +2046,6 @@
 				F5CE6E23025AFB5301A80105,
 				F5CE6E24025AFB5301A80105,
 				F5CE6E25025AFB5301A80105,
-				F5CE6E26025AFB5301A80105,
 			);
 			isa = PBXGroup;
 			name = Source;
@@ -2052,18 +2053,12 @@
 		};
 		F5CE6E2E025AFB7901A80105 = {
 			children = (
-				F5CE6E2F025AFBF001A80105,
+				F536EB9D03232CB401A8008C,
 			);
 			isa = PBXGroup;
 			name = Resources;
 			path = "";
 			refType = 4;
-		};
-		F5CE6E2F025AFBF001A80105 = {
-			isa = PBXFileReference;
-			name = NSpTest2.rsrc;
-			path = ../../Source/Demos/NSpTest2/NSpTest2.rsrc;
-			refType = 2;
 		};
 		F5CE6E30025AFBF001A80105 = {
 			fileRef = F5FE302102558CD301A80105;
@@ -2077,12 +2072,6 @@
 			settings = {
 			};
 		};
-		F5CE6E32025AFBF001A80105 = {
-			fileRef = F5CE6E2F025AFBF001A80105;
-			isa = PBXBuildFile;
-			settings = {
-			};
-		};
 		F5CE6E33025AFBF001A80105 = {
 			buildActionMask = 2147483647;
 			dstPath = "";
@@ -2091,7 +2080,7 @@
 				F5CE6E34025AFBF001A80105,
 			);
 			isa = PBXCopyFilesBuildPhase;
-			name = "Copy Files";
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 		F5CE6E34025AFBF001A80105 = {
 			fileRef = 034768DEFF38A45A11DB9C8B;
@@ -2119,9 +2108,9 @@
 			);
 			buildSettings = {
 				HEADER_SEARCH_PATHS = "../../Source/Utilities ../../Source/Demos/OpenPlayTest/Common ../../Source/Demos/OpenPlayTest/Macintosh ../../Interfaces";
-				IMPLICITLY_INCLUDED_HEADERS = ../../Source/Utilities/Macintosh/prefixMacCarbon.h;
 				OTHER_REZFLAGS = "";
 				PREBINDING = NO;
+				PREFIX_HEADER = ../../Source/Utilities/Posix/prefixMach.h;
 				PRODUCT_NAME = OpenPlayTest;
 				SECTORDER_FLAGS = "";
 				WARNING_CFLAGS = "-Wno-four-char-constants -Wno-unknown-pragmas";
@@ -2135,15 +2124,15 @@
 			productName = OpenPlayTest;
 			productReference = F5FE3011025586E501A80105;
 			productSettingsXML = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
-<!DOCTYPE plist SYSTEM \"file://localhost/System/Library/DTDs/PropertyList.dtd\">
-<plist version=\"0.9\">
+<!DOCTYPE plist PUBLIC \"-//Apple Computer//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">
+<plist version=\"1.0\">
 <dict>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>English</string>
 	<key>CFBundleExecutable</key>
-	<string></string>
+	<string>OPTest</string>
 	<key>CFBundleGetInfoString</key>
-	<string></string>
+	<string>© 1999-2002 Apple Computer, Inc.</string>
 	<key>CFBundleIconFile</key>
 	<string></string>
 	<key>CFBundleIdentifier</key>
@@ -2151,15 +2140,15 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string></string>
+	<string>OpenPlay Protocol API Test bed</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string></string>
+	<string>v2.2</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleVersion</key>
-	<string>0.0.1d1</string>
+	<string>2.2</string>
 </dict>
 </plist>
 ";
@@ -2170,7 +2159,7 @@
 			files = (
 			);
 			isa = PBXHeadersBuildPhase;
-			name = Headers;
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 		F5FE3014025586E501A80105 = {
 			buildActionMask = 2147483647;
@@ -2178,7 +2167,7 @@
 				F5530D5D0256B46901A80105,
 			);
 			isa = PBXResourcesBuildPhase;
-			name = "Bundle Resources";
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 		F5FE3015025586E501A80105 = {
 			buildActionMask = 2147483647;
@@ -2192,7 +2181,7 @@
 				F5FE303302558E2201A80105,
 			);
 			isa = PBXSourcesBuildPhase;
-			name = Sources;
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 		F5FE3016025586E501A80105 = {
 			buildActionMask = 2147483647;
@@ -2201,7 +2190,7 @@
 				F5FE303502558E2201A80105,
 			);
 			isa = PBXFrameworksBuildPhase;
-			name = "Frameworks & Libraries";
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 		F5FE3017025586E501A80105 = {
 			buildActionMask = 2147483647;
@@ -2209,7 +2198,7 @@
 				F5530D600256B56901A80105,
 			);
 			isa = PBXRezBuildPhase;
-			name = "ResourceManager Resources";
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 		F5FE301902558C6F01A80105 = {
 			children = (

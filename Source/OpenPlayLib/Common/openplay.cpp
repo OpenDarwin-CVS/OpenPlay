@@ -21,8 +21,6 @@
  * 
  * @APPLE_LICENSE_HEADER_END@
  *
- * Modified: $Date$
- * Revision: $Id$
  */
  
 //define our sections for doxygen to make start our documentation from here...

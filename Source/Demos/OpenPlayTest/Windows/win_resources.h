@@ -21,8 +21,6 @@
  * 
  * @APPLE_LICENSE_HEADER_END@
  *
- * Modified: $Date$
- * Revision: $Id$
  */
 
 #define rMENU_BAR_ID (128)

@@ -22,8 +22,6 @@
  * 
  * @APPLE_LICENSE_HEADER_END@
  *
- * Modified: $Date$
- * Revision: $Id$
  */
 
 /* NOTES:
@@ -47,9 +45,8 @@
 #include <ctype.h>
 #include <stdio.h>
 #include <string.h>
-#include <time.h>
-#include <string.h>
 #include <stdlib.h>
+#include <time.h>
 
 #include "main.h"
 

@@ -21,8 +21,6 @@
  * 
  * @APPLE_LICENSE_HEADER_END@
  *
- * Modified: $Date$
- * Revision: $Id$
  */
 
 
@@ -1100,7 +1098,7 @@ NMUInt32			size;
 	//Ä	Fill in the fields we know
 	NSpClearMessageHeader(&((*theMessage)->header));
 	(*theMessage)->header.what = kNSpJoinApproved;
-	(*theMessage)->header.from = kNSpHostID;
+	(*theMessage)->header.from = kNSpMasterEndpointID;
 	(*theMessage)->header.to = inPlayer;
 	(*theMessage)->header.messageLen = messageSize;
 	(*theMessage)->receivedTimeStamp = inReceivedTime;
@@ -1172,7 +1170,7 @@ NSpJoinDeniedMessage	theReply;
 NMErr				err = kNMNoError;
 	
 	theReply.header.what = kNSpJoinDenied;
-	theReply.header.from = kNSpHostID;
+	theReply.header.from = kNSpMasterEndpointID;
 	theReply.header.to = 0;				//Ä	This person has no honor (or playerID)
 	theReply.header.version = kVersion10Message;
 	theReply.header.id = mNextMessageID++;
@@ -1658,7 +1656,7 @@ NSpJoinRequestMessage	theMessage;
 
 	theMessage.header.what = kNSpJoinRequest;
 	theMessage.header.messageLen = sizeof(NSpJoinRequestMessage);
-	theMessage.header.to = kNSpHostID;	/* %% was kNSpHostOnly, the headless server ID ... not for this, correct? */
+	theMessage.header.to = kNSpMasterEndpointID;
 	theMessage.theType = inType;
 	theMessage.customDataLen = kCustomLocalJoinRequest;			//Ä	Signifying a local join request
 	doCopyPStrMax(inPlayerName, theMessage.name, 31);

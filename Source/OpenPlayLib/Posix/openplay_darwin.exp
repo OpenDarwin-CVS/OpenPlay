@@ -56,6 +56,7 @@ _NSpMessage_SendTo
 _NSpPlayer_ChangeType
 _NSpPlayer_Remove
 _NSpPlayer_GetIPAddress
+_NSpPlayer_FreeAddress
 _NSpPlayer_GetMyID
 _NSpPlayer_GetInfo
 _NSpPlayer_ReleaseInfo

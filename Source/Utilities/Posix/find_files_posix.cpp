@@ -21,8 +21,6 @@
  * 
  * @APPLE_LICENSE_HEADER_END@
  *
- * Modified: $Date$
- * Revision: $Id$
  */
 
 #ifndef __NETMODULE__
@@ -120,7 +118,7 @@ static FileError enumerate_files(struct find_file_pb *param_block)
 	long counter;
 	FileDesc temp_file;
 	NMBoolean result;
-	moduleURLs = CFBundleCopyResourceURLsOfType(param_block->start_search_from.bundle,CFSTR("netmodule"),CFSTR("OpenPlay Modules"));
+	moduleURLs = CFBundleCopyResourceURLsOfType(param_block->start_search_from.bundle,CFSTR("bundle"),CFSTR("OpenPlay Modules"));
 	long count = CFArrayGetCount(moduleURLs);
 	DEBUG_PRINT("found %d modules",count);		
 	

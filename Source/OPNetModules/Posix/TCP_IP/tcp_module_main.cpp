@@ -1,5 +1,4 @@
 /* 
- * File: tcp_module_main.c
  *-------------------------------------------------------------
  * Description:
  *   Functions which are main entry points for module library.
@@ -7,11 +6,7 @@
  *------------------------------------------------------------- 
  *   Author: Kevin Holbrook
  *  Created: June 23, 1999
- *-------------------------------------------------------------
- *          Copyright (c) 1999 Kevin Holbrook
- *-------------------------------------------------------------
- */
-/*
+ *
  * Copyright (c) 1999-2002 Apple Computer, Inc. All rights reserved.
  *
  * @APPLE_LICENSE_HEADER_START@
@@ -34,8 +29,6 @@
  * 
  * @APPLE_LICENSE_HEADER_END@
  *
- * Modified: $Date$
- * Revision: $Id$
  */
 
 

@@ -21,9 +21,8 @@
  * 
  * @APPLE_LICENSE_HEADER_END@
  *
- * Modified: $Date$
- * Revision: $Id$
  */
+
 #include "OpenPlay.h"
 #include "OPUtils.h"
 #include "portable_files.h"

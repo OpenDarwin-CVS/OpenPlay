@@ -21,8 +21,6 @@
  * 
  * @APPLE_LICENSE_HEADER_END@
  *
- * Modified: $Date$
- * Revision: $Id$
  */
 
 #ifndef __PREFIXMACCARBON__
@@ -31,7 +29,7 @@
 	#if __MWERKS__		
 		#include <MacHeadersCarbon.h>
 	#else
-		#include <Carbon.h>
+		#include <carbon/Carbon.h>
 	#endif
 	
 	#define OP_PLATFORM_MAC_CARBON_FLAG	1	

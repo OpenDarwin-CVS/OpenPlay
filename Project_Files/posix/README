@@ -1,4 +1,1 @@
-# Modified: $Date$
-# Revision: $Id$
-
 currently, to build release builds, set the environment variable "OP_BUILD_TYPE" to "release" before calling make

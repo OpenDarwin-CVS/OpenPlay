@@ -21,8 +21,6 @@
  * 
  * @APPLE_LICENSE_HEADER_END@
  *
- * Modified: $Date$
- * Revision: $Id$
  */
 
 // this demo asks the user to pick a protocol, creates a passive(host) endpoint, and then scans the network
@@ -376,7 +374,7 @@ void storeEnumMessage(NMEnumerationCommand command, NMEnumerationItem *item)
 		#endif
 	#elif defined(OP_PLATFORM_WINDOWS)
 		theMessage = (OPEnumMessage*)GlobalAlloc(GPTR,sizeof(OPEnumMessage));
-	#elif defined((OP_PLATFORM_UNIX)
+	#elif defined(OP_PLATFORM_UNIX)
 		theMessage = (OPEnumMessage*)malloc(sizeof(OPEnumMessage));
 	#endif
 	
