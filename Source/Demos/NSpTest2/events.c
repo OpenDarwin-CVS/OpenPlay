@@ -129,7 +129,7 @@ void CustomWindowEvent(short eventType,WindowRef window,void *refCon)
 
 void DoEvent(EventRecord *event)
 {
-	short			kind;
+//	short			kind;
 	long			menuChoice;
 	Point			thePoint;
 	Boolean			active;
@@ -164,7 +164,7 @@ void DoEvent(EventRecord *event)
 			{
 				AdjustMainMenus();
 				menuChoice = MenuKey(event->message & charCodeMask);
-				kind = GetWindKind(window);
+//				kind = GetWindKind(window);
 				//if (kind < kDocKind || kind > kFloatKind) 			// not our window
 					HandleMenuChoice(window, (void *)&menuChoice);	// default menu
 				//else	
@@ -246,7 +246,7 @@ void HandleMouseDown(EventRecord *event)
 {
 	long			menuChoice;
 	short			thePart;
-	short			kind;
+//	short			kind;
 	WindowRef		window;
 		
 
@@ -259,11 +259,11 @@ void HandleMouseDown(EventRecord *event)
 
 			menuChoice = MenuSelect(event->where);
 			window = FrontWindow();
-			kind = GetWindKind(window);
-			if (kind < kDocKind || kind > kAboutKind) 			// not our window
+//			kind = GetWindKind(window);
+//			if (kind < kDocKind || kind > kAboutKind) 			// not our window
 				HandleMenuChoice(window, (void *)&menuChoice);	// default menu
-			else	
-				CustomWindowEvent(kMenuProc, window, (void *)&menuChoice);
+//			else	
+//				CustomWindowEvent(kMenuProc, window, (void *)&menuChoice);
 			break;
 
 		case inContent:
@@ -298,8 +298,8 @@ void HandleMouseDown(EventRecord *event)
 			break;
 						
 		case inGoAway:
-			if (TrackGoAway(window, event->where))
-				RemoveWindow(window);
+//			if (TrackGoAway(window, event->where))
+//				RemoveWindow(window);
 			break;
 						
 		case inZoomIn:
@@ -339,6 +339,11 @@ void HandleMenuChoice(WindowRef window, void *refCon)
 		case mApple:
 			switch(item) 
 			{					
+				case iAbout:
+//				CreateWindow( rAboutWin, NULL, NULL, "\pAbout", true, 0, kAboutKind, (WindowRef)-1, true, NULL );
+				NoteAlert( rAboutAlert, NULL );
+				break;
+
 				default:
 					GetMenuItemText(GetMenuHandle(mApple),item,daName);
 					#if (!carbon_build)
@@ -514,15 +519,15 @@ void UpdateWindow(WindowRef window)
 
 void DoActivate(WindowRef window, void *refCon)
 {
-	Boolean		becomingActive;
-	DocHnd		doc;
+//	Boolean		becomingActive;
+//	DocHnd		doc;
 	
 	#if (carbon_build)
 		SetPortWindowPort(window);
 	#else
 		SetPort(window);
 	#endif //carbon_build
-		
+/*
 	doc = (DocHnd)GetWRefCon(window);
 
 	if(doc != nil && GetIsAppWindow(window)) 
@@ -536,6 +541,6 @@ void DoActivate(WindowRef window, void *refCon)
 		{
 		}
 	}
-	
+*/
 }
 

@@ -96,8 +96,8 @@ enum {
 //
 //---------------------------------------------------------------------
 
-#define rAboutPictID		3000 // about picture
-#define rErrorDlg			128	 // main error dialog
+//#define rAboutPictID		3000 // about picture
+#define rAboutAlert			128
 
 
 //---------------------------------------------------------------------
@@ -106,7 +106,7 @@ enum {
 //
 //---------------------------------------------------------------------
 
-#define kNeedsDisplayManager		128	// ID of no Display Manager
+#define rErrorDlg			129	 // main error dialog
 
 
 //---------------------------------------------------------------------

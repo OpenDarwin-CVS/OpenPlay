@@ -132,7 +132,7 @@ void 			DoActivate(WindowRef window, void *refCon);
 //	Windows
 //
 //----------------------------------------------------------------------
-
+/* LR
 WindowPtr 		CreateWindow(short resID, void *wStorage, Rect *bounds, Str255 title,
 							Boolean visible, short procID,short kind, WindowRef behind,
 							Boolean goAwayFlag,long refCon);
@@ -146,7 +146,7 @@ void 			DoResizeWindow (WindowRef window);
 short 			GetWindKind(WindowRef window);
 Boolean			GetIsAppWindow(WindowRef window);
 Boolean 		GetIsAboutWindow( WindowRef window );
-
+*/
 #ifdef __cplusplus
 }
 #endif
