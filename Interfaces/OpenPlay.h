@@ -134,7 +134,10 @@
 	typedef NMUInt16						NMInetPort;
 	typedef unsigned char 					NMStr31[32];
 	typedef const unsigned char *			NMConstStr31Param;
-											
+
+#if macintosh_build
+	typedef NumVersion	NMNumVersion;		/* same as below, but compatible w/MacOS headers & code */
+#else
 	struct NMNumVersion {
 											/* Numeric version part of 'vers' resource */
 		NMUInt8 		majorRev;			/* 1st part of version number in BCD */
@@ -144,6 +147,7 @@
 	};
 
 	typedef struct NMNumVersion	NMNumVersion;	
+#endif
 	
 /*-------------------------------------------------------------------------------------------
 	Specify any specific platfrom settings.
