@@ -7,11 +7,11 @@
  *   Author: Kevin Holbrook
  *  Created: June 23, 1999
  *
- * Copyright (c) 1999-2002 Apple Computer, Inc. All rights reserved.
+ * Copyright (c) 1999-2004 Apple Computer, Inc. All rights reserved.
  *
  * @APPLE_LICENSE_HEADER_START@
  * 
- * Portions Copyright (c) 1999-2002 Apple Computer, Inc.  All Rights
+ * Portions Copyright (c) 1999-2004 Apple Computer, Inc.  All Rights
  * Reserved.  This file contains Original Code and/or Modifications of
  * Original Code as defined in and that are subject to the Apple Public
  * Source License Version 1.1 (the "License").  You may not use this file
@@ -56,7 +56,7 @@ void _fini(void);
 static NMModuleInfo		gModuleInfo;
 static const NMUInt32 moduleID = 'Inet';
 static const char *kModuleName = "TCP/IP";
-static const char *kModuleCopyright = "1996-1999 Apple Computer, Inc.";
+static const char *kModuleCopyright = "1996-2004 Apple Computer, Inc.";
 
 NMEndpointPriv *endpointList = NULL;
 NMUInt32 endpointListState = 0;
@@ -91,8 +91,7 @@ extern "C"{
 void _init(void)
 {
 	DEBUG_ENTRY_EXIT("_init");
-	
-	
+		
 	// ecf - on the OSX bundle based builds, we don't seem to be re-initialized
 	// so we have to share globals and _init may be called multiple times on the same
 	// instance of our module - we must be prepared.
@@ -100,7 +99,7 @@ void _init(void)
 	if (module_inited != 1)
 		return;
 	//op_assert(module_inited == false);
-	
+
 	gModuleInfo.size= sizeof (NMModuleInfo);
 	gModuleInfo.type = moduleID;
 	strcpy(gModuleInfo.name, kModuleName);
@@ -113,11 +112,19 @@ void _init(void)
 	endpointListLock = new machine_lock;
 	endpointWaitingListLock = new machine_lock;
 	notifierLock = new machine_lock;	
-	
+
+#ifdef OP_API_NETWORK_WINSOCK
+	initWinsock();	//LR -- can not use sockets before they are started up!
+#endif
+
 	if (createWakeSocket())
 		DEBUG_PRINT("createWakeSocket succeeded");
 	else
+#ifdef OP_API_NETWORK_WINSOCK
+		DEBUG_PRINT("createWakeSocket failed, err = %d", WSAGetLastError() );
+#else
 		DEBUG_PRINT("createWakeSocket failed");
+#endif
 	
 } /* _init */
 
@@ -153,7 +160,7 @@ void _fini(void)
 		killWorkerThread();
 	#endif
 	
-	//on widnows, kill winsock
+	//on windows, kill winsock
 	#ifdef OP_API_NETWORK_WINSOCK
 		shutdownWinsock();
 	#endif
@@ -163,7 +170,10 @@ void _fini(void)
 	delete notifierLock;
 	
 	disposeWakeSocket();
-	
+
+#ifdef OP_API_NETWORK_WINSOCK
+	WSACleanup();
+#endif
 } /* _fini */
 
 

@@ -1,9 +1,9 @@
 /*
- * Copyright (c) 1999-2002 Apple Computer, Inc. All rights reserved.
+ * Copyright (c) 1999-2004 Apple Computer, Inc. All rights reserved.
  *
  * @APPLE_LICENSE_HEADER_START@
  * 
- * Portions Copyright (c) 1999-2002 Apple Computer, Inc.  All Rights
+ * Portions Copyright (c) 1999-2004 Apple Computer, Inc.  All Rights
  * Reserved.  This file contains Original Code and/or Modifications of
  * Original Code as defined in and that are subject to the Apple Public
  * Source License Version 1.1 (the "License").  You may not use this file
@@ -20,7 +20,6 @@
  * under the License.
  * 
  * @APPLE_LICENSE_HEADER_END@
- *
  */
 
 #ifndef __NTSPPREFIX__
@@ -29,7 +28,7 @@
 //	------------------------------	Includes
 
 	#ifndef __OPENPLAY__
-	#include 			"OpenPlay.h"
+	#include "OpenPlay.h"
 	#endif
 	#include "OPUtils.h"
 	

@@ -1,9 +1,9 @@
 /*
- * Copyright (c) 1999-2002 Apple Computer, Inc. All rights reserved.
+ * Copyright (c) 1999-2004 Apple Computer, Inc. All rights reserved.
  *
  * @APPLE_LICENSE_HEADER_START@
  * 
- * Portions Copyright (c) 1999-2002 Apple Computer, Inc.  All Rights
+ * Portions Copyright (c) 1999-2004 Apple Computer, Inc.  All Rights
  * Reserved.  This file contains Original Code and/or Modifications of
  * Original Code as defined in and that are subject to the Apple Public
  * Source License Version 1.1 (the "License").  You may not use this file
@@ -551,6 +551,38 @@ NMSetTimeout(
 	
 	return kNMNoError;
 }
+
+//----------------------------------------------------------------------------------------
+// NMGetIdentifier
+//----------------------------------------------------------------------------------------
+
+NMErr
+NMGetIdentifier(NMEndpointRef inEndpoint,  char * outIdStr, NMSInt16 inMaxLen)
+{
+    NMErr				err = kNMNoError;
+    SOCKET		the_socket = inEndpoint->socket[_stream_socket];
+    SOCKADDR_IN remote_address;
+    int			remote_length = sizeof(remote_address);
+	char result[256];
+    IN_ADDR addr;
+    
+	op_vassert_return((inEndpoint != NULL),"Endpoint is NIL!",kNMParameterErr);
+	op_vassert_return((outIdStr != NULL),"Identifier string ptr is NIL!",kNMParameterErr);
+	op_vassert_return((inMaxLen > 0),"Max string length is less than one!",kNMParameterErr);
+
+
+    getpeername(the_socket, (SOCKADDR*)&remote_address, &remote_length);
+    
+    addr = remote_address.sin_addr;
+ 
+	sprintf(result, "%u.%u.%u.%u", addr.s_net, addr.s_host, addr.s_lh, addr.s_impno);
+	
+	strncpy(outIdStr, result, inMaxLen - 1);
+    outIdStr[inMaxLen - 1] = 0;
+
+	return (kNMNoError);
+}
+
 
 /* Back door functions */
 

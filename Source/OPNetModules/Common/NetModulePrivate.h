@@ -1,9 +1,9 @@
 /*
- * Copyright (c) 1999-2002 Apple Computer, Inc. All rights reserved.
+ * Copyright (c) 1999-2004 Apple Computer, Inc. All rights reserved.
  *
  * @APPLE_LICENSE_HEADER_START@
  * 
- * Portions Copyright (c) 1999-2002 Apple Computer, Inc.  All Rights
+ * Portions Copyright (c) 1999-2004 Apple Computer, Inc.  All Rights
  * Reserved.  This file contains Original Code and/or Modifications of
  * Original Code as defined in and that are subject to the Apple Public
  * Source License Version 1.1 (the "License").  You may not use this file
@@ -84,6 +84,8 @@
 		kNMEnterNotifier,
 		kNMLeaveNotifier,
 
+		kNMGetIdentifier,
+        
 		NUMBER_OF_MODULE_FUNCTIONS
 	};
 
@@ -132,7 +134,9 @@
 			"NMStopAdvertising",
 			"NMStartAdvertising",
 			"NMEnterNotifier",
-			"NMLeaveNotifier"
+			"NMLeaveNotifier",
+			
+			"NMGetIdentifier"
 		};
 
 		#define NUMBER_OF_MODULES_TO_LOAD (sizeof (module_names) / sizeof (module_names[0]))
@@ -174,6 +178,8 @@ extern "C" {
 
 	typedef NMErr		(*NMIdlePtr)(NMEndpointRef inEndpoint);
 	typedef NMErr		(*NMFunctionPassThroughPtr)(NMEndpointRef inEndpoint, NMUInt32 inSelector, void *inParamBlock);
+
+	typedef NMErr       (*NMGetIdentifierPtr)(NMEndpointRef inEndpoint, char* outIdStr, NMSInt16 inMaxLen);
 
 	/* Data functions */
 	typedef NMErr		(*NMSendDatagramPtr)(NMEndpointRef inEndpoint, unsigned char *inData, NMUInt32 inSize, NMFlags inFlags);

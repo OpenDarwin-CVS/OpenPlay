@@ -32,6 +32,7 @@
 /EXPORT:ProtocolStartAdvertising
 /EXPORT:ProtocolStopAdvertising
 /EXPORT:ProtocolSetEndpointContext
+/EXPORT:ProtocolGetEndpointIdentifier
 
 /EXPORT:NetSprocketEntryPoint
 /EXPORT:NSpProtocol_New

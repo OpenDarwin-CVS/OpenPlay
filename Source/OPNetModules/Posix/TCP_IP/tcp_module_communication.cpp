@@ -7,11 +7,11 @@
  *   Author: Kevin Holbrook
  *  Created: June 23, 1999
  *
- * Copyright (c) 1999-2002 Apple Computer, Inc. All rights reserved.
+ * Copyright (c) 1999-2004 Apple Computer, Inc. All rights reserved.
  *
  * @APPLE_LICENSE_HEADER_START@
  * 
- * Portions Copyright (c) 1999-2002 Apple Computer, Inc.  All Rights
+ * Portions Copyright (c) 1999-2004 Apple Computer, Inc.  All Rights
  * Reserved.  This file contains Original Code and/or Modifications of
  * Original Code as defined in and that are subject to the Apple Public
  * Source License Version 1.1 (the "License").  You may not use this file
@@ -31,19 +31,19 @@
  *
 */
 
+#include <signal.h>
+#include <fcntl.h>
 
 #include "Openplay.h"
 #include "OPUtils.h"
 #include "configuration.h"
 #include "configfields.h"
 #include "ip_enumeration.h"
-#include <signal.h>
 
 #ifndef __NETMODULE__
 #include 			"NetModule.h"
 #endif
 #include "tcp_module.h"
-#include <fcntl.h>
 
 #ifdef OP_API_NETWORK_SOCKETS
 	#include <sys/time.h>
@@ -1055,10 +1055,16 @@ NMErr NMClose(NMEndpointRef Endpoint, NMBoolean Orderly)
 	DEBUG_ENTRY_EXIT("NMClose");
 
 	if (module_inited < 1)
+	{
+		DEBUG_PRINT("Module not inited in NMClose");
 		return kNMInternalErr;
+	}
 
 	if (!Endpoint)
+	{
+		DEBUG_PRINT("NULL Endpoint in NMClose");
 		return(kNMParameterErr);
+	}
 
 	if (Endpoint->cookie != kModuleID)
 	{
@@ -1067,6 +1073,8 @@ NMErr NMClose(NMEndpointRef Endpoint, NMBoolean Orderly)
 	}
 	linger_option.l_onoff = 1;
 	linger_option.l_linger = 0;
+
+	DEBUG_PRINT("Searching for theEndpoint in NMClose");
 
 	//search for this endpoint on the list, and if its there, remove it
 	{
@@ -1094,6 +1102,8 @@ NMErr NMClose(NMEndpointRef Endpoint, NMBoolean Orderly)
 			endpointListState++;
 	}
 
+    	DEBUG_PRINT("Done searching for theEndpoint in NMClose");
+
 	for (index = 0; index < NUMBER_OF_SOCKETS; ++index)
 	{
 		if (Endpoint->sockets[index] != INVALID_SOCKET)
@@ -1105,9 +1115,11 @@ NMErr NMClose(NMEndpointRef Endpoint, NMBoolean Orderly)
 					(char*)&linger_option, sizeof(struct linger));
 			}
 
+    		DEBUG_PRINT("Shutting down a socket in NMClose...");
 			/* shutdown the socket, not allowing any further send/receives */
 			status = shutdown(Endpoint->sockets[index], 2);
 
+    		DEBUG_PRINT("Closing a socket in NMClose...");
 			status = close(Endpoint->sockets[index]);
 		} 
 	} /* for (index) */
@@ -1116,6 +1128,7 @@ NMErr NMClose(NMEndpointRef Endpoint, NMBoolean Orderly)
 	if (Endpoint->alive)
 	{
 		Endpoint->alive = false;
+    	DEBUG_PRINT("Notifying about closure in NMClose...");
 		Endpoint->callback(Endpoint, Endpoint->user_context, kNMCloseComplete, 0, NULL);
 	}
 
@@ -1123,6 +1136,7 @@ NMErr NMClose(NMEndpointRef Endpoint, NMBoolean Orderly)
 
 
 	/* FIX ME - why free the endpoint pointer here ? */
+	DEBUG_PRINT("Freeing the Endpoint in NMClose...");
 	free(Endpoint);
 
 	return(kNMNoError);
@@ -1390,6 +1404,59 @@ NMErr NMSetTimeout(NMEndpointRef Endpoint, unsigned long Timeout)
 	return(kNMNoError);
 } /* NMSetTimeout */
 
+
+/* 
+ * Function: NMGetIdentifier
+ *--------------------------------------------------------------------
+ * Parameters:
+ *  [IN] Endpoint = 
+ *  [OUT] IdStr =  
+ *  [IN] MaxLen = 
+ *
+ * Returns:
+ *  identifier for remote endpoint (dotted IP address) in outIdStr
+ *
+ *--------------------------------------------------------------------
+ */
+
+NMErr
+NMGetIdentifier(NMEndpointRef inEndpoint,  char * outIdStr, NMSInt16 inMaxLen)
+{
+	int the_socket;
+
+	DEBUG_ENTRY_EXIT("NMGetIdentifier");
+
+	if (module_inited == false)
+		return kNMInternalErr;
+	
+	if (!inEndpoint)
+		return(kNMParameterErr);
+	
+	if (!outIdStr)
+		return(kNMParameterErr);
+
+	if (inMaxLen < 1)
+		return(kNMParameterErr);
+
+	if (inEndpoint->cookie != kModuleID)
+		return(kNMInternalErr);
+	
+    the_socket = inEndpoint->sockets[_stream_socket];
+    sockaddr_in   remote_address;
+    int			remote_length = sizeof(remote_address);
+    char result[256];
+    
+    getpeername(the_socket, (sockaddr*)&remote_address, &remote_length);
+    
+    in_addr addr = remote_address.sin_addr;
+
+    sprintf(result, "%s", inet_ntoa(addr));
+	
+    strncpy(outIdStr, result, inMaxLen - 1);
+    outIdStr[inMaxLen - 1] = 0;
+
+	return (kNMNoError);
+}
 
 /* 
  * Function: NMIdle
@@ -1731,7 +1798,7 @@ NMBoolean NMStartAdvertising(NMEndpointRef Endpoint)
 	DEBUG_ENTRY_EXIT("NMStartAdvertising");
 
 	if (module_inited < 1)
-		return kNMInternalErr;
+		return(false);   //kNMInternalErr;
 
 	if (!Endpoint)
 		return(false);
@@ -1764,7 +1831,7 @@ NMBoolean NMStopAdvertising(NMEndpointRef Endpoint)
 	DEBUG_ENTRY_EXIT("NMStopAdvertising");
 
 	if (module_inited < 1)
-		return kNMInternalErr;
+		return(false);  //kNMInternalErr;
 
 	if (!Endpoint)
 		return(false);
@@ -1777,18 +1844,18 @@ NMBoolean NMStopAdvertising(NMEndpointRef Endpoint)
 
 int createWakeSocket(void)
 {
-	struct sockaddr_in Server_Address;
+	struct sockaddr Server_Address;
 	int result;
-	posix_size_type nameLen;
+	posix_size_type nameLen = sizeof(Server_Address);
 	
 		
 	wakeSocket = 0;
 	wakeHostSocket = 0;
 	
 	machine_mem_zero((char *) &Server_Address, sizeof(Server_Address));	
-	Server_Address.sin_family = AF_INET;
-	Server_Address.sin_addr.s_addr = INADDR_ANY;
-	Server_Address.sin_port = 0;
+	((sockaddr_in *) &Server_Address)->sin_family = AF_INET;
+	((sockaddr_in *) &Server_Address)->sin_addr.s_addr = INADDR_ANY;
+	((sockaddr_in *) &Server_Address)->sin_port = 0;
 	
 	wakeHostSocket = socket(AF_INET, SOCK_DGRAM, 0);
 	if (!wakeHostSocket)	return false;
@@ -2272,6 +2339,68 @@ void processEndPointSocket(NMEndpointPriv *theEndPoint, long socketType, fd_set 
 	return;
 }
 
+//This function gets the IP address of the remote peer on the connection.
+
+NMErr NMGetAddress(NMEndpointRef inEndpoint, NMAddressType addressType, void **outAddress)
+{
+	NMErr status = kNMNoError;
+
+	switch( addressType )
+	{
+		case kNMIPAddressType:	//¥ IP address (string of format "127.0.0.1:80")
+		
+		    // First, get the socket address for the remote connection...
+		    // (Note, I tried using inEndpoint->remoteAddress.sin_addr, but the value
+		    // was nil.  Isn't that structure element supposed to contain the remote
+		    // machine's address?  Does this mean that datagrams will be screwed?
+		    // I'll have to look into this when I have more time, but for now, I don't
+		    // need datagrams, and I can get the remote address directly using "getpeername()"...)
+		    
+		    posix_size_type size;
+		    unsigned char *byte;
+		    sockaddr_in	socket_address;
+
+		    size  = sizeof(sockaddr_in);
+		    status = getpeername(inEndpoint->sockets[_stream_socket], (sockaddr *) &socket_address, &size);
+		
+		    // Now, convert the UInt32 value in socket_address.sin_addr into a dotted decimal
+		    // format string...
+		    byte = (unsigned char *) &socket_address.sin_addr;
+		    *outAddress = (void *) new char[16];
+		    #if big_endian
+		    sprintf((char *) *outAddress, "%u.%u.%u.%u",byte[0],byte[1],byte[2],byte[3]);
+		    #else
+		    sprintf((char *) *outAddress, "%u.%u.%u.%u",byte[3],byte[2],byte[1],byte[0]);		    
+		    #endif
+		break;
+
+		default:	// This module returns no other type of address.
+			status = kNMParameterErr;
+		break;
+	}
+
+	return status;
+}
+
+//This function frees the memory allocated by NMGetAddress().
+
+NMErr NMFreeAddress(NMEndpointRef inEndpoint, void **outAddress)
+{
+	// (OP_PLATFORM_MAC_MACHO)
+
+	NMErr	err = kNMNoError;
+
+	#pragma unused (inEndpoint)
+	
+	op_vassert_return((outAddress != NULL),"OutAddress is NIL!",kNMParameterErr);
+	op_vassert_return((*outAddress != NULL),"*OutAddress is NIL!",kNMParameterErr);
+
+	delete (char *) *outAddress;
+
+	return( err );
+}
+
+
 #ifdef USE_WORKER_THREAD
 void createWorkerThread(void)
 {
@@ -2454,7 +2583,6 @@ void initWinsock(void)
 		WSADATA		aWsaData;
 		NMSInt16	aVersionRequested= MAKEWORD(1, 1);
 		err = WSAStartup(aVersionRequested, &aWsaData);
-
 		if (! err)
 		{
 			// Make sure they support our version (will not fail with newer versions!)
@@ -2464,14 +2592,14 @@ void initWinsock(void)
 				DEBUG_PRINT("Version bad! (%d.%d) != %d.%d", HIBYTE(aWsaData.wVersion), LOBYTE(aWsaData.wVersion),
 								HIBYTE(aVersionRequested), LOBYTE(aVersionRequested));
 			}
+			else
+				winSockRunning = true;
 		}
 		else
 		{
 			DEBUG_PRINT("Unable to startup winsock!");
 		}
 	}
-	if (! err) 
-		winSockRunning = true;
 }
 
 void shutdownWinsock(void)

@@ -1,9 +1,9 @@
 /*
- * Copyright (c) 1999-2002 Apple Computer, Inc. All rights reserved.
+ * Copyright (c) 1999-2004 Apple Computer, Inc. All rights reserved.
  *
  * @APPLE_LICENSE_HEADER_START@
  * 
- * Portions Copyright (c) 1999-2002 Apple Computer, Inc.  All Rights
+ * Portions Copyright (c) 1999-2004 Apple Computer, Inc.  All Rights
  * Reserved.  This file contains Original Code and/or Modifications of
  * Original Code as defined in and that are subject to the Apple Public
  * Source License Version 1.1 (the "License").  You may not use this file
@@ -20,16 +20,13 @@
  * under the License.
  * 
  * @APPLE_LICENSE_HEADER_END@
- *
- * Modified: $Date$
- * Revision: $Id$
  */
 
 //	------------------------------	Includes
 
 #include <OpenTptClient.h>
 
-#include "OTIPEndpoint.h"
+#include "OTLRdzEndpoint.h" // PAB - This needs to use the Rdz version
 #include "OTUtils.h"
 #include "Exceptions.h"
 
@@ -258,6 +255,37 @@ OTIPEndpoint::SetConfigAddress(TNetbuf *inBuf)
 	OTInitInetAddress((InetAddress *)&mConfig.address, addr->fPort,addr->fHost);
 }
 
+//----------------------------------------------------------------------------------------
+// OTIPEndpoint::GetIdentifier
+//----------------------------------------------------------------------------------------
+
+NMErr
+OTIPEndpoint::GetIdentifier(char* outIdStr, NMSInt16 inMaxSize)
+{
+	char result[256];
+    TBind peerAddr;
+    
+	op_vassert_return((mStreamEndpoint != NULL),"Stream Endpoint is NIL!",  kNMBadStateErr);
+
+    OSStatus err = OTGetProtAddress(mStreamEndpoint->mEP, NULL, &peerAddr);
+
+    if (err != kNMNoError) {
+        return err;
+    }
+    
+	InetAddress *addr = (InetAddress *) peerAddr.addr.buf;
+	op_vassert_return((addr->fAddressType == AF_INET),"Bad Endpoint Address Type!",  kNMInternalErr);
+
+   unsigned char *addrp = (unsigned char*)&addr->fHost;
+
+	sprintf(result, "%u.%u.%u.%u", addrp[0], addrp[1], addrp[2], addrp[3]);
+	
+	strncpy(outIdStr, result, inMaxSize - 1);
+    outIdStr[inMaxSize - 1] = 0;
+
+	return (kNMNoError);    
+}
+        
 //----------------------------------------------------------------------------------------
 // OTIPEndpoint::MakeEnumerationResponse
 //----------------------------------------------------------------------------------------

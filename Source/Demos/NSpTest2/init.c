@@ -141,14 +141,14 @@ OSErr MenuSetup(void)
 	menu = GetNewMBar(rMBarID);		//	get our menus from resource
 	if( menu )
 	{
-	SetMenuBar(menu);
-	DisposeHandle(menu);
+		SetMenuBar(menu);
+		DisposeHandle(menu);
 	
-	#if (!OP_PLATFORM_MAC_CARBON_FLAG)
+#if (!OP_PLATFORM_MAC_CARBON_FLAG)
 		AppendResMenu(GetMenuHandle(mApple ), 'DRVR');		//	add apple menu items
-	#endif //!OP_PLATFORM_MAC_CARBON_FLAG
+#endif //!OP_PLATFORM_MAC_CARBON_FLAG
 
-	DrawMenuBar();
+		DrawMenuBar();
 		return( noErr );
 	}
 	else

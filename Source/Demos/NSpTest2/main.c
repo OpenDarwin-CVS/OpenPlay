@@ -78,9 +78,9 @@ int main(void)
 	err = Initialize();
 	if( !err )
 	{
-	EventLoop();
+		EventLoop();
 
-	ShutdownNetworking();
+		ShutdownNetworking();
 	}	
 	AERemove();	
 //	ExitToShell();

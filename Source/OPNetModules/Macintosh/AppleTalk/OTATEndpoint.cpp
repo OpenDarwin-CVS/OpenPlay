@@ -1,9 +1,9 @@
 /*
- * Copyright (c) 1999-2002 Apple Computer, Inc. All rights reserved.
+ * Copyright (c) 1999-2004 Apple Computer, Inc. All rights reserved.
  *
  * @APPLE_LICENSE_HEADER_START@
  * 
- * Portions Copyright (c) 1999-2002 Apple Computer, Inc.  All Rights
+ * Portions Copyright (c) 1999-2004 Apple Computer, Inc.  All Rights
  * Reserved.  This file contains Original Code and/or Modifications of
  * Original Code as defined in and that are subject to the Apple Public
  * Source License Version 1.1 (the "License").  You may not use this file
@@ -393,6 +393,36 @@ OTATEndpoint::SetConfigAddress(TNetbuf *inBuf)
 	machine_move_data(inBuf->buf, &mNBPAddr, inBuf->len);
 	mNBPAddrLen = inBuf->len;
 }
+
+//----------------------------------------------------------------------------------------
+// OTATEndpoint::GetIdentifier
+//----------------------------------------------------------------------------------------
+
+NMErr
+OTATEndpoint::GetIdentifier(char* outIdStr, NMSInt16 inMaxSize)
+{
+	char result[256];
+    TBind peerAddr;
+    
+	op_vassert_return((mStreamEndpoint != NULL),"Stream Endpoint is NIL!",  kNMBadStateErr);
+
+    OSStatus err = OTGetProtAddress(mStreamEndpoint->mEP, NULL, &peerAddr);
+
+    if (err != kNMNoError) {
+        return err;
+    }
+    
+	NBPAddress *addr = (NBPAddress *) peerAddr.addr.buf;
+	op_vassert_return((addr->fAddressType == AF_ATALK_NBP),"Bad Endpoint Address Type!",  kNMInternalErr);
+
+	sprintf(result, "%s", addr->fNBPNameBuffer);
+	
+	strncpy(outIdStr, result, inMaxSize - 1);
+   outIdStr[inMaxSize - 1] = 0;
+
+	return (kNMNoError);    
+}
+
 
 //----------------------------------------------------------------------------------------
 // OTATEndpoint::MakeEnumerationResponse

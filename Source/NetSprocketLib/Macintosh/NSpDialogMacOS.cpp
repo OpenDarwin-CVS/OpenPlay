@@ -1,9 +1,9 @@
 /*
- * Copyright (c) 1999-2002 Apple Computer, Inc. All rights reserved.
+ * Copyright (c) 1999-2004 Apple Computer, Inc. All rights reserved.
  *
  * @APPLE_LICENSE_HEADER_START@
  * 
- * Portions Copyright (c) 1999-2002 Apple Computer, Inc.  All Rights
+ * Portions Copyright (c) 1999-2004 Apple Computer, Inc.  All Rights
  * Reserved.  This file contains Original Code and/or Modifications of
  * Original Code as defined in and that are subject to the Apple Public
  * Source License Version 1.1 (the "License").  You may not use this file
@@ -20,7 +20,6 @@
  * under the License.
  * 
  * @APPLE_LICENSE_HEADER_END@
- *
  */
  
 //	------------------------------	Includes
@@ -50,15 +49,11 @@
 #include "op_globals.h"
 #include "String_Utils.h"
 
-
-
 //	------------------------------	Public Variables
 
 extern OSType  		gCreatorType;
 
-//	------------------------------	Private Functions
-
-//	------------------------------	Private Functions
+//	------------------------------	Private Declarations
 
 	#define	kNSpDialogResID 	 2500
 	#define kNSpIPAddrStrSize 	 128
@@ -114,29 +109,7 @@ static unsigned char     gIPPortStr[ kNSpStr32Len ];
 static NMBoolean         gIPSelected = true;
 
 
-// Prototypes
-
-NMBoolean    NSpDoModalDialog( eDialogMode mode,
-                             unsigned char    ioGameName[ kNSpStr32Len ],
-                             unsigned char    ioPlayerName[ kNSpStr32Len ],
-                             unsigned char    ioPassword[ kNSpStr32Len ],
-                             NSpEventProcPtr  inEventProcPtr );
-
-NMBoolean    DoDialogLoop( DialogPtr dialog, 
-                         eNSpDialogItem  theATInfoLabel,
-                         eNSpDialogItem  theIPInfoLabel/*,
-                         unsigned char    ioGameName[ kNSpStr32Len ],
-                         unsigned char    ioPlayerName[ kNSpStr32Len ],
-                         unsigned char    ioPassword[ kNSpStr32Len ]*/ );
-
-void       HideATItems( DialogPtr dialog, eNSpDialogItem theATInfoLabel );
-void       ShowATItems( DialogPtr dialog, eNSpDialogItem theATInfoLabel );
-void       HideIPItems( DialogPtr dialog, eNSpDialogItem theIPInfoLabel );
-void       ShowIPItems( DialogPtr dialog, eNSpDialogItem theIPInfoLabel );
-
-ControlHandle   GetControlHandle( DialogPtr thebox, short theGetItem );
-
-
+//----------------------------------------------------------------------------------------
 static void doP2CStr(char *str)
 {
 	long size = str[0];
@@ -148,116 +121,136 @@ static void doP2CStr(char *str)
 	str[x] = 0;
 }
 
-NMBoolean              
-NSpDoModalHostDialog( NSpProtocolListReference	ioProtocolList,
-                      unsigned char    ioGameName[ kNSpStr32Len ],
-                      unsigned char    ioPlayerName[ kNSpStr32Len ],
-                      unsigned char    ioPassword[ kNSpStr32Len ],
-                      NSpEventProcPtr  inEventProcPtr )
+//----------------------------------------------------------------------------------------
+static ControlHandle 
+GetControlHandle( DialogPtr theBox, short theGetItem )
 {
-	NSpProtocolReference  protocolRef;
-	NMBoolean status;
+    short itemType;
+    Rect itemRect;
+    Handle theHandle;
+    
+    GetDialogItem( theBox, theGetItem, &itemType, &theHandle, &itemRect );
 
-	if ( ioProtocolList == NULL ) {
-		return( false );
-	}
+    return( (ControlHandle) theHandle );
 
-	status = NSpDoModalDialog( kNSpHostDialog, 
-	                           ioGameName, 
-	                           ioPlayerName, 
-	                           ioPassword, 
-	                           inEventProcPtr );
+}	// End  GetControlHandle()
+
+//----------------------------------------------------------------------------------------
+static void
+HideATItems( DialogPtr dialog, eNSpDialogItem theATInfoLabel )
+{
+	Handle tempHandle;
+
+	tempHandle = (Handle) GetControlHandle( dialog, kAppleTalkProtocolButton );
+	SetControlValue( (ControlHandle) tempHandle, false );
+
+	HideDialogItem( dialog, theATInfoLabel );	
+	HideDialogItem( dialog, kATGameNameLabel );
+	HideDialogItem( dialog, kATGameNameText );
+}
+
+//----------------------------------------------------------------------------------------
+static void
+ShowATItems( DialogPtr dialog, eNSpDialogItem theATInfoLabel )
+{
+	Handle tempHandle;
+
+	tempHandle = (Handle) GetControlHandle( dialog, kAppleTalkProtocolButton );
+	SetControlValue( (ControlHandle) tempHandle, true );
+
+	ShowDialogItem( dialog, theATInfoLabel );	
+	ShowDialogItem( dialog, kATGameNameLabel );
+	ShowDialogItem( dialog, kATGameNameText );
+}
+
+//----------------------------------------------------------------------------------------
+static void
+HideIPItems( DialogPtr dialog, eNSpDialogItem theIPInfoLabel )
+{
+	Handle tempHandle;
+
+	tempHandle = (Handle) GetControlHandle( dialog, kIPProtocolButton );
+	SetControlValue( (ControlHandle) tempHandle, false );
 	
-	if ( status == false ) {
-		return( status );
-	}
-	else {
+	HideDialogItem( dialog, theIPInfoLabel );
+	HideDialogItem( dialog, kIPHostLabel );
+	HideDialogItem( dialog, kIPHostText );
+	HideDialogItem( dialog, kIPPortLabel );
+	HideDialogItem( dialog, kIPPortText );
+}				
+
+//----------------------------------------------------------------------------------------
+static void
+ShowIPItems( DialogPtr dialog, eNSpDialogItem theIPInfoLabel )
+{
+	Handle tempHandle;
+
+	tempHandle = (Handle) GetControlHandle( dialog, kIPProtocolButton );
+	SetControlValue( (ControlHandle) tempHandle, true );
 	
-		if ( gIPSelected )
-		{
-			char portStr[kNSpStr32Len];
+	ShowDialogItem( dialog, theIPInfoLabel );
+	ShowDialogItem( dialog, kIPHostLabel );
+	ShowDialogItem( dialog, kIPHostText );
+	ShowDialogItem( dialog, kIPPortLabel );
+	ShowDialogItem( dialog, kIPPortText );
+}				
 
-			doCopyP2CStr(gIPPortStr, portStr);
-			NMUInt16 mIPPort = atoi(portStr);
-		
-			protocolRef = NSpProtocol_CreateIP( mIPPort, 0UL, 0UL );		
+//----------------------------------------------------------------------------------------
+static NMBoolean
+DoDialogLoop( DialogPtr dialog, 
+              eNSpDialogItem  theATInfoLabel,
+              eNSpDialogItem  theIPInfoLabel/*,
+              unsigned char    ioGameName[ kNSpStr32Len ],
+              unsigned char    ioPlayerName[ kNSpStr32Len ],
+              unsigned char    ioPassword[ kNSpStr32Len ]*/ )
+{  
+	NMSInt16   hitItem = 0;
+    NMBoolean  status = true;
+	
+	#ifdef OP_API_NETWORK_OT
+		NMBoolean	tcpPresent = OTUtils::HasOpenTransportTCP();
+	#else
+		NMBoolean	tcpPresent = true;
+	#endif
+	
+	do {
+		ModalDialog( NULL, &hitItem );
 
-		}
-		else {
+        switch ( hitItem ) {
 
-			protocolRef = NSpProtocol_CreateAppleTalk( (unsigned char*) ioGameName, 
-			                                           (unsigned char*) gCreatorType, 
-			                                           0UL, 
-			                                           0UL );			
-		}
-		
-		if ( protocolRef == NULL ) {
-			status = false;
-		}
-		else {
-			NSpProtocolList_Append( ioProtocolList, protocolRef );
-		}		
+            case kIPProtocolButton:
+ 
+ 				if ( tcpPresent ) {
+ 				
+	 				gIPSelected = true;
+	 				ShowIPItems( dialog, theIPInfoLabel );
+	 				HideATItems( dialog, theATInfoLabel );
+	 			}
+ 				
+				break;
+             
+			case kAppleTalkProtocolButton:
+			
+				gIPSelected = false;
+ 				ShowATItems( dialog, theATInfoLabel );
+ 				HideIPItems( dialog, theIPInfoLabel );
+					
+				break;
+        }
+ 
+    } while ( hitItem != ok && hitItem != cancel );
+	
+	if ( hitItem == cancel ) {
+		status = false;
 	}
 	
 	return( status );
-}
-
-
-
-NSpAddressReference  
-NSpDoModalJoinDialog( const unsigned char  inGameType[ kNSpStr32Len ],
-                      const unsigned char  inEntityListLabel[256],
-                      unsigned char        ioName[ kNSpStr32Len ],
-                      unsigned char        ioPassword[ kNSpStr32Len ],
-                      NSpEventProcPtr      inEventProcPtr )
-{
-	NSpAddressReference  addrRef = NULL;
-	char     theATZone[ kNSpStr32Len ] = "*";
-	unsigned char     gameNameStr[ kNSpStr32Len ] = "";
-	NMBoolean  success;
-		
-	UNUSED_PARAMETER(inEntityListLabel);
-
-	success = NSpDoModalDialog( kNSpJoinDialog, 
-	                           gameNameStr, 
-	                           ioName, 
-	                           ioPassword, 
-	                           inEventProcPtr );
-
-	if ( !success ) {
-		return( NULL );
-	}
 	
-	if ( gIPSelected ) {
-	
-		//ECF020111 we gotta convert these strings from pascal to c before shipping them in
-		doP2CStr((char*)gIPAddressStr);
-		doP2CStr((char*)gIPPortStr);
-		addrRef = NSpCreateIPAddressReference( (char*) gIPAddressStr, (char*) gIPPortStr );
-	}
-	else {
-	
-		if ( inGameType == NULL ) {
-		
-			// Skanky. We should change this function to take a NMUInt32
-			// as its Game Type parameter....
-			addrRef = NSpCreateATlkAddressReference( (char*) gameNameStr, 
-			                                         (char*) gCreatorType, 
-			                                         theATZone );
-		}
-		else {
-			addrRef = NSpCreateATlkAddressReference( (char*) gameNameStr, 
-			                                         (char*) inGameType, 
-			                                         theATZone );
-		}			
-	}
-
-	return( addrRef );
-}
+}	// End  DoDialogLoop()
 
 
-
-NMBoolean 
+//----------------------------------------------------------------------------------------
+static NMBoolean 
 NSpDoModalDialog( eDialogMode mode,
                   unsigned char    ioGameName[ kNSpStr32Len ],
                   unsigned char    ioPlayerName[ kNSpStr32Len ],
@@ -269,9 +262,6 @@ NSpDoModalDialog( eDialogMode mode,
 	eNSpDialogItem  theATInfoLabel;
 	eNSpDialogItem  theIPInfoLabel;
 	unsigned char   portPStr[ kNSpStr32Len ];
-//	unsigned char   gameNamePStr[ kNSpStr32Len ];
-//	unsigned char   namePStr[ kNSpStr32Len ];
-//	unsigned char   passwdPStr[ kNSpStr32Len ];
 	NMBoolean       status = true;
 	NMBoolean		aCloseResourceFile = false;
 	
@@ -280,8 +270,17 @@ NSpDoModalDialog( eDialogMode mode,
 	machine_mem_zero( gIPAddressStr, kNSpIPAddrStrSize );
 	machine_mem_zero( gIPPortStr, kNSpStr32Len );
 	
-	if (gOp_globals.res_refnum == -1) {
+	if (gOp_globals.res_refnum == -1)
+	{
+#if OP_PLATFORM_MAC_CFM
 		gOp_globals.res_refnum = FSpOpenResFile((FSSpec *)&gOp_globals.file_spec,fsRdPerm);
+#else
+		gOp_globals.selfBundleRef = CFBundleGetBundleWithIdentifier ( CFSTR ( "com.apple.openplay" ) );
+		if( gOp_globals.selfBundleRef )
+			gOp_globals.res_refnum = CFBundleOpenBundleResourceMap ( gOp_globals.selfBundleRef );
+		else
+			DEBUG_PRINT( "ERROR in NSpDoModalDialog selfBundleRef is NULL" );
+#endif
 		aCloseResourceFile = true;
 	}
 	
@@ -363,8 +362,13 @@ NSpDoModalDialog( eDialogMode mode,
 
 	DisposeDialog( dialog );
 
-	if (aCloseResourceFile) {
+	if (aCloseResourceFile)
+	{
+#if OP_PLATFORM_MAC_CFM
 		CloseResFile(gOp_globals.res_refnum);
+#else
+		CFBundleCloseBundleResourceMap( gOp_globals.selfBundleRef, gOp_globals.res_refnum  );
+#endif
 		gOp_globals.res_refnum = -1;
 	}
 
@@ -372,134 +376,115 @@ NSpDoModalDialog( eDialogMode mode,
 	
 } // End  NSpDoModalJoinDialog()
 
+//----------------------------------------------------------------------------------------
+// Host Dialog
+//----------------------------------------------------------------------------------------
 
-
-void
-HideATItems( DialogPtr dialog, eNSpDialogItem theATInfoLabel )
+NMBoolean              
+NSpDoModalHostDialog( NSpProtocolListReference	ioProtocolList,
+                      unsigned char    ioGameName[ kNSpStr32Len ],
+                      unsigned char    ioPlayerName[ kNSpStr32Len ],
+                      unsigned char    ioPassword[ kNSpStr32Len ],
+                      NSpEventProcPtr  inEventProcPtr )
 {
-	Handle tempHandle;
+	NSpProtocolReference  protocolRef;
+	NMBoolean status;
 
-	tempHandle = (Handle) GetControlHandle( dialog, kAppleTalkProtocolButton );
-	SetControlValue( (ControlHandle) tempHandle, false );
+	if ( ioProtocolList == NULL ) {
+		return( false );
+	}
 
-	HideDialogItem( dialog, theATInfoLabel );	
-	HideDialogItem( dialog, kATGameNameLabel );
-	HideDialogItem( dialog, kATGameNameText );
-}
-
-
-void
-ShowATItems( DialogPtr dialog, eNSpDialogItem theATInfoLabel )
-{
-	Handle tempHandle;
-
-	tempHandle = (Handle) GetControlHandle( dialog, kAppleTalkProtocolButton );
-	SetControlValue( (ControlHandle) tempHandle, true );
-
-	ShowDialogItem( dialog, theATInfoLabel );	
-	ShowDialogItem( dialog, kATGameNameLabel );
-	ShowDialogItem( dialog, kATGameNameText );
-}
-
-
-void
-HideIPItems( DialogPtr dialog, eNSpDialogItem theIPInfoLabel )
-{
-	Handle tempHandle;
-
-	tempHandle = (Handle) GetControlHandle( dialog, kIPProtocolButton );
-	SetControlValue( (ControlHandle) tempHandle, false );
+	status = NSpDoModalDialog( kNSpHostDialog, 
+	                           ioGameName, 
+	                           ioPlayerName, 
+	                           ioPassword, 
+	                           inEventProcPtr );
 	
-	HideDialogItem( dialog, theIPInfoLabel );
-	HideDialogItem( dialog, kIPHostLabel );
-	HideDialogItem( dialog, kIPHostText );
-	HideDialogItem( dialog, kIPPortLabel );
-	HideDialogItem( dialog, kIPPortText );
-}				
-
-
-void
-ShowIPItems( DialogPtr dialog, eNSpDialogItem theIPInfoLabel )
-{
-	Handle tempHandle;
-
-	tempHandle = (Handle) GetControlHandle( dialog, kIPProtocolButton );
-	SetControlValue( (ControlHandle) tempHandle, true );
+	if ( status == false ) {
+		return( status );
+	}
+	else {
 	
-	ShowDialogItem( dialog, theIPInfoLabel );
-	ShowDialogItem( dialog, kIPHostLabel );
-	ShowDialogItem( dialog, kIPHostText );
-	ShowDialogItem( dialog, kIPPortLabel );
-	ShowDialogItem( dialog, kIPPortText );
-}				
+		if ( gIPSelected )
+		{
+			char portStr[kNSpStr32Len];
 
+			doCopyP2CStr(gIPPortStr, portStr);
+			NMUInt16 mIPPort = atoi(portStr);
+		
+			protocolRef = NSpProtocol_CreateIP( mIPPort, 0UL, 0UL );		
 
+		}
+		else {
 
-NMBoolean
-DoDialogLoop( DialogPtr dialog, 
-              eNSpDialogItem  theATInfoLabel,
-              eNSpDialogItem  theIPInfoLabel/*,
-              unsigned char    ioGameName[ kNSpStr32Len ],
-              unsigned char    ioPlayerName[ kNSpStr32Len ],
-              unsigned char    ioPassword[ kNSpStr32Len ]*/ )
-{  
-	NMSInt16   hitItem = 0;
-    NMBoolean  status = true;
-	
-	#ifdef OP_API_NETWORK_OT
-		NMBoolean	tcpPresent = OTUtils::HasOpenTransportTCP();
-	#else
-		NMBoolean	tcpPresent = true;
-	#endif
-	
-	do {
-		ModalDialog( NULL, &hitItem );
-
-        switch ( hitItem ) {
-
-            case kIPProtocolButton:
- 
- 				if ( tcpPresent ) {
- 				
-	 				gIPSelected = true;
-	 				ShowIPItems( dialog, theIPInfoLabel );
-	 				HideATItems( dialog, theATInfoLabel );
-	 			}
- 				
-				break;
-             
-			case kAppleTalkProtocolButton:
-			
-				gIPSelected = false;
- 				ShowATItems( dialog, theATInfoLabel );
- 				HideIPItems( dialog, theIPInfoLabel );
-					
-				break;
-        }
- 
-    } while ( hitItem != ok && hitItem != cancel );
-	
-	if ( hitItem == cancel ) {
-		status = false;
+			protocolRef = NSpProtocol_CreateAppleTalk( (unsigned char*) ioGameName, 
+			                                           (unsigned char*) gCreatorType, 
+			                                           0UL, 
+			                                           0UL );			
+		}
+		
+		if ( protocolRef == NULL ) {
+			status = false;
+		}
+		else {
+			NSpProtocolList_Append( ioProtocolList, protocolRef );
+		}		
 	}
 	
 	return( status );
-	
-}	// End  DoDialogLoop()
+}
 
+//----------------------------------------------------------------------------------------
+// Join Dialog
+//----------------------------------------------------------------------------------------
 
-
-ControlHandle 
-GetControlHandle( DialogPtr theBox, short theGetItem )
+NSpAddressReference  
+NSpDoModalJoinDialog( const unsigned char  inGameType[ kNSpStr32Len ],
+                      const unsigned char  inEntityListLabel[256],
+                      unsigned char        ioName[ kNSpStr32Len ],
+                      unsigned char        ioPassword[ kNSpStr32Len ],
+                      NSpEventProcPtr      inEventProcPtr )
 {
-    short itemType;
-    Rect itemRect;
-    Handle theHandle;
-    
-    GetDialogItem( theBox, theGetItem, &itemType, &theHandle, &itemRect );
+	NSpAddressReference  addrRef = NULL;
+	char     theATZone[ kNSpStr32Len ] = "*";
+	unsigned char     gameNameStr[ kNSpStr32Len ] = "";
+	NMBoolean  success;
+		
+	UNUSED_PARAMETER(inEntityListLabel);
 
-    return( (ControlHandle) theHandle );
+	success = NSpDoModalDialog( kNSpJoinDialog, 
+	                           gameNameStr, 
+	                           ioName, 
+	                           ioPassword, 
+	                           inEventProcPtr );
 
-}	// End  GetControlHandle()
+	if ( !success ) {
+		return( NULL );
+	}
+	
+	if ( gIPSelected ) {
+	
+		//ECF020111 we gotta convert these strings from pascal to c before shipping them in
+		doP2CStr((char*)gIPAddressStr);
+		doP2CStr((char*)gIPPortStr);
+		addrRef = NSpCreateIPAddressReference( (char*) gIPAddressStr, (char*) gIPPortStr );
+	}
+	else {
+	
+		if ( inGameType == NULL ) {
+		
+			// Skanky. We should change this function to take a NMUInt32
+			// as its Game Type parameter....
+			addrRef = NSpCreateATlkAddressReference( (char*) gameNameStr, 
+			                                         (char*) gCreatorType, 
+			                                         theATZone );
+		}
+		else {
+			addrRef = NSpCreateATlkAddressReference( (char*) gameNameStr, 
+			                                         (char*) inGameType, 
+			                                         theATZone );
+		}			
+	}
 
-// EOF  NSpDialogMacOS.cp
+	return( addrRef );
+}

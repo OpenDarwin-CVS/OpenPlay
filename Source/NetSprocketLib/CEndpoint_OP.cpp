@@ -605,12 +605,12 @@ EPCookie						*theCookie = NULL;
 				if (kOPInvalidEndpointRef != theCookie->endpointRefOP)
 				{
 					DEBUG_PRINT("Calling ProtocolCloseEndpt in CEndpoint::Disconnect (1)");
-				status = ::ProtocolCloseEndpoint(theCookie->endpointRefOP, false);
-				theCookie->endpointRefOP = NULL;
+					status = ::ProtocolCloseEndpoint(theCookie->endpointRefOP, false);
+					theCookie->endpointRefOP = NULL;
 				}
 #if OTDEBUG
-				if (status != kNMNoError)
-					DEBUG_PRINT("DoDisconnect returned %ld", status);
+					if (status != kNMNoError)
+						DEBUG_PRINT("DoDisconnect returned %ld", status);
 #endif
 			}
 		}
@@ -625,26 +625,26 @@ EPCookie						*theCookie = NULL;
 	
 	if (kOPInvalidEndpointRef != mOpenPlayEndpoint)
 	{
-	if (orderly)
-	{
+		if (orderly)
+		{
 			DEBUG_PRINT("Calling ProtocolCloseEndpt in CEndpoint::Disconnect (2)");
-		status = ::ProtocolCloseEndpoint(mOpenPlayEndpoint, true);
-		mOpenPlayEndpoint = NULL;
+			status = ::ProtocolCloseEndpoint(mOpenPlayEndpoint, true);
+			mOpenPlayEndpoint = NULL;
 
 #if OTDEBUG
-		if (kNMNoError != status)
-			DEBUG_PRINT("ProtocolCloseEndpoint returned %ld", status);
+			if (kNMNoError != status)
+				DEBUG_PRINT("ProtocolCloseEndpoint returned %ld", status);
 #endif
-	}
-	else
-	{
+		}
+		else
+		{
 			DEBUG_PRINT("Calling ProtocolCloseEndpt in CEndpoint::Disconnect (3)");
-		status = ::ProtocolCloseEndpoint(mOpenPlayEndpoint, false);
-		mOpenPlayEndpoint = NULL;
+			status = ::ProtocolCloseEndpoint(mOpenPlayEndpoint, false);
+			mOpenPlayEndpoint = NULL;
 
 #if OTDEBUG
-		if (kNMNoError != status)
-			DEBUG_PRINT("ProtocolCloseEndpoint returned %ld", status);
+			if (kNMNoError != status)
+				DEBUG_PRINT("ProtocolCloseEndpoint returned %ld", status);
 
 #endif
 		}
@@ -796,8 +796,8 @@ CEndpoint::SendMessage(NSpMessageHeader *inHeader, NMUInt8 *inBody, NSpFlags inF
 					{
 						op_vpause("CEndpoint::SendMessage - No bytes were sent.  Calling PostponeSend...");
 						result = PostponeSend(&mStreamSendInfo, inHeader); 		
+					}
 				}
-			}
 			}
 			
 			mStreamSendInfo.sendInProgress = false;
@@ -892,7 +892,7 @@ CEndpoint::PostponeSend(SendInfo *inInfo, NSpMessageHeader *inData, NMUInt32 inB
 		status = kNSpPipeFullErr;
 		goto error;
 	}
-	
+
 	op_vpause("CEndpoint::PostponeSend - About to create new SendQItem...");
 	
 	qItem = new SendQItem( (void *) inData, inBytesSent);
@@ -919,7 +919,7 @@ error:
 		return( status );
 	}
 	
-		ProtocolLeaveNotifier(mOpenPlayEndpoint, endpointMode);
+	ProtocolLeaveNotifier(mOpenPlayEndpoint, endpointMode);
 
 	return (kNMNoError);
 }
@@ -1370,7 +1370,7 @@ CEndpoint::DoReceiveStream(PEndpointRef inEndpoint, EPCookie *inCookie)
 		else
 		{
 			DEBUG_PRINT("Calling Close() in CEndpoint::DoReceiveStream");
-		Close();
+			Close();
 		}
 		return (status);
 	}

@@ -1,9 +1,12 @@
 NMGetModuleInfo
+NMGetIdentifier
 NMOpen
 NMClose
 NMAcceptConnection
 NMRejectConnection
 NMIsAlive
+NMGetAddress
+NMFreeAddress
 NMSetTimeout
 NMCreateConfig
 NMGetConfigLen

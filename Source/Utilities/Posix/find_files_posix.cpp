@@ -1,9 +1,9 @@
 /*
- * Copyright (c) 1999-2002 Apple Computer, Inc. All rights reserved.
+ * Copyright (c) 1999-2004 Apple Computer, Inc. All rights reserved.
  *
  * @APPLE_LICENSE_HEADER_START@
  * 
- * Portions Copyright (c) 1999-2002 Apple Computer, Inc.  All Rights
+ * Portions Copyright (c) 1999-2004 Apple Computer, Inc.  All Rights
  * Reserved.  This file contains Original Code and/or Modifications of
  * Original Code as defined in and that are subject to the Apple Public
  * Source License Version 1.1 (the "License").  You may not use this file
@@ -118,7 +118,7 @@ static FileError enumerate_files(struct find_file_pb *param_block)
 	long counter;
 	FileDesc temp_file;
 	NMBoolean result;
-	moduleURLs = CFBundleCopyResourceURLsOfType(param_block->start_search_from.bundle,CFSTR("bundle"),CFSTR("OpenPlay Modules"));
+	moduleURLs = CFBundleCopyResourceURLsOfType(param_block->start_search_from.bundle,CFSTR("bundle"),CFSTR("modules"));
 	long count = CFArrayGetCount(moduleURLs);
 	DEBUG_PRINT("found %d modules",count);		
 	

@@ -149,6 +149,11 @@ extern "C" {
 		NMSetTimeout		(	NMEndpointRef 		inEndpoint, 
 								NMUInt32			inTimeout);	/* in milliseconds */
 
+		OP_DEFINE_API_C(NMErr)
+		NMGetIdentifier 	(	NMEndpointRef 		inEndpoint, 
+								char *				outIdStr,
+							    NMSInt16            inMaxLen);
+
 	/* Enter/Leave Notifier functions */
 
 		OP_DEFINE_API_C(NMErr)

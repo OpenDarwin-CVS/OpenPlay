@@ -1,9 +1,9 @@
 /*
- * Copyright (c) 1999-2002 Apple Computer, Inc. All rights reserved.
+ * Copyright (c) 1999-2004 Apple Computer, Inc. All rights reserved.
  *
  * @APPLE_LICENSE_HEADER_START@
  * 
- * Portions Copyright (c) 1999-2002 Apple Computer, Inc.  All Rights
+ * Portions Copyright (c) 1999-2004 Apple Computer, Inc.  All Rights
  * Reserved.  This file contains Original Code and/or Modifications of
  * Original Code as defined in and that are subject to the Apple Public
  * Source License Version 1.1 (the "License").  You may not use this file
@@ -20,9 +20,6 @@
  * under the License.
  * 
  * @APPLE_LICENSE_HEADER_END@
- *
- * Modified: $Date$
- * Revision: $Id$
  */
 
 #ifndef __OTIPENDPOINT__
@@ -53,6 +50,7 @@
 		
 		virtual	void	GetConfigAddress(TNetbuf *outBuf, NMBoolean inActive);
 		virtual void	SetConfigAddress(TNetbuf *inBuf);
+		virtual NMErr	GetIdentifier(char* outIdStr, NMSInt16 inMaxSize);
 
 	protected:
 		virtual	NMErr	DoBind(PrivateEndpoint *inEP, TBind *inRequest, TBind *outReturned);

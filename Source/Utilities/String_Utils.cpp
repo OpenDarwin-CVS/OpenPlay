@@ -1,9 +1,9 @@
 /*
- * Copyright (c) 1999-2002 Apple Computer, Inc. All rights reserved.
+ * Copyright (c) 1999-2004 Apple Computer, Inc. All rights reserved.
  *
  * @APPLE_LICENSE_HEADER_START@
  * 
- * Portions Copyright (c) 1999-2002 Apple Computer, Inc.  All Rights
+ * Portions Copyright (c) 1999-2004 Apple Computer, Inc.  All Rights
  * Reserved.  This file contains Original Code and/or Modifications of
  * Original Code as defined in and that are subject to the Apple Public
  * Source License Version 1.1 (the "License").  You may not use this file
@@ -149,9 +149,6 @@ NMBoolean doComparePStr(const NMUInt8 *stringOne, const NMUInt8 *stringTwo)
 	return stringsEqual;
 }
 
-
-
-
 //----------------------------------------------------------------------------------------
 // doGetConfigSubString
 //----------------------------------------------------------------------------------------
@@ -173,7 +170,6 @@ NMBoolean 	doGetConfigSubString(char *configStr, char *itemName, char *buffer, l
 		
 	return true;
 }
-
 
 //----------------------------------------------------------------------------------------
 // doSetConfigSubString
@@ -208,12 +204,3 @@ void		doSetConfigSubString(char *configStr, char *itemName, char *itemValue)
 	sprintf(configStr,"%s%s=%s%s",buffer,itemName,itemValue,nameStart);
 
 }
-
-
-
-
-
-
-
-
-

@@ -33,6 +33,7 @@ SwapCrossPlatformPacket
 ProtocolStartAdvertising
 ProtocolStopAdvertising
 ProtocolSetEndpointContext
+ProtocolGetEndpointIdentifier
 
 NSpProtocol_New
 NSpProtocol_Dispose

@@ -181,9 +181,20 @@ resource 'DLOG' (2500, purgeable)
 resource 'vers' (1) {
 		0x02, 
 		0x02, 
-		development, 
-		0x03,
+		release, 
+		0x1,
 		verUS,
-		"2.2",
-		"2.2d3, Apple Open Source."
+		"2.2r1",
+		"2.2r1, © Copyright 1999-2004 Apple Computer"
+	};
+
+
+resource 'vers' (2) {
+		0x02,
+		0x02,
+		release,
+		0x1,
+		verUS,
+		"2.2r1",
+		"OpenPlay, Apple Open Source"
 	};

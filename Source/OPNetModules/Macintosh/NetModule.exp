@@ -1,4 +1,5 @@
 NMGetModuleInfo
+NMGetIdentifier
 NMOpen
 NMClose
 NMAcceptConnection

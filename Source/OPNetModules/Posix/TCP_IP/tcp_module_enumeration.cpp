@@ -7,11 +7,11 @@
  *   Author: Kevin Holbrook
  *  Created: June 23, 1999
  *
- * Copyright (c) 1999-2002 Apple Computer, Inc. All rights reserved.
+ * Copyright (c) 1999-2004 Apple Computer, Inc. All rights reserved.
  *
  * @APPLE_LICENSE_HEADER_START@
  * 
- * Portions Copyright (c) 1999-2002 Apple Computer, Inc.  All Rights
+ * Portions Copyright (c) 1999-2004 Apple Computer, Inc.  All Rights
  * Reserved.  This file contains Original Code and/or Modifications of
  * Original Code as defined in and that are subject to the Apple Public
  * Source License Version 1.1 (the "License").  You may not use this file
@@ -208,7 +208,7 @@ static void _send_game_request_packet(NMConfigRef Config)
 			DEBUG_PRINT("bytes sent: %d",bytes_sent);
 		#ifdef DEBUG
 			if (bytes_sent != packet_length)
-				op_dprintf("Error in  _send_game_request_packet: sendto only delivered %d bytes of %d", bytes_sent, packet_length);
+				DEBUG_PRINT("Error in  _send_game_request_packet: sendto only delivered %d bytes of %d", bytes_sent, packet_length);
 			#endif
 		}
 	}
@@ -235,24 +235,23 @@ static void _send_game_request_packet(NMConfigRef Config)
 
 NMErr NMBindEnumerationItemToConfig(NMConfigRef inConfig, NMHostID inID)
 {
-	
+	DEBUG_ENTRY_EXIT("NMBindEnumerationtoConfig");
+
 	NMErr 		err= kNMNoError;
 
 	op_assert(inConfig->cookie==config_cookie);
 	if(inConfig->enumerating)
 	{
-		NMSInt16	index;
+		int	index;
 
 		for(index= 0; index<inConfig->game_count; ++index)
 		{
 			if((NMHostID)(inConfig->games[index].host)==inID)
 	    	{
 				inConfig->hostAddr.sin_family = AF_INET;
-				/* sjb 19990330 should these be converted to network byte order? */
-				inConfig->hostAddr.sin_addr.s_addr = htonl(inConfig->games[index].host);	/* [Edmark/PBE] 11/12/99 added SWAP4 */
-				inConfig->hostAddr.sin_port = htons(inConfig->games[index].port);				/* [Edmark/PBE] 11/12/99 added SWAP2 */
-				/*	      inConfig->host_name[0] = '\0'; */
-				strcpy(inConfig->host_name, inet_ntoa(inConfig->hostAddr.sin_addr));	/* [Edmark/PBE] 11/12/99 added */
+				inConfig->hostAddr.sin_addr.s_addr = htonl(inConfig->games[index].host);
+				inConfig->hostAddr.sin_port = htons(inConfig->games[index].port);
+				strcpy(inConfig->host_name, inet_ntoa(inConfig->hostAddr.sin_addr));
 				break;
 		    }
 		}
@@ -264,7 +263,6 @@ NMErr NMBindEnumerationItemToConfig(NMConfigRef inConfig, NMHostID inID)
 		err= kNMNotEnumeratingErr;
 
 	return err;	
-	
 
 } /* NMBindEnumerationtoConfig */
 
@@ -594,9 +592,7 @@ NMErr NMEndEnumeration(NMConfigRef Config)
 
 		if (status)
 		{
-			#ifdef _DEBUG
-				op_dprintf("Error in NMEndEnumeration: closesocket returned %d", op_errno);
-			#endif
+			DEBUG_PRINT("Error in NMEndEnumeration: closesocket returned %d", op_errno);
 		}
 
 		Config->enumeration_socket = INVALID_SOCKET;
