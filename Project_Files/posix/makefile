@@ -10,64 +10,71 @@ ifneq ($(OP_BUILD_TYPE),release)
 	OP_DEBUG_DEFINES = -DDEBUG -DDEBUGCALLCHAIN
 endif
 
+#openplay headers needed for development
+OP_DEVEL_HEADERS = $(TOP)/../../Interfaces/OpenPlay.h
+
 #store intermediates and targets based on architecture and machine
 OSTYPE_DIR		= $(OSTYPE)-$(HOSTTYPE)
 TARGET_DIR		= $(TOP)/../../Targets/posix/$(OSTYPE_DIR)/$(OP_BUILD_TYPE)
 MODULES_DIR		= $(TOP)/../../Targets/posix/$(OSTYPE_DIR)/$(OP_BUILD_TYPE)/OpenPlay\ Modules
 DOXYGEN_OP_DIR	= $(TOP)/../../Documentation/html
 
+#standard location for netmodules on posix
+OP_NETMODULE_DIR = /usr/share/openplay/netmodules
+
 #stick object files in the dir for this os
-OBJECT_DIR = objs_$(OSTYPE_DIR)-$(OP_BUILD_TYPE)
+OBJECT_DIR = $(TOP)/objs_$(OSTYPE_DIR)-$(OP_BUILD_TYPE)
 OUTPUT_OPTION = -o $(OBJECT_DIR)/$@
 
 ifeq ($(OSTYPE),darwin)
 	CC = cc	
-	CXX = c++
 	INOSTYPE = os_darwin
 	GLOBAL_FLAGS = -Dmacho_build -Wno-four-char-constants
-	OP_SHLIB_NAME = $(TARGET_DIR)/libopenplay.dylib
+	OP_SHLIB_NAME = libopenplay.dylib
 	APPFLAGS =	 -L$(TARGET_DIR)  -lopenplay -lpthread -lstdc++ 	
 else
-	CC = gcc
+	CC = libtool g++
 	INOSTYPE = os_posix_generic
-	OP_SHLIB_NAME = $(TARGET_DIR)/libopenplay.so
+	OP_SHLIB_NAME = libopenplay.so
 	APPFLAGS = 	-L$(TARGET_DIR)  -ldl -lopenplay -lpthread -lstdc++	
 endif
 
-TCP_MODULE_NAME	= $(MODULES_DIR)/libtcp_ip.so
-ENUM_TEST_NAME = $(TARGET_DIR)/openumtest
-NSP_TEST_NAME = $(TARGET_DIR)/nsptest
-OP_EXAMPLE1_NAME = $(TARGET_DIR)/opexample1
-NSP_EXAMPLE1_NAME = $(TARGET_DIR)/nspexample1
-MINI_PLAY_NAME = $(TARGET_DIR)/miniplay
-OP_DOWNLOADHTTP_NAME = $(TARGET_DIR)/opdownloadhttp
+OP_SHLIB_PATH = $(TARGET_DIR)/$(OP_SHLIB_NAME)
+
+TCP_MODULE_NAME = libtcp_ip.so
+TCP_MODULE_PATH	= $(MODULES_DIR)/$(TCP_MODULE_NAME)
+ENUM_TEST_PATH = $(TARGET_DIR)/openumtest
+NSP_TEST_PATH = $(TARGET_DIR)/nsptest
+OP_EXAMPLE1_PATH = $(TARGET_DIR)/opexample1
+NSP_EXAMPLE1_PATH = $(TARGET_DIR)/nspexample1
+MINI_PLAY_PATH = $(TARGET_DIR)/miniplay
+OP_DOWNLOADHTTP_PATH = $(TARGET_DIR)/opdownloadhttp
 
 #where to find sources/headers/libs  
-HPATH1 = $(TOP)/../../Interfaces
-HPATH2 = $(TOP)/../../Source/OpenPlayLib/Common
-HPATH3 = $(TOP)/../../Source/OpenPlayLib/posix
-HPATH4 = $(TOP)/../../Source/Utilities
-HPATH5 = $(TOP)/../../Source/Utilities/posix
-HPATH6 = $(TOP)/../../Source/OPNetModules
-HPATH7 = $(TOP)/../../Source/OPNetModules/Common
-HPATH8 = $(TOP)/../../Source/OPNetModules/posix/TCP_IP
-HPATH9 = $(TOP)/../../Source/Demos/OPEnumTest
-HPATH10 = $(TOP)/../../Source/NetSprocketLib
-HPATH11 = $(TOP)/../../Source/Demos/NSpTestApp
-HPATH12 = $(TOP)/../../Source/Demos/OPMiniDemo
-HPATH13 = $(TOP)/../../Source/Demos/OPExample1
-HPATH14 = $(TOP)/../../Source/Demos/OPDownloadHTTP
-		
-HINCLUDES = $(HPATH1) $(HPATH2) $(HPATH3) $(HPATH4) $(HPATH5) $(HPATH6)\
-	$(HPATH7) $(HPATH8) $(HPATH9) $(HPATH10) $(HPATH11) $(HPATH12) $(HPATH13) $(HPATH14)
+OUR_PATHS = $(TOP)/../../Interfaces\
+	$(TOP)/../../Source/OpenPlayLib/Common\
+	$(TOP)/../../Source/OpenPlayLib/posix\
+	$(TOP)/../../Source/Utilities\
+	$(TOP)/../../Source/Utilities/posix\
+	$(TOP)/../../Source/OPNetModules\
+	$(TOP)/../../Source/OPNetModules/Common\
+	$(TOP)/../../Source/OPNetModules/posix/TCP_IP\
+	$(TOP)/../../Source/Demos/OPEnumTest\
+	$(TOP)/../../Source/NetSprocketLib\
+	$(TOP)/../../Source/Demos/NSpTestApp\
+	$(TOP)/../../Source/Demos/OPMiniDemo\
+	$(TOP)/../../Source/Demos/OPExample1\
+	$(TOP)/../../Source/Demos/OPDownloadHTTP
+
+	
+HINCLUDES = $(OUR_PATHS)
 	
 #where make looks for sources of any sort (besides the default obj dir)
 #.PATH: $(HINCLUDES) $(OBJECT_DIR)
 VPATH = $(HINCLUDES) $(OBJECT_DIR)
 
 #summarize our flags to pass to the compiler
-INCLUDE_FLAGS = -I$(HPATH1) -I$(HPATH2) -I$(HPATH3) -I$(HPATH4)\
-	-I$(HPATH5) -I$(HPATH6) -I$(HPATH7) -I$(HPATH8) -I$(HPATH9) -I$(HPATH10) -I$(HPATH11) -I$(HPATH12) -I$(HPATH13) -I$(HPATH14)
+INCLUDE_FLAGS = $(addprefix -I,$(OUR_PATHS))
 CFLAGS = -g -fPIC -fno-common $(GLOBAL_FLAGS) -D$(INOSTYPE) $(OP_DEBUG_DEFINES) $(INCLUDE_FLAGS)
 CXXFLAGS = $(CFLAGS)
 
@@ -135,8 +142,8 @@ OP_DOWNLOADHTTP_OBJECTS = 	OPDownloadHTTP.o\
 ################################################################################
 							
 #builds all - default target
-MAIN: $(OP_SHLIB_NAME) $(TCP_MODULE_NAME) $(ENUM_TEST_NAME) $(NSP_TEST_NAME) $(OP_EXAMPLE1_NAME) $(NSP_EXAMPLE1_NAME) $(MINI_PLAY_NAME) $(OP_DOWNLOADHTTP_NAME)
-	@echo openplay build complete
+MAIN: $(OP_SHLIB_PATH) $(TCP_MODULE_PATH) $(ENUM_TEST_PATH) $(NSP_TEST_PATH) $(OP_EXAMPLE1_PATH) $(NSP_EXAMPLE1_PATH) $(MINI_PLAY_PATH) $(OP_DOWNLOADHTTP_PATH)
+	@echo openplay build complete!
 
 #clears out object files from the current posix build
 clean:
@@ -145,7 +152,7 @@ clean:
 	-rm -rf $(MODULES_DIR)
 
 #clears out all builds (cw, posix, etc)
-clean_all: clean
+distclean: clean
 	-rm -rf objs_*
 	-rm -rf $(TOP)/../../Targets
 	-rm -rf $(TOP)/../ProjectBuilder/OpenPlay.build
@@ -159,17 +166,13 @@ clean_all: clean
 	-rm -rf $(TOP)/../VC/OPNetModulesWin/Debug
 	-rm $(TOP)/../VC/OPNetModulesWin/*.opt
 	-rm $(TOP)/../VC/OPNetModulesWin/*.ncb
-	-rm -rf $(TOP)/../VC/OPNetModulesWinOld/Release
-	-rm -rf $(TOP)/../VC/OPNetModulesWinOld/Debug
-	-rm $(TOP)/../VC/OPNetModulesWinOld/*.opt
-	-rm $(TOP)/../VC/OPNetModulesWinOld/*.ncb
 	
-#construct required directories
-build_dirs: 
-	@echo creating directories
-	@mkdir -p $(OBJECT_DIR)
-	@mkdir -p $(TARGET_DIR)
-	@mkdir -p $(MODULES_DIR)
+#required directories
+#build_dirs: $(OBJECT_DIR)
+#	mkdir -p $(OBJECT_DIR)
+	
+$(OBJECT_DIR):
+	mkdir -p $(OBJECT_DIR)
 
 #create the documentation using doxygen
 docs:
@@ -177,50 +180,58 @@ docs:
 	@mkdir -p $(DOXYGEN_OP_DIR)
 	@doxygen DoxygenConfigOP
 
-#the library itself 
-$(OP_SHLIB_NAME): build_dirs $(OP_LIB_OBJECTS)
-	@echo updating $(OP_SHLIB_NAME)
+#build the library itself 
+$(OP_SHLIB_PATH): $(OBJECT_DIR) $(OP_LIB_OBJECTS)
+	mkdir -p $(TARGET_DIR)
 ifeq ($(OSTYPE),darwin)
-	cd $(OBJECT_DIR); $(CC) -dynamiclib -o $(OP_SHLIB_NAME)  $(OP_LIB_OBJECTS)
+	cd $(OBJECT_DIR); $(CC) -dynamiclib -o $(OP_SHLIB_PATH)  $(OP_LIB_OBJECTS)
 else
-	cd $(OBJECT_DIR); ld -shared -o $(OP_SHLIB_NAME) $(OP_LIB_OBJECTS)
+	cd $(OBJECT_DIR); ld -shared -o $(OP_SHLIB_PATH) $(OP_LIB_OBJECTS)
+#	cd $(OBJECT_DIR); $(CC) -shared -o $(OP_SHLIB_PATH) $(OP_LIB_OBJECTS)
 endif
 	
+#install the library and netmodules
+install: MAIN
+	cp $(OP_SHLIB_PATH) /usr/lib
+	mkdir -p $(OP_NETMODULE_DIR)
+	cp $(TCP_MODULE_PATH) $(OP_NETMODULE_DIR)
+	cp $(OP_DEVEL_HEADERS) /usr/include
+
+#uninstall the library and netmodules
+uninstall:
+	rm -f /usr/lib/$(OP_SHLIB_NAME)
+	rm -f $(OP_NETMODULE_DIR)/$(TCP_MODULE_NAME)
+	-rmdir $(OP_NETMODULE_DIR)
+	
 #the ip module
-$(TCP_MODULE_NAME):  build_dirs $(TCP_MODULE_OBJECTS)
-	@echo updating $(TCP_MODULE_NAME)
+$(TCP_MODULE_PATH):  $(OBJECT_DIR) $(TCP_MODULE_OBJECTS)
+	mkdir -p $(MODULES_DIR)
 ifeq ($(OSTYPE),darwin)	
-	cd $(OBJECT_DIR); $(CC) -bundle -flat_namespace -o $(TCP_MODULE_NAME) $(TCP_MODULE_OBJECTS)
+	cd $(OBJECT_DIR); $(CC) -bundle -flat_namespace -o $(TCP_MODULE_PATH) $(TCP_MODULE_OBJECTS)
 else
-	cd $(OBJECT_DIR); ld -shared -o $(TCP_MODULE_NAME) $(TCP_MODULE_OBJECTS)
+	cd $(OBJECT_DIR); ld -shared -o $(TCP_MODULE_PATH) $(TCP_MODULE_OBJECTS)
 endif
 
 #enumeration test
-$(ENUM_TEST_NAME): build_dirs $(ENUM_TEST_OBJECTS)
-	@echo updating $(ENUM_TEST_NAME)
-	cd $(OBJECT_DIR); $(CC) $(APPFLAGS) -o $(ENUM_TEST_NAME) $(ENUM_TEST_OBJECTS)
+$(ENUM_TEST_PATH): $(OBJECT_DIR) $(ENUM_TEST_OBJECTS)
+	cd $(OBJECT_DIR); $(CC) $(APPFLAGS) -o $(ENUM_TEST_PATH) $(ENUM_TEST_OBJECTS)
 
 #nsp test
-$(NSP_TEST_NAME): build_dirs $(NSP_TEST_OBJECTS)
-	@echo updating $(NSP_TEST_NAME)
-	cd $(OBJECT_DIR); $(CC) $(APPFLAGS) -o $(NSP_TEST_NAME) $(NSP_TEST_OBJECTS)
+$(NSP_TEST_PATH): $(OBJECT_DIR) $(NSP_TEST_OBJECTS)
+	cd $(OBJECT_DIR); $(CC) $(APPFLAGS) -o $(NSP_TEST_PATH) $(NSP_TEST_OBJECTS)
 
 #opexample1
-$(OP_EXAMPLE1_NAME): build_dirs $(OP_EXAMPLE1_OBJECTS)
-	@echo updating $(OP_EXAMPLE1_NAME)
-	cd $(OBJECT_DIR); $(CC) $(APPFLAGS) -o $(OP_EXAMPLE1_NAME) $(OP_EXAMPLE1_OBJECTS)
+$(OP_EXAMPLE1_PATH): $(OBJECT_DIR) $(OP_EXAMPLE1_OBJECTS)
+	cd $(OBJECT_DIR); $(CC) $(APPFLAGS) -o $(OP_EXAMPLE1_PATH) $(OP_EXAMPLE1_OBJECTS)
 
 #nspexample1
-$(NSP_EXAMPLE1_NAME): build_dirs $(NSP_EXAMPLE1_OBJECTS)
-	@echo updating $(NSP_EXAMPLE1_NAME)
-	cd $(OBJECT_DIR); $(CC) $(APPFLAGS) -o $(NSP_EXAMPLE1_NAME) $(NSP_EXAMPLE1_OBJECTS)
+$(NSP_EXAMPLE1_PATH): $(OBJECT_DIR) $(NSP_EXAMPLE1_OBJECTS)
+	cd $(OBJECT_DIR); $(CC) $(APPFLAGS) -o $(NSP_EXAMPLE1_PATH) $(NSP_EXAMPLE1_OBJECTS)
 
 #mini-play
-$(MINI_PLAY_NAME): build_dirs $(MINI_PLAY_OBJECTS)
-	@echo updating $(MINI_PLAY_NAME)
-	cd $(OBJECT_DIR); $(CC) $(APPFLAGS) -o $(MINI_PLAY_NAME) $(MINI_PLAY_OBJECTS)
+$(MINI_PLAY_PATH): $(OBJECT_DIR) $(MINI_PLAY_OBJECTS)
+	cd $(OBJECT_DIR); $(CC) $(APPFLAGS) -o $(MINI_PLAY_PATH) $(MINI_PLAY_OBJECTS)
 
 #download-http
-$(OP_DOWNLOADHTTP_NAME): build_dirs $(OP_DOWNLOADHTTP_OBJECTS)
-	@echo updating $(OP_DOWNLOADHTTP_NAME)
-	cd $(OBJECT_DIR); $(CC) $(APPFLAGS) -o $(OP_DOWNLOADHTTP_NAME) $(OP_DOWNLOADHTTP_OBJECTS)
+$(OP_DOWNLOADHTTP_PATH): $(OBJECT_DIR) $(OP_DOWNLOADHTTP_OBJECTS)
+	cd $(OBJECT_DIR); $(CC) $(APPFLAGS) -o $(OP_DOWNLOADHTTP_PATH) $(OP_DOWNLOADHTTP_OBJECTS)
