@@ -266,7 +266,7 @@ NMBoolean					swapBack = false;	//?? why here and not below?
 		status = DoSelfSend(inMessage, (NMUInt8 *)inMessage + sizeof (NSpMessageHeader), inFlags);
 		bSelfSent = true;
 	}
-	else if (inMessage->to < kNSpHostOnly)	//Ä	We need to handle if its a group. In case we're a member
+	else if (inMessage->to < kNSpMasterEndpointID)	//Ä	We need to handle if its a group. In case we're a member
 	{
 		if (!bSelfSent)
 		{
@@ -385,7 +385,7 @@ NMBoolean						bSelfSent = false;
 		status = DoSelfSend(headerPtr, inData, inFlags);
 		bSelfSent = true;
 	}
-	else if (inTo < kNSpHostOnly)	// We need to handle if its a group. In case we're a member
+	else if (inTo < kNSpMasterEndpointID)	// We need to handle if its a group. In case we're a member
 	{
 		if (!bSelfSent)
 		{

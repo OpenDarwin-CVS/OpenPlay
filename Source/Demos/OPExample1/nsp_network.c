@@ -368,7 +368,7 @@ NMErr NetworkSendAnswer
 	NSpClearMessageHeader( &answerPacket.header );
 
 	answerPacket.header.what = kMessageType_Answer;
-	answerPacket.header.to = kNSpHostOnly;
+	answerPacket.header.to = kNSpHostID;	/* %% was kNSpHostOnly */
 	answerPacket.header.messageLen = sizeof(answerPacket);
 
 	/* fill in the data section */
@@ -440,7 +440,7 @@ NMErr NetworkSendPlayerMessage
 	err = NSpMessage_Send( _gameReference, &qpp->header, kNSpSendFlag_Registered );
 	if( !err )
 	{
-		qpp->header.to = kNSpHostOnly;		/* allow host to play as well! */
+		qpp->header.to = kNSpHostID;	/* %% was kNSpHostOnly */		/* allow host to play as well! */
 
 		err = NSpMessage_Send( _gameReference, &qpp->header, kNSpSendFlag_Registered );
 	}

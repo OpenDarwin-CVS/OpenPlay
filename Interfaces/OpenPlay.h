@@ -29,18 +29,40 @@
 #define __OPENPLAY__
 
 /*-------------------------------------------------------------------------------------------
-	Determine which platform we're compiling for: MacOS, Windows, Posix
+	Determine which platform we're compiling for: 
+	
+	We currently support the following platform builds:
+	
+		OP_PLATFORM_MAC_CFM: 	MacOS classic and MacOS Carbon using OpenTransport
+			
+			OP_PLATFORM_MAC_CARBON_FLAG: can be defined.
+					
+		OP_PLATFORM_WINDOWS: 		Windows 32-bit using the WinSock API
+		
+		OP_PLATFORM_MAC_MACHO:	MacOSXin this case we use bundles, frameworks like coreservices, carbon, etc
+			
+			OP_PLATFORM_MAC_CARBON_FLAG: can be defined.
+
+		OP_PLATFORM_UNIX:		macOSX/linux/unix using POSIX API.
+
 */
 
-	#if defined(__MWERKS__)			/* Metrowerks CodeWarrior Compiler */
+	#ifdef __MWERKS__			/* Metrowerks CodeWarrior Compiler */
 
-		#if defined(__INTEL__)		/* Compiling for x86, assume windows */
-			#define windows_build  1
+		#ifdef __INTEL__		/* Compiling for x86, assume windows */
+			#define OP_PLATFORM_WINDOWS  1
 			#define little_endian  1
 			#define has_byte_type  1
 		#elif defined(__POWERPC__)	/* Compiling for PowerPC, assume MacOS */
-			#define macintosh_build  1
-			#define mac_cfm_build 1
+
+			#ifdef __MACH__
+				#define OP_PLATFORM_MAC_MACHO	1
+
+				#include <machine/endian.h> /*bsd,osx,etc*/
+			#else
+				#define OP_PLATFORM_MAC_CFM		1
+			#endif
+			
 			#define big_endian	1
 			#undef  has_byte_type
 		#else
@@ -49,19 +71,15 @@
 	
 		#undef  has_unused_pragma	/* unused pragma can't be used in define 8-( */
 	
-	#elif defined(PROJECT_BUILDER_CARBON) 	/* project builder doing a carbon build as opposed */
-		#define macintosh_build 1			/* to a posix build which comes up below*/
-		#define big_endian 1
-		
 	#elif defined(_MSC_VER)			/* microsoft compiler */
 		#define little_endian 1
-		#define windows_build  1
+		#define OP_PLATFORM_WINDOWS  1
 		#undef  has_unused_pragma 
 		#undef  has_byte_type
 		#undef  has_mark_pragma
 	
 	#elif defined(__MRC__)			/* mpw mrc */
-		#define macintosh_build  1
+		#define OP_PLATFORM_MAC_CFM		1
 		#define big_endian  1
 
 		#undef  has_unused_pragma 
@@ -70,13 +88,12 @@
 	#elif defined(__WATCOMC__)		/* Watcom, set to fake Microsoft compiler */
 		#define little_endian 1			
 		#define MICROSOFT
-		#define windows_build	1
+		#define OP_PLATFORM_WINDOWS	1
 
 		#define has_unused_pragma 1
 		#define has_byte_type
 	
 	#else	/* lump everything else under Posix -- linux, unix, etc. */		
-		#define posix_build 1
 
 		#ifdef linux
 			#include <endian.h>
@@ -84,6 +101,20 @@
 			#include <machine/endian.h> /*bsd,osx,etc*/
 		#endif 		
 
+		#if defined(project_builder)
+			#define OP_PLATFORM_MAC_MACHO 1
+		#else
+			#define OP_PLATFORM_UNIX 1
+
+//
+//		We make this decision later...
+//
+//		#elif defined(os_darwin)
+//			#define OP_PLATFORM_MAC_MACHO 1
+//			#define macosx_darwin_build 1
+
+		#endif
+		
 		#ifdef linux
 			#if __BYTE_ORDER == __BIG_ENDIAN
 				#define big_endian 1
@@ -105,7 +136,7 @@
 	#endif
 		
 	/* make sure we've defined one and only one endian type */
-	#if defined (big_endian) && defined (little_endian)
+	#if defined(big_endian) && defined(little_endian)
 	 	#error "Somehow big and little endian got defined!!"
 	#endif
 	
@@ -135,7 +166,7 @@
 	typedef unsigned char 					NMStr31[32];
 	typedef const unsigned char *			NMConstStr31Param;
 
-#if macintosh_build
+#if OP_PLATFORM_MAC_CFM
 	typedef NumVersion	NMNumVersion;		/* same as below, but compatible w/MacOS headers & code */
 #else
 	struct NMNumVersion {
@@ -157,15 +188,13 @@
 	#pragma once
 	#endif
 	
-	#if defined(macintosh_build)
+	#ifdef OP_PLATFORM_MAC_CFM
 
 		#if TARGET_API_MAC_CARBON
-			#define carbon_build 1
+			#define OP_PLATFORM_MAC_CARBON_FLAG 1
 		#endif
 		
-		#if (!macho_build)
 			#include <ConditionalMacros.h>
-		#endif
 		
 		#ifndef __MACTYPES__
 		#include <MacTypes.h>
@@ -182,22 +211,23 @@
 	
 		#define FATAL_EXIT            exit(-1)
 	
-		typedef  EventRecord  EVENT;
-		typedef  Rect         RECT;
-		typedef  DialogPtr    DIALOGPTR;
+		typedef  EventRecord  NMEvent;
+		typedef  Rect         NMRect;
+		typedef  DialogPtr    NMDialogPtr;
 
 
 		#define OP_CALLBACK_API CALLBACK_API
 		#define OP_DEFINE_API_C DEFINE_API_C
 		
-	#elif windows_build
+	#elif defined(OP_PLATFORM_WINDOWS)
 	
 		#define WIN32_LEAN_AND_MEAN /* We limit the import of certain libs... */
 	
 		#include <Windows.h>
 	
 		#define FATAL_EXIT        	FatalExit(0)
-		typedef HWND				DIALOGPTR;
+		typedef HWND				NMDialogPtr;
+		typedef RECT				NMRect;
 
 		typedef struct private_event
 		{
@@ -205,7 +235,7 @@
 			UINT        message;
 			WPARAM      wParam;
 			LPARAM      lParam;
-		} EVENT;
+		} NMEvent;
 
 		#ifdef OPENPLAY_DLLEXPORT
 			#define OP_DEFINE_API_C(_type) __declspec(dllexport) _type __cdecl
@@ -215,21 +245,32 @@
 			#define OP_CALLBACK_API(_type, _name)              _type (__cdecl *_name)
 		#endif /* OPENPLAY_DLLEXPORT */
 
-	#elif defined (posix_build)
+	#elif defined(OP_PLATFORM_MAC_MACHO)
+
+		#define OP_PLATFORM_MAC_CARBON_FLAG 1
+		#include <Carbon/Carbon.h>
 	
 		#define FATAL_EXIT          exit(EXIT_FAILURE)
 		typedef  unsigned short  	word;
 
-		#if (OP_POSIX_USE_CARBON_TYPES)
-			typedef  EventRecord  EVENT;
-			typedef  DialogPtr    DIALOGPTR;	
-			typedef  Rect         RECT;			
-		#else
-			typedef  void*  			DIALOGPTR;
-			typedef struct _event
+		typedef  EventRecord  		NMEvent;
+		typedef  DialogPtr    		NMDialogPtr;	
+		typedef  Rect         		NMRect;			
+
+
+		#define OP_DEFINE_API_C(_type) _type
+		#define OP_CALLBACK_API(_type, _name) _type (*_name)
+
+	#elif defined(OP_PLATFORM_UNIX)
+	
+		#define FATAL_EXIT          exit(EXIT_FAILURE)
+		typedef	unsigned short  	word;
+
+		typedef	void*  				NMDialogPtr;
+		typedef	struct _event
 			{
 				NMSInt32 unknown;       
-			} EVENT;
+		} NMEvent;
 	
 			typedef struct _rect
 			{
@@ -237,9 +278,7 @@
 				NMUInt32 left;
 				NMUInt32 bottom;
 				NMUInt32 right;
-			} RECT;
-			
-		#endif
+		} NMRect;
 		
 		
 		#define OP_DEFINE_API_C(_type) _type
@@ -255,7 +294,7 @@
 	define parameters
 */
 
-	#if defined(has_unused_pragma)
+	#ifdef has_unused_pragma
 	  #define UNUSED_PARAMETER(x)  #pragma unused(x)
 	#else
 	  #define UNUSED_PARAMETER(x)  (void) (x);
@@ -287,7 +326,7 @@
 		/**8-bit signed integer.*/
 		typedef char NMSInt8;
 		/**Platform specific integer-based rect type */
-		typedef struct RECT
+		typedef struct NMRect
 		{
 			/**top*/
 			na top;
@@ -297,11 +336,11 @@
 			na bottom;
 			/**right*/
 			na right;
-		} RECT;
+		} NMRect;
 		/**Platform specific event struct*/
-		typedef struct na EVENT;
+		typedef struct na NMEvent;
 		/**Platform specific pointer to a dialog object*/
-		typedef struct na DIALOGPTR;
+		typedef struct na NMDialogPtr;
 	#endif
 		
 /*-------------------------------------------------------------------------------------------
@@ -312,11 +351,12 @@
 	typedef NMSInt32		NMType;
 	/**OpenPlay error code.*/
 	typedef NMSInt32    	NMErr;
+	typedef NMErr			NMOSStatus;
 	/**Used for flags throughout OpenPlay.*/
 	typedef NMUInt32		NMFlags;
 	/**Host identification for enumeration.*/
 	typedef NMUInt32 		NMHostID;
-	
+
 	/**Callback codes passed to an endpoint's notifier function by OpenPlay.*/
 	typedef enum
 	{
@@ -389,11 +429,12 @@
 	};
 	typedef struct NMModuleInfoStruct NMModuleInfo;
 
+	/**Define which types of address we are requesting in \Ref ProtocolGetAddress() */
 	typedef enum
 	{
-		/* Get an IP Address string (ie, 127.0.0.1:128) */
+		/** Get an IP Address string (ie, 127.0.0.1:128) */
 		kNMIPAddressType,
-		/* Get an OT Address of type AF_INET, AF_DNS, etc. */
+		/**Get an OT Address of type AF_INET, AF_DNS, etc. */
 		kNMOTAddressType
 
 	}NMAddressType;
@@ -449,7 +490,7 @@
 		kNMBlocking	= 0x00000001
 	}NMDataTranferFlag;
 	
-	/* OpenPlay Error Codes */
+	/**OpenPlay Error Codes */
 	typedef enum
 	{
 		/**OpenPlay has run out of memory. Ouch.*/
@@ -670,7 +711,7 @@
 	
 	typedef NMUInt32 						NSpTopology;
 	enum {
-		kNSpClientServer			= 0x00000001
+		kNSpClientServer					= 0x00000001
 	};
 	
 	/* Game information */
@@ -835,11 +876,16 @@
 	};
 	
 	
-	/* Special TPlayerIDs  for sending messages */
-	enum {
-		kNSpAllPlayers				= 0x00000000,
-		kNSpHostOnly				= (NMSInt32)0xFFFFFFFF
-	};
+	/** Special TPlayerIDs  for sending messages */
+	typedef enum
+	{
+		/**Send message to all connected players (host is not a player!) */
+		kNSpAllPlayers				= 0,
+		/**Used to send a message to the NSp game's host */
+		kNSpHostID					= 1,
+		/**For use in a headless server setup */
+		kNSpMasterEndpointID		= -1		/* was kNSpHostOnly */
+	}NSpPlayerSpecials;
 	
 	#ifndef __MACTYPES__
 	
@@ -928,7 +974,7 @@ extern "C" {
 		ProtocolDisposeConfig			(	PConfigRef config);
 
 		OP_DEFINE_API_C(NMType) 
-		ProtocolGetConfigType			(	PConfigRef config );	//LR :why parse config string when we save the type?
+		ProtocolGetConfigType			(	PConfigRef config );
 
 		OP_DEFINE_API_C(NMErr) 
 		ProtocolGetConfigString			(	PConfigRef config, 
@@ -962,10 +1008,10 @@ extern "C" {
 		ProtocolBindEnumerationToConfig	(	PConfigRef 	config, 
 											NMHostID 	inID);		
 		OP_DEFINE_API_C(void) 
-		ProtocolStartAdvertising		(	PEndpointRef endpoint);	// [Edmark/PBE] 11/8/99 changed parameter from PConfigRef to PEndpointRef
+		ProtocolStartAdvertising		(	PEndpointRef endpoint);
 
 		OP_DEFINE_API_C(void) 
-		ProtocolStopAdvertising			(	PEndpointRef endpoint);		// [Edmark/PBE] 11/8/99 changed parameter from PConfigRef to PEndpointRef
+		ProtocolStopAdvertising			(	PEndpointRef endpoint);
 	
 	/* ---------- opening/closing */
 	
@@ -999,7 +1045,7 @@ extern "C" {
 										
 		OP_DEFINE_API_C(NMErr) 
 		ProtocolSetEndpointContext		(	PEndpointRef endpoint, 
-											void *newContext);	/* [Edmark/PBE] 11/10/99 added */
+											void *newContext);
 	
 	/* ----------- connections */
 	
@@ -1083,28 +1129,28 @@ extern "C" {
 	
 	/* ----------- dialog functions */
 		OP_DEFINE_API_C(NMErr) 
-		ProtocolSetupDialog				(	DIALOGPTR dialog, 
+		ProtocolSetupDialog				(	NMDialogPtr dialog, 
 											NMSInt16 frame, 
 											NMSInt16 inBaseItem, 
 											PConfigRef config);
 								
 		OP_DEFINE_API_C(NMBoolean) 
-		ProtocolHandleEvent				(	DIALOGPTR 	dialog,
-											EVENT *		event,
+		ProtocolHandleEvent				(	NMDialogPtr dialog,
+											NMEvent *	event,
 											PConfigRef	config);
 								
 		OP_DEFINE_API_C(NMErr) 
-		ProtocolHandleItemHit			(	DIALOGPTR 	dialog, 
+		ProtocolHandleItemHit			(	NMDialogPtr dialog, 
 											NMSInt16	inItemHit,
 											PConfigRef	config);
 									
 		OP_DEFINE_API_C(NMBoolean) 
-		ProtocolDialogTeardown			(	DIALOGPTR 	dialog, 
+		ProtocolDialogTeardown			(	NMDialogPtr dialog, 
 											NMBoolean 	update_config,
 											PConfigRef 	config);
 									
 		OP_DEFINE_API_C(void) 
-		ProtocolGetRequiredDialogFrame	(	RECT *		r, 
+		ProtocolGetRequiredDialogFrame	(	NMRect *	r, 
 											PConfigRef	config);
 	
 	
@@ -1178,7 +1224,7 @@ extern "C" {
 	
 	/***********************  Human Interface  ************************/
 	
-	#if (macintosh_build)
+	#if (OP_PLATFORM_MAC_CFM)
 		typedef OP_CALLBACK_API( NMBoolean , NSpEventProcPtr )(EventRecord *inEvent);
 	#else
 		/*dummy function - pass NULL*/
@@ -1370,7 +1416,7 @@ extern "C" {
 	
 	
 	/************************ Mac-CFM-Versions-Only routines ****************/
-	#if mac_cfm_build
+	#ifdef OP_PLATFORM_MAC_CFM
 		OP_DEFINE_API_C( NMErr )
 		NSpPlayer_GetOTAddress		(	NSpGameReference 	inGame,
 										NSpPlayerID 		inPlayerID,
@@ -1385,7 +1431,7 @@ extern "C" {
 		OP_DEFINE_API_C( void )
 		NSpReleaseOTAddress	(OTAddress 		*inAddress);
 		
-	#endif	/*	mac_cfm_build	*/
+	#endif
 	
 	/************************ Advanced/Async routines ****************/
 	typedef OP_CALLBACK_API( void , NSpCallbackProcPtr )(	NSpGameReference inGame, 

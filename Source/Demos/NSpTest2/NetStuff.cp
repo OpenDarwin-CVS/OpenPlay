@@ -1225,7 +1225,7 @@ NMErr	status;
 		NSpClearMessageHeader(&gPlayerMessage.h);
 		
 		gPlayerMessage.h.what = kPlayerInputMessage;
-		gPlayerMessage.h.to = kNSpHostOnly;
+		gPlayerMessage.h.to = kNSpHostID;	/* %% was kNSpHostOnly */
 		gPlayerMessage.h.messageLen = gPlayerMessageSize + sizeof(NSpMessageHeader);
 
 		//Send my info to the host

@@ -297,7 +297,7 @@ NSpGameMaster::AddLocalPlayer(NMConstStr31Param inPlayerName, NSpPlayerType inPl
 	if (inPlayerName == NULL || inPlayerName[0] == 0)
 	{
 		bHeadlessServer = true;
-		mPlayerID = kNSpHostOnly;
+		mPlayerID = kNSpMasterEndpointID;
 	}
 	else
 	{
@@ -522,7 +522,7 @@ NMErr
 NSpGameMaster::SendSystemMessage(NSpMessageHeader *inMessage, NSpFlags inFlags)
 {
 	
-	inMessage->from = kNSpHostOnly;
+	inMessage->from = kNSpMasterEndpointID;
 	inMessage->version = kVersion10Message;
 	inMessage->id = mNextMessageID++;
 
@@ -601,7 +601,7 @@ NSpGameMaster::RouteMessage(NSpMessageHeader *inHeader, NMUInt8 *inBody, NSpFlag
 				}			
 			}
 		}
-		else if (toPlayer == kNSpHostOnly)		//Ä	To the host only
+		else if (toPlayer == kNSpMasterEndpointID)		//Ä	To the host only
 		{
 			status = DoSelfSend(inHeader, inBody, inFlags);
 		}
@@ -628,7 +628,7 @@ NSpGameMaster::RouteMessage(NSpMessageHeader *inHeader, NMUInt8 *inBody, NSpFlag
 				}
 			}
 		}
-		else if (toPlayer < kNSpHostOnly)		//Ä	To a group
+		else if (toPlayer < kNSpMasterEndpointID)		//Ä	To a group
 		{	
 			NSp_InterruptSafeListIterator 	*playerIterator = NULL;
 			GroupListItem				*theGroup = NULL;
@@ -768,7 +768,7 @@ NSpGameMaster::SendUserMessage(NSpMessageHeader *inMessage, NSpFlags inFlags)
 			//Ä	Now hand it off to the host to send to everyone
 			status = mPlayersEndpoint->SendMessage(inMessage, (NMUInt8 *) inData, inFlags);
 		}
-		else if (inTo == kNSpHostOnly)		//Ä	To the host only
+		else if (inTo == kNSpMasterEndpointID)		//Ä	To the host only
 		{
 			status = mPlayersEndpoint->SendMessage(inMessage, (NMUInt8 *) inData, inFlags);
 		}
@@ -783,7 +783,7 @@ NSpGameMaster::SendUserMessage(NSpMessageHeader *inMessage, NSpFlags inFlags)
 		{
 			status = mPlayersEndpoint->SendMessage(inMessage, (NMUInt8 *) inData, inFlags);
 		}
-		else if (inTo < kNSpHostOnly)		//Ä	To a group
+		else if (inTo < kNSpMasterEndpointID)		//Ä	To a group
 		{
 			//Ä	If we're a member, send it to ourselves before sending to the host
 			groupIter->Reset();
@@ -912,7 +912,11 @@ NSpGameMaster::SendTo(NSpPlayerID inTo, NMSInt32 inWhat, void *inData, NMUInt32 
 			//Ä	Now hand it off to the host to send to everyone
 			status = mPlayersEndpoint->SendMessage(headerPtr, (NMUInt8 *) inData, inFlags);
 		}
-		else if (inTo == kNSpHostOnly)		//Ä	To the host only
+		else if (inTo == kNSpMasterEndpointID)		//Ä	To the host only
+		{
+			status = mPlayersEndpoint->SendMessage(headerPtr, (NMUInt8 *) inData, inFlags);
+		}
+		else if (inTo > kNSpAllPlayers)		//Ä	To a specific player
 		{
 			status = mPlayersEndpoint->SendMessage(headerPtr, (NMUInt8 *) inData, inFlags);
 		}
@@ -920,11 +924,7 @@ NSpGameMaster::SendTo(NSpPlayerID inTo, NMSInt32 inWhat, void *inData, NMUInt32 
 		{
 			status = DoSelfSend(headerPtr, inData, inFlags);
 		}
-		else if (inTo > kNSpAllPlayers)		//Ä	To a specific player
-		{
-			status = mPlayersEndpoint->SendMessage(headerPtr, (NMUInt8 *) inData, inFlags);
-		}
-		else if (inTo < kNSpHostOnly)		//Ä	To a group
+		else if (inTo < kNSpMasterEndpointID)		//Ä	To a group
 		{
 			//Ä	If we're a member, send it to ourselves before sending to the host
 			groupIter->Reset();
@@ -1100,7 +1100,7 @@ NMUInt32			size;
 	//Ä	Fill in the fields we know
 	NSpClearMessageHeader(&((*theMessage)->header));
 	(*theMessage)->header.what = kNSpJoinApproved;
-	(*theMessage)->header.from = kNSpHostOnly;
+	(*theMessage)->header.from = kNSpHostID;
 	(*theMessage)->header.to = inPlayer;
 	(*theMessage)->header.messageLen = messageSize;
 	(*theMessage)->receivedTimeStamp = inReceivedTime;
@@ -1172,7 +1172,7 @@ NSpJoinDeniedMessage	theReply;
 NMErr				err = kNMNoError;
 	
 	theReply.header.what = kNSpJoinDenied;
-	theReply.header.from = kNSpHostOnly;
+	theReply.header.from = kNSpHostID;
 	theReply.header.to = 0;				//Ä	This person has no honor (or playerID)
 	theReply.header.version = kVersion10Message;
 	theReply.header.id = mNextMessageID++;
@@ -1658,7 +1658,7 @@ NSpJoinRequestMessage	theMessage;
 
 	theMessage.header.what = kNSpJoinRequest;
 	theMessage.header.messageLen = sizeof(NSpJoinRequestMessage);
-	theMessage.header.to = kNSpHostOnly;
+	theMessage.header.to = kNSpHostID;	/* %% was kNSpHostOnly, the headless server ID ... not for this, correct? */
 	theMessage.theType = inType;
 	theMessage.customDataLen = kCustomLocalJoinRequest;			//Ä	Signifying a local join request
 	doCopyPStrMax(inPlayerName, theMessage.name, 31);
