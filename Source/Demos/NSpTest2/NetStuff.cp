@@ -46,7 +46,6 @@
 
 //¥	------------------------------	Includes
 
-#include "OpenPlay.h"
 #if (!OP_PLATFORM_MAC_MACHO)
 	#include <Fonts.h>
 	#include <MacWindows.h>

@@ -19,8 +19,6 @@
 #
 ***********************************************************************/
 
-#include "OpenPlay.h"
-
 #if (!OP_PLATFORM_MAC_MACHO)
 	#include <AppleEvents.h>
 	#include <Displays.h>
@@ -31,9 +29,10 @@
 	#include <OSUtils.h>
 #endif
 
+#include "NetStuff.h"
+
 #include "App.h"
 #include "Proto.h"
-#include "NetStuff.h"
 
 extern Boolean 			gHasDMTwo;
 extern Boolean 			gHasDrag;

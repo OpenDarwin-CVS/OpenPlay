@@ -26,8 +26,6 @@
 #
 *************************************************************************************/
 
-#include "OpenPlay.h"
-
 #if (!OP_PLATFORM_MAC_MACHO)
 	#include <NumberFormatting.h>
 	#include <Sound.h>
@@ -35,17 +33,17 @@
 	#include <ToolUtils.h>
 #endif
 
-#include "App.h"
-#include "Global.h"
-#include "Proto.h"
-
-#include "NetStuff.h"
-
 #include <stdio.h>
 
 #if (!OP_PLATFORM_MAC_MACHO)
 	#include <sioux.h>
 #endif
+
+#include "NetStuff.h"
+
+#include "App.h"
+#include "Global.h"
+#include "Proto.h"
 
 //----------------------------------------------------------------------
 //

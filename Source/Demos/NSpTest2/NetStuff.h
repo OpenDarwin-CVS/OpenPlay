@@ -3,6 +3,12 @@
 
 #if USING_OLD_NSP
 	#include "NetSprocket.h"
+
+	typedef OSErr	NMErr;
+	typedef Str32	NMStr31;
+
+	#define kNSpHostID	kNSpHostOnly
+	#define NSpPlayer_GetOTAddress NSpPlayer_GetAddress
 #else
 	#include "OpenPlay.h"
 #endif

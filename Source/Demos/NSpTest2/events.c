@@ -26,12 +26,11 @@
 #
 *************************************************************************************/
 
-#include "OpenPlay.h"
-
 #if (!OP_PLATFORM_MAC_MACHO)
 	#include <Devices.h>
 	#include <DiskInit.h>
 	#include <Events.h>
+	#include <Dialogs.h>
 	#include <Gestalt.h>
 	#include <MacWindows.h>
 	#include <OSUtils.h>

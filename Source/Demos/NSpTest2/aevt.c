@@ -26,12 +26,12 @@
 #
 *************************************************************************************/
 
-#include "OpenPlay.h"
-
 #if (!OP_PLATFORM_MAC_MACHO)
 	#include <AppleEvents.h>
 	#include <MacWindows.h>
 #endif
+
+#include "NetStuff.h"
 
 #include "App.h"
 #include "Proto.h"
