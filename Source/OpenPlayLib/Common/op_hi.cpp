@@ -60,7 +60,7 @@
  * This is NOT a ProtocolConfig-> it's the data hung off the data element
  */
 NMErr ProtocolSetupDialog(
-	DIALOGPTR dialog, 
+	NMDialogPtr dialog, 
 	short frame, 
 	short base,
 	PConfigRef config)
@@ -101,8 +101,8 @@ NMErr ProtocolSetupDialog(
 
 /* item_hit is in the DITL's reference space. */
 NMBoolean ProtocolHandleEvent(
-	DIALOGPTR dialog, 
-	EVENT *event, 
+	NMDialogPtr dialog, 
+	NMEvent *event, 
 	PConfigRef config)
 {
 /* sjb 19990317 remove all vestige of returning errors from this function. */
@@ -133,7 +133,7 @@ NMBoolean ProtocolHandleEvent(
  */
 
 NMErr ProtocolHandleItemHit(
-	DIALOGPTR dialog, 
+	NMDialogPtr dialog, 
 	short inItemHit,
 	PConfigRef config)
 {
@@ -173,9 +173,9 @@ NMErr ProtocolHandleItemHit(
 
 /* returns false if teardown is not possible (ie invalid parameters) */
 NMBoolean ProtocolDialogTeardown(
-	DIALOGPTR dialog, 
-	NMBoolean update_config,
-	PConfigRef config)
+	NMDialogPtr	dialog, 
+	NMBoolean 	update_config,
+	PConfigRef 	config)
 {
 	NMBoolean can_teardown= true;
 	NMErr	err;
@@ -204,14 +204,14 @@ NMBoolean ProtocolDialogTeardown(
 /**
 	Returns the frame size a dialog setup requires.
 	@brief Returns the frame size a dialog setup requires.
-	@param r Pointer to a RECT containing the size.
+	@param r Pointer to a NMRect containing the size.
 	@param config The configuration the dialog belongs to.
 	@return No return value.
 	\n\n\n\n
  */
 
 void ProtocolGetRequiredDialogFrame(
-	RECT *r,
+	NMRect *r,
 	PConfigRef config)
 {
 	NMErr err= kNMNoError;

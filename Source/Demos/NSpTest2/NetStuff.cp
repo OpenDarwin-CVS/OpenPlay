@@ -46,7 +46,8 @@
 
 //¥	------------------------------	Includes
 
-#if (!macho_build)
+#include "OpenPlay.h"
+#if (!OP_PLATFORM_MAC_MACHO)
 	#include <Fonts.h>
 	#include <MacWindows.h>
 	#include <Menus.h>
@@ -66,7 +67,7 @@
 	#include "String_Utils.h"
 #endif
 
-#if (!macho_build)
+#if (!OP_PLATFORM_MAC_MACHO)
 	#include <PLStringFuncs.h>
 #endif
 
@@ -219,15 +220,16 @@ WindowPtr	w = FindPlayersWindow(inPlayer);
 	
 		GetPort(&oldPort);
 		
-		#if (carbon_build)
-			Rect portRect;
-			GetPortBounds(GetWindowPort(w),&portRect);
-			SetPortWindowPort(w);
-			InvalWindowRect(w,&portRect);
-		#else
-			SetPort(w);
-			InvalRect(&w->portRect);
-		#endif //carbon_build
+#ifdef OP_PLATFORM_MAC_CARBON_FLAG
+		Rect portRect;
+		
+		GetPortBounds(GetWindowPort(w),&portRect);
+		SetPortWindowPort(w);
+		InvalWindowRect(w,&portRect);
+#else
+		SetPort(w);
+		InvalRect(&w->portRect);
+#endif
 		
 		SetPort(oldPort);
 	}
@@ -426,13 +428,14 @@ RefreshWindow(WindowPtr inWindow)
 	c2pstr(stuff->TextLine3);
 	c2pstr(stuff->TextLine4);
 	
-	#if (carbon_build)
-		Rect portRect;
+#ifdef OP_PLATFORM_MAC_CARBON_FLAG
+        Rect portRect;
+	
 		GetPortBounds(GetWindowPort(inWindow),&portRect);
 		EraseRect(&portRect);
 	#else
 		EraseRect(&inWindow->portRect);
-	#endif //carbon_build
+#endif //OP_PLATFORM_MAC_CARBON_FLAG
 	
 	TextSize(10);
 	MoveTo(5,20);
@@ -1174,11 +1177,11 @@ WindowPtr	w;
 		
 			GetPort(&oldPort);
 			
-			#if (carbon_build)
-				SetPortWindowPort(w);
-			#else
-				SetPort(w);
-			#endif //carbon_build
+		#ifdef OP_PLATFORM_MAC_CARBON_FLAG
+			SetPortWindowPort(w);
+		#else
+			SetPort(w);
+		#endif //OP_PLATFORM_MAC_CARBON_FLAG
 			
 			RefreshWindow(w);
 			SetPort(oldPort);
@@ -1314,7 +1317,7 @@ UInt32					i;
 		printf("%0.8ld    ", thePlayer->id);
 		fflush(stdout);
 
-		#if (macho_build)
+		#if (OP_PLATFORM_MAC_MACHO)
 			printf("Unavailable in posix build\n");
 			fflush(stdout);
 		#else

@@ -21,7 +21,9 @@
 #ifndef APP_H
 #define APP_H
 
-#if (!macho_build)
+#include "OpenPlay.h"
+
+#if (!OP_PLATFORM_MAC_MACHO)
 	#include <Controls.h>
 	#include <QDOffscreen.h>
 #endif

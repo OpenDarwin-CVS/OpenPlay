@@ -52,22 +52,28 @@ OTIPEndpoint::OTIPEndpoint(
 {	
 NMBoolean	success;
 	
-	//	Each endpoint stores its local and its remote address
-	success = AllocAddressBuffer(&mStreamEndpoint->mLocalAddress);
-	op_assert(success);
-	OTInitInetAddress((InetAddress *)mStreamEndpoint->mLocalAddress.buf,0,0);
-	
-	success = AllocAddressBuffer(&mStreamEndpoint->mRemoteAddress);
-	op_assert(success);
-	OTInitInetAddress((InetAddress *)mStreamEndpoint->mRemoteAddress.buf,0,0);
+	//    Each endpoint stores its local and its remote address
+    if ( mMode & kNMStreamMode )
+    {
+		success = AllocAddressBuffer(&mStreamEndpoint->mLocalAddress);
+		op_assert(success);
+	        OTInitInetAddress((InetAddress*)mStreamEndpoint->mLocalAddress.buf,0,0);
+		
+		success = AllocAddressBuffer(&mStreamEndpoint->mRemoteAddress);
+		op_assert(success);
+        OTInitInetAddress((InetAddress*)mStreamEndpoint->mRemoteAddress.buf,0,0);
+    }
 
-	success = AllocAddressBuffer(&mDatagramEndpoint->mLocalAddress);
-	op_assert(success);
-	OTInitInetAddress((InetAddress *)mDatagramEndpoint->mLocalAddress.buf,0,0);
-	
-	success = AllocAddressBuffer(&mDatagramEndpoint->mRemoteAddress);
-	op_assert(success);
-	OTInitInetAddress((InetAddress *)mDatagramEndpoint->mRemoteAddress.buf,0,0);
+    if ( mMode & kNMDatagramMode )
+    {
+		success = AllocAddressBuffer(&mDatagramEndpoint->mLocalAddress);
+		op_assert(success);
+	        OTInitInetAddress((InetAddress*)mDatagramEndpoint->mLocalAddress.buf,0,0);
+		
+		success = AllocAddressBuffer(&mDatagramEndpoint->mRemoteAddress);
+		op_assert(success);
+        OTInitInetAddress((InetAddress*)mDatagramEndpoint->mRemoteAddress.buf,0,0);
+    }
 	
 	//	Alloc the address buffer for the TCall structure
 	success = AllocAddressBuffer(&mCall.addr);

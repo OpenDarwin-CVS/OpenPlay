@@ -28,11 +28,14 @@
 #include "NSpPrefix.h"
 #include "NSpProtocolRef.h"
 #include <string.h>
+#ifndef __NETMODULE__
+#include 			"NetModule.h"
+#endif
 
-#if (macintosh_build)
+#ifdef OP_API_NETWORK_OT
 	#include <OpenTptAppleTalk.h>
 	#include <OpenTptInternet.h>
-#endif	//	macintosh_build
+#endif
 
 
 #include <stdio.h>
@@ -93,7 +96,7 @@ NMErr NSpProtocolPriv::ParseConfigString(const char *inConfiguration)
 		if (strncmp(inConfiguration, kATModuleType, 4) == 0)
 		{
 		
-		#if !TARGET_OS_MAC
+		#ifndef OP_API_NETWORK_OT
 		
 			return (kNSpInvalidProtocolRefErr);	// No such thing as AppleTalk on a non-MacOS platform.
 			
@@ -139,7 +142,7 @@ NMErr NSpProtocolPriv::ParseConfigString(const char *inConfiguration)
 			
 			mCustomData = atInfo;
 			
-		#endif //	TARGET_OS_MAC
+		#endif
 		}
 		else if (strncmp(inConfiguration, kIPModuleType, 4) == 0)
 		{

@@ -49,7 +49,7 @@
 		int			bottom;
 	} ChildControlInfo;
 
-	static const RECT gNeededRect = { 0,0,70,250 };
+	static const NMRect gNeededRect = { 0,0,70,250 };
 
 	enum {	kJoinTitle = 0,
 			kHostLabel,
@@ -79,7 +79,7 @@ static TEXTMETRIC gDialogTextInfo;
 
 static void CreateModuleControls(	HWND dialog,
                                  	const TEXTMETRIC *winMetrics,
-									const RECT *relativeRect,
+									const NMRect *relativeRect,
                                 	const int commandNumberBase);
 
 // sjb 19990316 need to specify reserved command IDs
@@ -93,7 +93,7 @@ static void CreateModuleControls(	HWND dialog,
 
 void
 NMGetRequiredDialogFrame(
-	RECT *r, 
+	NMRect *r, 
 	NMConfigRef inConfig)
 {
 	UNUSED_PARAMETER(inConfig)
@@ -112,7 +112,7 @@ NMGetRequiredDialogFrame(
 
 NMErr
 NMSetupDialog(
-	DIALOGPTR 	dialog, 
+	NMDialogPtr 	dialog, 
 	NMSInt16	whereFrameItem,
 	NMSInt16	inBaseItem, 
 	NMConfigRef inConfig)
@@ -120,8 +120,8 @@ NMSetupDialog(
 	NMErr err= kNMNoError;
 	HDC			windowDrawContext;
 	HWND		windowModuleBoxItem;
-	RECT		windowModuleBox;
-	RECT		mainWindowBox;
+	NMRect		windowModuleBox;
+	NMRect		mainWindowBox;
 	
 	op_vassert_return((inConfig != NULL),"Config ref is NULL!",kNMParameterErr);
 	op_vassert_return((dialog != NULL),"Dialog ptr is NULL!",kNMParameterErr);
@@ -173,8 +173,8 @@ NMSetupDialog(
 
 NMBoolean
 NMHandleEvent(
-	DIALOGPTR	dialog, 
-	EVENT		*event, 
+	NMDialogPtr	dialog, 
+	NMEvent		*event, 
 	NMConfigRef	inConfig)
 {
 NMBoolean	handled = false;
@@ -193,7 +193,7 @@ NMBoolean	handled = false;
 void 
 CreateModuleControls(HWND dialog,
                 const TEXTMETRIC *winMetrics,
-                const RECT *relativeRect,
+                const NMRect *relativeRect,
                 const int commandNumberBase)
 {
 // make test control
@@ -232,7 +232,7 @@ CreateModuleControls(HWND dialog,
 
 NMErr
 NMHandleItemHit(
-	DIALOGPTR 		dialog, 
+	NMDialogPtr 	dialog, 
 	NMSInt16		inItemHit, 
 	NMConfigRef		inConfig)
 {
@@ -249,7 +249,7 @@ NMHandleItemHit(
 
 NMBoolean
 NMTeardownDialog(
-	DIALOGPTR dialog,
+	NMDialogPtr dialog,
 	NMBoolean  inUpdateConfig, 
 	NMConfigRef inConfig)
 {

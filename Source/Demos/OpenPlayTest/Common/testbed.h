@@ -32,7 +32,7 @@ struct endpoint_data { // stored off the windows RefCon
 };
 
 struct list_item_data {
-	DIALOGPTR dialog;
+	NMDialogPtr dialog;
 	short count;
 	NMHostID host[200];
 };
@@ -69,9 +69,9 @@ void adjust_menus(void);
 
 /* -------- should go into the library */
 
-#ifdef macintosh_build
+#if defined(OP_PLATFORM_MAC_CFM) || defined(OP_PLATFORM_MAC_MACHO)
 	#define MENU_UPSHIFT (16)
-#elif defined(windows_build)
+#elif defined(OP_PLATFORM_WINDOWS)
 	#define MENU_UPSHIFT (8)
 #endif
 #define GET_MENU_ID(x) ((x)>>MENU_UPSHIFT)

@@ -74,7 +74,7 @@
 		NMUInt32	mValue;
 	};
 
-	class SendQItem : public OTLink
+	class SendQItem : public NMLink
 	{
 	public:
 		SendQItem(void *inData, NMUInt32 inBytesSent);

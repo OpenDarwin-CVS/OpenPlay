@@ -51,9 +51,11 @@
 #		descended from Apple Sample Code, but that you've made changes.
 #
 *************************************************************************************/
-#if (!macho_build)
+
+#if (!OP_PLATFORM_MAC_MACHO)
 	#include <AppleEvents.h>
 #endif
+
 #include "app.h"
 
 #ifdef __cplusplus
@@ -68,7 +70,7 @@ extern "C" {
 OSErr 			AEInit(void);
 OSErr			AERemove(void);
 
-#if (carbon_build)
+#if (OP_PLATFORM_MAC_CARBON_FLAG)
 	pascal OSErr	DoAEOpenApp(const AppleEvent *event,AppleEvent *reply,long refCon);
 	pascal OSErr	DoAEQuitApp(const AppleEvent *event,AppleEvent *reply,long refCon);
 	pascal OSErr	DoAEOpenDoc(const AppleEvent *event,AppleEvent *reply,long refCon);
@@ -78,7 +80,7 @@ OSErr			AERemove(void);
 	pascal OSErr	DoAEQuitApp(AppleEvent *event,AppleEvent reply,long refCon);
 	pascal OSErr	DoAEOpenDoc(AppleEvent *event,AppleEvent reply,long refCon);
 	pascal OSErr	DoAEPrintDoc(AppleEvent *event,AppleEvent reply,long refCon);
-#endif //carbon_build
+#endif //OP_PLATFORM_MAC_CARBON_FLAG
 OSErr 			GotAEParams(AppleEvent *appleEvent);
 
 

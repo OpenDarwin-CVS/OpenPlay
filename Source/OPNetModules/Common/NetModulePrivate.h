@@ -25,8 +25,8 @@
  * Revision: $Id$
  */
 
-#ifndef __NETMODULEMPRIVATE__
-#define __NETMODULEMPRIVATE__
+#ifndef __NETMODULEPRIVATE__
+#define __NETMODULEPRIVATE__
 	
 	
 /*	------------------------------	Includes */
@@ -34,6 +34,10 @@
 
 
 /*	------------------------------	Public Definitions */
+
+
+	
+
 /*	------------------------------	Public Types */
 
 	enum
@@ -184,11 +188,11 @@ extern "C" {
 	typedef NMErr		(*NMLeaveNotifierPtr)(NMEndpointRef inEndpoint, NMEndpointMode endpointMode);
 
 	/* Dialog functions */
-	typedef void		(*NMGetRequiredDialogFramePtr)(RECT *r, NMConfigRef config);
-	typedef NMErr 		(*NMSetupDialogPtr)(DIALOGPTR dialog, short frame, short inBaseItem, NMConfigRef config);
-	typedef NMBoolean	(*NMHandleEventPtr)(DIALOGPTR dialog, EVENT *event, NMConfigRef config);
-	typedef NMErr		(*NMHandleItemHitPtr)(DIALOGPTR dialog, short inItemHit, NMConfigRef config);
-	typedef NMBoolean	(*NMTeardownDialogPtr)(DIALOGPTR dialog, NMBoolean inUpdateConfig, NMConfigRef config);
+	typedef void		(*NMGetRequiredDialogFramePtr)(NMRect *r, NMConfigRef config);
+	typedef NMErr 		(*NMSetupDialogPtr)(NMDialogPtr dialog, short frame, short inBaseItem, NMConfigRef config);
+	typedef NMBoolean	(*NMHandleEventPtr)(NMDialogPtr dialog, NMEvent *event, NMConfigRef config);
+	typedef NMErr		(*NMHandleItemHitPtr)(NMDialogPtr dialog, short inItemHit, NMConfigRef config);
+	typedef NMBoolean	(*NMTeardownDialogPtr)(NMDialogPtr dialog, NMBoolean inUpdateConfig, NMConfigRef config);
 
 #ifdef __cplusplus
 }

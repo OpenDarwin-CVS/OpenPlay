@@ -32,7 +32,12 @@
 	#ifndef __OPENPLAY__
 	#include 			"OpenPlay.h"
 	#endif
+	#ifndef __NETMODULE__
+	#include 			"NetModule.h"
+	#endif
+	#ifdef OP_API_NETWORK_OT
 	#include <OpenTransport.h>
+	#endif
 	#include "Endpoint.h"
 	#include "TPointerArray.h"
 	//#include "OTUtils.h"

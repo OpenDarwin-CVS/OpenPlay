@@ -7,13 +7,35 @@
  *------------------------------------------------------------- 
  *   Author: Kevin Holbrook
  *  Created: June 23, 1999
- *
- * Modified: $Date$
- * Revision: $Id$
- *
  *-------------------------------------------------------------
  *          Copyright (c) 1999 Kevin Holbrook
  *-------------------------------------------------------------
+ */
+/*
+ * Copyright (c) 1999-2002 Apple Computer, Inc. All rights reserved.
+ *
+ * @APPLE_LICENSE_HEADER_START@
+ * 
+ * Portions Copyright (c) 1999-2002 Apple Computer, Inc.  All Rights
+ * Reserved.  This file contains Original Code and/or Modifications of
+ * Original Code as defined in and that are subject to the Apple Public
+ * Source License Version 1.1 (the "License").  You may not use this file
+ * except in compliance with the License.  Please obtain a copy of the
+ * License at http://www.apple.com/publicsource and read it before using
+ * this file.
+ * 
+ * The Original Code and all software distributed under the License are
+ * distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, EITHER
+ * EXPRESS OR IMPLIED, AND APPLE HEREBY DISCLAIMS ALL SUCH WARRANTIES,
+ * INCLUDING WITHOUT LIMITATION, ANY WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE OR NON- INFRINGEMENT.  Please see the
+ * License for the specific language governing rights and limitations
+ * under the License.
+ * 
+ * @APPLE_LICENSE_HEADER_END@
+ *
+ * Modified: $Date$
+ * Revision: $Id$
  */
 
 
@@ -36,7 +58,7 @@
  *--------------------------------------------------------------------
  */
 
-NMErr NMSetupDialog(	DIALOGPTR 			dialog, 
+NMErr NMSetupDialog(	NMDialogPtr 		dialog, 
 						NMSInt16 			frame, 
 						NMSInt16			inBaseItem, 
 						NMConfigRef			inConfig)
@@ -66,8 +88,8 @@ NMErr NMSetupDialog(	DIALOGPTR 			dialog,
  *--------------------------------------------------------------------
  */
 
-NMBoolean NMHandleEvent(	DIALOGPTR			dialog, 
-							EVENT *				event, 
+NMBoolean NMHandleEvent(	NMDialogPtr			dialog, 
+							NMEvent *			event, 
 							NMConfigRef 		inConfig)
 {
 	UNUSED_PARAMETER(dialog);
@@ -94,7 +116,7 @@ NMBoolean NMHandleEvent(	DIALOGPTR			dialog,
  *--------------------------------------------------------------------
  */
 
-NMErr NMHandleItemHit(	DIALOGPTR			dialog, 
+NMErr NMHandleItemHit(	NMDialogPtr			dialog, 
 						NMSInt16			inItemHit, 
 						NMConfigRef 		inConfig)
 {
@@ -122,7 +144,7 @@ NMErr NMHandleItemHit(	DIALOGPTR			dialog,
  */
 
 
-NMBoolean NMTeardownDialog(	DIALOGPTR 			dialog, 
+NMBoolean NMTeardownDialog(	NMDialogPtr 		dialog, 
 							NMBoolean			inUpdateConfig, 
 							NMConfigRef 		ioConfig)
 {
@@ -150,7 +172,7 @@ NMBoolean NMTeardownDialog(	DIALOGPTR 			dialog,
  *--------------------------------------------------------------------
  */
 
-void NMGetRequiredDialogFrame(	RECT *			r, 
+void NMGetRequiredDialogFrame(	NMRect *		r, 
 								NMConfigRef 	inConfig)
 {
 	r->left = 0;

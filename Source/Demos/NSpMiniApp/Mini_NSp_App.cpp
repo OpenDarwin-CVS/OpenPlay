@@ -589,7 +589,7 @@ Wait_For_Approval(NSpGameReference &gGameObject, char *theDenyReason)
 			
 		while (response == false)
 		{
-#ifdef windows_build
+#ifdef OP_PLATFORM_WINDOWS
 		MSG	msg;
 
 				// check for pending messages.		

@@ -46,12 +46,12 @@
 #include <stdio.h>
 #include <iostream>
 
-#if (macintosh_build)
-	#if (!macho_build)
+#if (OP_PLATFORM_MAC_CFM)
+	#if (! defined(OP_PLATFORM_MAC_CARBON_FLAG))
 		#include <OpenTransport.h>
 		#include <Dialogs.h>
 	#endif
-#elif (windows_build)
+#elif (OP_PLATFORM_WINDOWS)
   #include <windows.h>
   #include <winbase.h>
 #endif
@@ -63,7 +63,7 @@ const int   kDataStrLen = 256;      /* Max packets to receive & store. */
 const char  kCannedRegisteredMessage[ kDataStrLen ] = "Just a random registered message";
 const char  kCannedJunkMessage[ kDataStrLen ] = "Just a random junk message";
 
-#if TARGET_OS_MAC
+#if OP_PLATFORM_MAC_CFM
   #define d_GAME_ID    'MOOF'
 #else
   #define d_GAME_ID    0x4d4f4f46  /* hex for "MOOF" */
@@ -217,7 +217,7 @@ NMUInt32    Get_Current_TimeStamp( NSpGameReference  gGameObject );
 
     /* --------------  Asynchronous Routines -------------- */
 
-#if TARGET_OS_MAC
+#if OP_PLATFORM_MAC_CFM
 static pascal NMBoolean
 #else
 NMBoolean
@@ -225,7 +225,7 @@ NMBoolean
 MyAsyncMessageHandler(NSpGameReference gameRef, NSpMessageHeader *messagePtr, void *inContext);
 
 	
-#if TARGET_OS_MAC
+#if OP_PLATFORM_MAC_CFM
 static pascal NMBoolean
 #else
 NMBoolean
@@ -265,11 +265,11 @@ main( void )
 	
 	//NSpGameInfo  *gGameInfo = NULL;
 
-//	EVENT event;
+//	NMEvent event;
 
-#if TARGET_OS_MAC
+#if OP_PLATFORM_MAC_CFM
 
-#ifndef carbon_build
+#ifndef OP_PLATFORM_MAC_CARBON_FLAG
 	InitGraf((Ptr) &qd.thePort);
 	InitFonts();
 	InitWindows();
@@ -282,7 +282,7 @@ main( void )
 #else
 	InitCursor();
 	FlushEvents(everyEvent, 0);
-#endif // carbon_build
+#endif // ! OP_PLATFORM_MAC_CARBON_FLAG
 #endif
 
 	//convert our c strings to pascal
@@ -724,7 +724,7 @@ Do_Utilities( NSpGameReference gGameObject )
 		cout << "\t 3) Get Current Timestamp" << endl;
 		cout << "\t 4) Set Connect Timeout..." << endl;
 		cout << "\t 5) Get Player IP Address..." << endl;
-#if mac_cfm_build
+#if OP_PLATFORM_MAC_CFM
 		cout << "\t 6) Get Player OT Address..." << endl;
 #endif
 		cout << "\t b) Back to Main Menu" << endl << endl;
@@ -782,7 +782,7 @@ Do_Utilities( NSpGameReference gGameObject )
 				}				
 				break;
 			}
-#if mac_cfm_build
+#if OP_PLATFORM_MAC_CFM
 			case '6':
 			{
 				NSpPlayerID  	whichPlayer;
@@ -840,7 +840,7 @@ void
 Do_Modal_Host( NSpProtocolListReference  &gProtocolListRef )
 {	
 
-#if TARGET_OS_MAC
+#if OP_PLATFORM_MAC_CFM
 	NMBoolean success;
 	if ( gProtocolListRef == NULL ) {
 	
@@ -862,7 +862,7 @@ Do_Modal_Host( NSpProtocolListReference  &gProtocolListRef )
 #else
 	cout << "NSpDoModalHostDialog not yet implemented." << endl;
 
-#endif //TARGET_OS_MAC
+#endif //OP_PLATFORM_MAC_CFM
 }
 
 
@@ -870,7 +870,7 @@ void
 Do_Modal_Join( NSpAddressReference  &gAddressRef )
 {
 
-#if TARGET_OS_MAC
+#if OP_PLATFORM_MAC_CFM
 	gAddressRef = NSpDoModalJoinDialog(
 					NULL,
 					"\pWoogie Games",
@@ -887,7 +887,7 @@ Do_Modal_Join( NSpAddressReference  &gAddressRef )
 	cout << "NSpDoModalJoinDialog not yet implemented." << endl;
 
 		//  Remove after NSpDoModalJoinDialog is implemented.
-#endif TARGET_OS_MAC
+#endif OP_PLATFORM_MAC_CFM
 	
 }
 
@@ -896,7 +896,7 @@ void
 Protocol_Create_AppleTalk( NSpProtocolReference &gProtocolRef )
 {
 
-#if !TARGET_OS_MAC
+#if !OP_PLATFORM_MAC_CFM
 	cout << "You can't use AppleTalk on this platform!" << endl;
 #endif
 
@@ -1031,7 +1031,7 @@ Join_Game( NSpGameReference  &gGameObject, NSpAddressReference  addressRef)
 	*/
 
 /*	
-	#if TARGET_OS_MAC
+	#if OP_PLATFORM_MAC_CFM
 	
 	OTAddress 				*theOTAddressPtr = NULL;
 	
@@ -1057,7 +1057,7 @@ Join_Game( NSpGameReference  &gGameObject, NSpAddressReference  addressRef)
 	    cerr << "Error: Join_Game(), Error calling NSpConvertAddressReferenceToOTAddr." << endl;
 	}
 	
-	#endif		//	TARGET_OS_MAC
+	#endif		//	OP_PLATFORM_MAC_CFM
 
 	theStatus = NSpProtocol_ExtractDefinitionString( 
 				(NSpProtocolReference)  addressRef, testConfigString);
@@ -1118,7 +1118,7 @@ NSpAddressReference 	addressRef;
 char					gameNameC[32];
 char					gameTypeC[32];
 
-#if !TARGET_OS_MAC
+#if !OP_PLATFORM_MAC_CFM
 	cout << "You can't use AppleTalk on this platform!" << endl;
 #endif
 
@@ -1178,7 +1178,7 @@ Wait_For_Approval(NSpGameReference &gGameObject, char *theDenyReason)
 	NSpMessageHeader		*message;
 	clock_t					clocks;					
 	
-#if !TARGET_OS_MAC
+#if !OP_PLATFORM_MAC_CFM
 //	return true;	// My current testing environment (Virtual PC) impedes asynchronous operation on the PC,
 #endif				// so I'm not going to go into a tight loop waiting for the approval message from another
 					// application.  It will never come.  You should remove this barrier if you have
@@ -2068,7 +2068,7 @@ Get_Current_TimeStamp( NSpGameReference  gGameObject )
 }
 
 
-#if TARGET_OS_MAC
+#if OP_PLATFORM_MAC_CFM
 pascal NMBoolean
 #else
 NMBoolean
@@ -2079,7 +2079,7 @@ MyAsyncMessageHandler(NSpGameReference gameRef, NSpMessageHeader *messagePtr, vo
 	
 	// Give an indication that this function was executed...
 /*	
-	#if TARGET_OS_MAC
+	#if OP_PLATFORM_MAC_CFM
 		SysBeep(10);
 	#else
 		Beep(10,0);
@@ -2088,7 +2088,7 @@ MyAsyncMessageHandler(NSpGameReference gameRef, NSpMessageHeader *messagePtr, vo
 	return 1;
 }
 	
-#if TARGET_OS_MAC
+#if OP_PLATFORM_MAC_CFM
 pascal NMBoolean
 #else
 NMBoolean
@@ -2100,7 +2100,7 @@ MyJoinRequestHandler(NSpGameReference gameRef, NSpJoinRequestMessage *messagePtr
 
 	// Give an indication that this function was executed...
 /*
-	#if TARGET_OS_MAC
+	#if OP_PLATFORM_MAC_CFM
 		SysBeep(10);
 	#else
 		Beep(10,0);

@@ -30,13 +30,10 @@
 
 	#if __MWERKS__		
 		#include <MacHeadersCarbon.h>
+	#else
+		#include <Carbon.h>
 	#endif
 	
-	#ifdef project_builder
-		#define PROJECT_BUILDER_CARBON
-		#include <Carbon/Carbon.h>
-	#endif
-
-	#define carbon_build	1
+	#define OP_PLATFORM_MAC_CARBON_FLAG	1	
 
 #endif // __PREFIXMACCARBON__

@@ -47,10 +47,10 @@ extern "C" {
 	void		doConcatPStr(NMUInt8 *stringOne, NMUInt8 *stringTwo);
 	NMBoolean	doComparePStr(const NMUInt8 *stringOne, const NMUInt8 *stringTwo);
 
-	#if carbon_build
+	#if OP_PLATFORM_MAC_CARBON_FLAG
 		#define p2cstr(aStr) (p2cstrcpy((char *) aStr, aStr) , (char *) aStr)
 		#define c2pstr(aStr) (c2pstrcpy((StringPtr)aStr, aStr) , (StringPtr) aStr)
-	#endif // carbon_build
+	#endif // OP_PLATFORM_MAC_CARBON_FLAG
 
 	//utils for manipulating config string items
 	NMBoolean 	doGetConfigSubString(char *configStr, char *itemName, char *buffer, long bufferLen);

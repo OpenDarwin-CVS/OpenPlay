@@ -26,6 +26,10 @@
  */
 
 
+#ifndef __NETMODULE__
+#include 			"NetModule.h"
+#endif
+
 #include "portable_files.h"
 #include "OPUtils.h"
 
@@ -40,7 +44,7 @@
 /* We must bind! */
 /*----------------------------------posix Section-----------------------------*/
 
-#if (os_darwin)
+#ifdef OP_API_PLUGIN_MACHO
 	#include "op_dlfcn.h"
 	#define dlopen op_dlopen
 	#define dlsym op_dlsym
@@ -55,13 +59,12 @@ extern "C" {
 /* Returns 0 on success, !0 otherwise */ 
 NMErr bind_to_library(FileDesc *file, ConnectionRef *conn_id)
 {
-	#if (project_builder)
-	{
+#ifdef OP_API_PLUGIN_MACHO
 		Boolean didLoad = false;
+
 		op_assert(file->bundle != NULL);
 		didLoad = CFBundleLoadExecutable(file->bundle);
-		if (didLoad){
-			DEBUG_PRINT("did load executable");
+	if (didLoad) {
 			void (*initFunc) (void);
 			//search for an "_init" function, and call it if we find one
 			//so we can just use the standard posix configuration
@@ -70,12 +73,12 @@ NMErr bind_to_library(FileDesc *file, ConnectionRef *conn_id)
 				initFunc();
 			*conn_id = file->bundle;
 			return kNMNoError;
-		}else
+	}
+	else
 		{
 			DEBUG_PRINT("couldn't load executable");		
 			return 1;
 		}
-	}
 	#else
 		void* lib_handle;
 
@@ -90,7 +93,6 @@ NMErr bind_to_library(FileDesc *file, ConnectionRef *conn_id)
 		#endif
 			return(1);
 		} 
-
 		*conn_id = (ConnectionRef)lib_handle;
 
 		return(0);
@@ -107,16 +109,22 @@ void *load_proc(ConnectionRef conn_id, short proc_id)
 
 	if ((proc_id >= 0) && (proc_id < NUMBER_OF_MODULES_TO_LOAD))
 	{
-		#if (project_builder)
+	#ifdef OP_API_PLUGIN_MACHO
+
 			CFStringRef funcName = CFStringCreateWithCString(kCFAllocatorDefault,module_names[proc_id],kCFStringEncodingMacRoman);
+
 			op_assert(funcName);
 			proc_ptr = (void*)CFBundleGetFunctionPointerForName(conn_id,funcName);
 			CFRelease(funcName);
-		#else
-			//we seem to need to prefix an underscore to get them on darwin
-				//i think updating the dlcompat code might fix that.... ecf
-			#if (os_darwin)
+
+	#else
+
+		//	We seem to need to prefix an underscore to get them on darwin
+		//	I think updating the dlcompat code might negate this requirement.... ecf
+
+		#ifdef OP_API_PLUGIN_POSIX_DARWIN
 				char symbolName[128];
+
 				sprintf(symbolName,"_%s",module_names[proc_id]);
 			#else
 				char *symbolName = (char*)module_names[proc_id];
@@ -126,7 +134,7 @@ void *load_proc(ConnectionRef conn_id, short proc_id)
 		#endif
 	}
 	  
-  return(proc_ptr);
+	return (proc_ptr);
 }
 
 

@@ -41,8 +41,8 @@ typedef struct OPHTTPDownload
 {
 	char prevReceivalEnd[4];
 	NMBoolean skipHeader;
-	OTLink *currentList;
-	OTLIFO messageList;
+	NMLink *currentList;
+	NMLIFO messageList;
 	OPHTTPDownloadStatus currentStatus;
 	PEndpointRef theEndpoint;
 	char		*currentBufferBase;
@@ -54,7 +54,7 @@ typedef struct OPHTTPDownload
 typedef struct MessageStorageNode
 {
 	NMBoolean complete;
-	OTLink fNext;
+	NMLink fNext;
 	OPHTTPDownload		*download;
 	void				*cookie;
 	NMCallbackCode 		code;
@@ -64,12 +64,12 @@ typedef struct MessageStorageNode
 
 
 #if TARGET_API_MAC_CARBON
-	static OTClientContextPtr theOTContext; /* we use open transport for interrupt-safe memory allocation */
-	static NMBoolean weInitedOTContext;
+	static OTClientContextPtr 	gOTContext; /* we use open transport for interrupt-safe memory allocation */
+	static NMBoolean 		gInitedOTContext;
 #endif
 
-#if (carbon_build)
-	void OPHTTPInit(OTClientContextPtr theOTContextIn)
+#if (OP_PLATFORM_MAC_CARBON_FLAG)
+	void OPHTTPInit(OTClientContextPtr gOTContextIn)
 #else
 	void OPHTTPInit(void *unused)
 #endif
@@ -78,15 +78,15 @@ typedef struct MessageStorageNode
 	
 		
 	/*on mac, we gotta set up OpenTransport, which we use for interrupt-safe allocations (since OpenPlay's messages come in at interrupt time)*/
-	#if (macintosh_build)
+	#if (OP_PLATFORM_MAC_CFM)
 		#if (TARGET_API_MAC_CARBON)
-			if (theOTContext){
-				theOTContext = theOTContextIn;
-				weInitedOTContext = false;
+			if (gOTContext){
+				gOTContext = gOTContextIn;
+				gInitedOTContext = false;
 			}
 			else{
-				err = InitOpenTransportInContext(kInitOTForApplicationMask,&theOTContext);
-				weInitedOTContext = true;
+				err = InitOpenTransportInContext(kInitOTForApplicationMask,&gOTContext);
+				gInitedOTContext = true;
 			}
 		#else
 			err = InitOpenTransport();
@@ -99,10 +99,10 @@ void OPHTTPTerm( void )
 {
 	NMErr err = kNMNoError;
 		
-	#if (macintosh_build)
+	#if (OP_PLATFORM_MAC_CFM)
 		#if TARGET_API_MAC_CARBON
-			if (weInitedOTContext)
-				CloseOpenTransportInContext(theOTContext);
+			if (gInitedOTContext)
+				CloseOpenTransportInContext(gOTContext);
 		#else
 			CloseOpenTransport();
 		#endif
@@ -114,15 +114,15 @@ static void*	InterruptSafeAllocate(long size)
 	
 	void *chunk;
 
-	#if (macintosh_build)
+	#if (OP_PLATFORM_MAC_CFM)
 		#if (TARGET_API_MAC_CARBON)
-			chunk = OTAllocMemInContext(size,theOTContext);
+			chunk = OTAllocMemInContext(size,gOTContext);
 		#else
 			chunk = OTAllocMem(size);
 		#endif
-	#elif (windows_build)
+	#elif (OP_PLATFORM_WINDOWS)
 		chunk = GlobalAlloc(GPTR,size);
-	#elif (posix_build)
+	#elif (OP_PLATFORM_UNIX)
 		chunk =  malloc(size);
 	#endif
 	
@@ -131,11 +131,11 @@ static void*	InterruptSafeAllocate(long size)
 
 static void	InterruptSafeDispose(void *data)
 {
-	#if (macintosh_build)
+	#if (OP_PLATFORM_MAC_CFM)
 		OTFreeMem(data);
-	#elif (windows_build)
+	#elif (OP_PLATFORM_WINDOWS)
 		GlobalFree((HGLOBAL)data);
-	#elif (posix_build)
+	#elif (OP_PLATFORM_UNIX)
 		free(data);
 	#endif
 
@@ -185,7 +185,7 @@ static MessageStorageNode* GetNextNetMessage(OPHTTPDownload *theDL)
 	{
 		theDL->currentList = theDL->messageList.StealList();
 		if (theDL->currentList)
-			theDL->currentList = OTReverseList(theDL->currentList);
+			theDL->currentList = NMReverseList(theDL->currentList);
 	}
 	
 	/*if theres still no list, we return empty-handed*/
@@ -195,7 +195,7 @@ static MessageStorageNode* GetNextNetMessage(OPHTTPDownload *theDL)
 	/*now grab the first item off our current list and return it*/
 	else
 	{
-		MessageStorageNode *theNode = OTGetLinkObject(theDL->currentList,MessageStorageNode,fNext);
+		MessageStorageNode *theNode = NMGetLinkObject(theDL->currentList,MessageStorageNode,fNext);
 		theDL->currentList = theDL->currentList->fNext;
 		
 		//if by chance we grab the node while its still being created, just wait

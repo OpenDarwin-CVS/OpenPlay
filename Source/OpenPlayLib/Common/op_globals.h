@@ -28,6 +28,10 @@
 #ifndef __OP_GLOBALS__
 #define __OP_GLOBALS__
 
+	#ifndef __NETMODULE__
+	#include 			"NetModule.h"
+	#endif
+
 //  -----------------------------  Public Prototypes
 void initialize_openplay(FileDesc *file);
 
@@ -66,7 +70,7 @@ void initialize_openplay(FileDesc *file);
 
 		NMSInt16				res_refnum;
 
-	#if defined(macintosh_build)
+	#ifdef OP_API_NETWORK_OT
 
 		Endpoint *				endpoint_cache[MAXIMUM_CACHED_ENDPOINTS];
 		NMSInt32 				cache_size;
@@ -74,11 +78,11 @@ void initialize_openplay(FileDesc *file);
 		Endpoint *				doomed_endpoints[MAXIMUM_DOOMED_ENDPOINTS];
 		NMSInt16 				doomed_endpoint_count;
 
-	#elif defined(windows_build)
+	#elif defined(OP_API_NETWORK_WINSOCK)
 
 		HINSTANCE dll_instance;
 
-	#elif defined(posix_build)
+	#elif defined(OP_API_NETWORK_SOCKETS)
 
 	#else
 		#error "Porting problem - check op_globals structure"

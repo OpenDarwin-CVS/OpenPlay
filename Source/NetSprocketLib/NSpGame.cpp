@@ -30,8 +30,11 @@
 #include "NSpGame.h"
 #include "NSpGamePrivate.h"
 #include "String_Utils.h"
+#ifndef __NETMODULE__
+#include 			"NetModule.h"
+#endif
 
-#if macintosh_build
+#ifdef OP_API_NETWORK_OT
 	#include "OTUtils.h"
 	#include <OpenTptAppleTalk.h>
 	#include <OpenTptInternet.h>
@@ -90,18 +93,18 @@ NSpGame::NSpGame(
 	mTimeStampDifferential = 0;
 
 	//Ä	Allocate our queues
-	mEventQ = new OTLIFO();
+	mEventQ = new NMLIFO();
 	//ThrowIfNULL_(mEventQ);
 	op_assert(mEventQ);
 	mEventQ->Init();
 
-	mCookieQ = new OTLIFO();
+	mCookieQ = new NMLIFO();
 	//ThrowIfNULL_(mCookieQ);
 	op_assert(mCookieQ);
 	mCookieQ->Init();
 
 	//Ä	Lets make a bunch of event records, and add them to the free q
-	mFreeQ = new OTLIFO();
+	mFreeQ = new NMLIFO();
 	//ThrowIfNULL_(mFreeQ);
 	op_assert(mFreeQ);
 	mFreeQ->Init();

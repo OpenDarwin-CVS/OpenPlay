@@ -55,7 +55,7 @@
 #include "main.h"
 
 #if __MWERKS__
-	#if (macintosh_build)
+	#if (OP_PLATFORM_MAC_CFM)
 		#define __USE_SIOUX__ 1		/* define to non-zero to use MetroWerks standard output library */
 	#endif
 #endif
@@ -472,7 +472,7 @@ void GameHandleEvents( void )
 
 	/* now get and handle the system/application event messages */
 	
-#if windows_build
+#if OP_PLATFORM_WINDOWS
 	/*{
 		MSG msg;
 
@@ -485,7 +485,7 @@ void GameHandleEvents( void )
 			DispatchMessage( &msg );
 		}
 	}*/
-#elif macintosh_build
+#elif OP_PLATFORM_MAC_CFM
 	{
 		EventRecord event;
 
@@ -508,7 +508,7 @@ void GameHandleEvents( void )
 	/* see if sioux has been quit so we can exit gracefully
 	alas, this is only available on mac */
 	#if (__USE_SIOUX__)
-		#if (macintosh_build)
+		#if (OP_PLATFORM_MAC_CFM)
 			|| SIOUXQuitting
 		#endif
 	#endif

@@ -1044,7 +1044,7 @@ NMATConfigPriv *theConfig = (NMATConfigPriv *) inConfig;
 	return kNMNoError;
 }
 
-#ifndef carbon_build
+#ifndef OP_PLATFORM_MAC_CARBON_FLAG
 // TODO - find a carbonized replacement
 static RoutineDescriptor NMHandleItemRD
 	= BUILD_ROUTINE_DESCRIPTOR(uppUserItemProcInfo, NMHandleConfigUserItems);
@@ -1058,7 +1058,7 @@ static RoutineDescriptor NMHandleItemRD
 
 NMErr
 NMSetupDialog(
-	DIALOGPTR	dialog,
+	NMDialogPtr	dialog,
 	NMSInt16	frame,
 	NMSInt16	inBaseItem,
 	NMConfigRef	inConfig)
@@ -1106,13 +1106,13 @@ NMSetupDialog(
 			//GetDialogItem(dialog,(DialogItemIndex) (kZoneList+gBaseItem),
 			//	&iType,&iHandle,&iRect);
 
-#ifdef carbon_build
+#ifdef OP_PLATFORM_MAC_CARBON_FLAG
 		op_vpause("NMSetupDialog - put back the thing");
 #else
 
 			//SetDialogItem(dialog,(DialogItemIndex) (kZoneList+gBaseItem),
 			//	iType,(Handle) &NMHandleItemRD,&iRect);
-#endif // carbon_build
+#endif // OP_PLATFORM_MAC_CARBON_FLAG
 
 		}
 
@@ -1152,7 +1152,7 @@ NMSetupDialog(
 OSErr
 SkankUpAnLDEF(short whichID, ListDefProcPtr whatProc)
 {
-#ifndef carbon_build
+#ifndef OP_PLATFORM_MAC_CARBON_FLAG
 Handle						LDEFResource;
 OSErr						retErr;
 RoutineDescriptor			inPlace =
@@ -1190,7 +1190,7 @@ RoutineDescriptor			inPlace =
 	UNUSED_PARAMETER(whichID);
 	UNUSED_PARAMETER(whatProc);
 
-#endif // carbon_build
+#endif // OP_PLATFORM_MAC_CARBON_FLAG
 
 	return kNMNoError;
 }
@@ -1287,11 +1287,11 @@ GDHandle				oldGDevice;
 
 	GetGWorld(&oldGWorld,& oldGDevice);
 	
-	#ifdef carbon_build
+	#ifdef OP_PLATFORM_MAC_CARBON_FLAG
 		SetPortDialogPort(whatDialog);
 	#else
 		SetPort(whatDialog);
-	#endif	// carbon_build
+	#endif	// OP_PLATFORM_MAC_CARBON_FLAG
 
 	if (zoneList[0] && setList)
 	{
@@ -1315,7 +1315,7 @@ GDHandle				oldGDevice;
 		cellSize.h = itemRect.right - itemRect.left;
 		cellSize.v = curFontInfo.ascent + curFontInfo.descent + curFontInfo.leading;
 
-#ifndef carbon_build
+#ifndef OP_PLATFORM_MAC_CARBON_FLAG
 		// make our fake LDEF first
 		if (kNMNoError !=  SkankUpAnLDEF(LDEFID,OffsetLDEFProc))
 			goto errOut;			// hmm, return an error?
@@ -1329,7 +1329,7 @@ GDHandle				oldGDevice;
 		DetachLDEF(LDEFID);
 #else
 		newList = LNew(&itemRect, &dataBounds, cellSize, 0, GetDialogWindow(whatDialog), 0, 0, 0, 1);
-#endif // carbon_build
+#endif // OP_PLATFORM_MAC_CARBON_FLAG
 
 		if (newList)
 		{
@@ -1462,11 +1462,11 @@ RgnHandle				dialogVisRgn;
 			FrameRect(&iRect);
 			dialogVisRgn = NewRgn();
 
-			#ifdef carbon_build
+			#ifdef OP_PLATFORM_MAC_CARBON_FLAG
 				GetPortVisibleRegion(GetDialogPort(theDialog), dialogVisRgn);
 			#else
 				dialogVisRgn = theDialog->visRgn;
-			#endif	// carbon_build
+			#endif	// OP_PLATFORM_MAC_CARBON_FLAG
 
 			LUpdate(dialogVisRgn, gZoneListRecord);
 			DisposeRgn(dialogVisRgn);
@@ -1478,7 +1478,7 @@ RgnHandle				dialogVisRgn;
 // NMHandleEvent
 //----------------------------------------------------------------------------------------
 
-NMBoolean NMHandleEvent(DIALOGPTR dialog, EVENT *event, NMConfigRef inConfig)
+NMBoolean NMHandleEvent(NMDialogPtr dialog, NMEvent *event, NMConfigRef inConfig)
 {
 NMATConfigPriv	*theConfig = (NMATConfigPriv *) inConfig;
 SetTempPort		port(dialog);
@@ -1497,7 +1497,7 @@ SetTempPort		port(dialog);
 //----------------------------------------------------------------------------------------
 
 NMErr
-NMHandleItemHit(DIALOGPTR dialog, short inItemHit, NMConfigRef inConfig)
+NMHandleItemHit(NMDialogPtr dialog, short inItemHit, NMConfigRef inConfig)
 {
 	DEBUG_ENTRY_EXIT("NMHandleItemHit");
 
@@ -1510,7 +1510,7 @@ EventRecord		evtToUse;
 	op_vassert_return((dialog != NULL),"Dialog ptr is NULL!",kNMParameterErr);
 
 	// get an event (null) so we get the mouse and keyboard values back that ModalDialog ate
-#ifdef carbon_build
+#ifdef OP_PLATFORM_MAC_CARBON_FLAG
 	op_vpause("NMHandleItemHit - put back OSEventAvail in some way");
 #else
 	OSEventAvail(everyEvent, &evtToUse);
@@ -1541,7 +1541,7 @@ EventRecord		evtToUse;
 
 NMBoolean
 NMTeardownDialog(
-	DIALOGPTR	dialog,
+	NMDialogPtr	dialog,
 	NMBoolean	inUpdateConfig,
 	NMConfigRef	ioConfig)
 {
@@ -1589,7 +1589,7 @@ SetTempPort		port(dialog);
 //----------------------------------------------------------------------------------------
 
 void
-NMGetRequiredDialogFrame(RECT *r, NMConfigRef inConfig)
+NMGetRequiredDialogFrame(NMRect *r, NMConfigRef inConfig)
 {
 	DEBUG_ENTRY_EXIT("NMGetRequiredDialogFrame");
 
@@ -1850,7 +1850,7 @@ ATEnumerationItemPriv *item;
 	if (!gEnumerator)
 		return kNMNotEnumeratingErr;
 
-#ifndef carbon_build
+#ifndef OP_PLATFORM_MAC_CARBON_FLAG
 	//	Give the enumerator time
 	SystemTask();
 #endif

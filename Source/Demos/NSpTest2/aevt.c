@@ -26,7 +26,9 @@
 #
 *************************************************************************************/
 
-#if (!macho_build)
+#include "OpenPlay.h"
+
+#if (!OP_PLATFORM_MAC_MACHO)
 	#include <AppleEvents.h>
 	#include <MacWindows.h>
 #endif
@@ -54,7 +56,7 @@ OSErr AEInit(void)
 {	
 	OSErr		err = noErr;
 
-	#if (carbon_build)
+	#if (OP_PLATFORM_MAC_CARBON_FLAG)
 		gAEOpenUPP 		= NewAEEventHandlerUPP((AEEventHandlerProcPtr)DoAEOpenApp);
 		gAEQuitUPP 		= NewAEEventHandlerUPP((AEEventHandlerProcPtr)DoAEQuitApp);
 		gAEOpenDocUPP	= NewAEEventHandlerUPP((AEEventHandlerProcPtr)DoAEOpenDoc);
@@ -64,7 +66,7 @@ OSErr AEInit(void)
 		gAEQuitUPP 		= NewAEEventHandlerProc(DoAEQuitApp);
 		gAEOpenDocUPP	= NewAEEventHandlerProc(DoAEOpenDoc);
 		gAEPrintDocUPP	= NewAEEventHandlerProc(DoAEPrintDoc);
-	#endif //carbon_build
+	#endif //OP_PLATFORM_MAC_CARBON_FLAG
 								//	install auto Open App
 	err = AEInstallEventHandler(kCoreEventClass, kAEOpenApplication, 
 								gAEOpenUPP, 0L, false );
@@ -105,7 +107,7 @@ OSErr AERemove(void)
 	err = AERemoveEventHandler(kCoreEventClass, kAEOpenDocuments, gAEOpenDocUPP, false);
 	err = AERemoveEventHandler(kCoreEventClass, kAEPrintDocuments, gAEPrintDocUPP, false);
 
-	#if (carbon_build)
+	#if (OP_PLATFORM_MAC_CARBON_FLAG)
 		DisposeAEEventHandlerUPP(gAEOpenUPP);
 		DisposeAEEventHandlerUPP(gAEQuitUPP);
 		DisposeAEEventHandlerUPP(gAEOpenDocUPP);
@@ -115,7 +117,7 @@ OSErr AERemove(void)
 		DisposeRoutineDescriptor(gAEQuitUPP);
 		DisposeRoutineDescriptor(gAEOpenDocUPP);
 		DisposeRoutineDescriptor(gAEPrintDocUPP);
-	#endif //carbon_build
+	#endif //OP_PLATFORM_MAC_CARBON_FLAG
 	
 	return err;
 }
@@ -128,11 +130,11 @@ OSErr AERemove(void)
 //
 //----------------------------------------------------------------------
 
-#if (carbon_build)
+#if (OP_PLATFORM_MAC_CARBON_FLAG)
 	pascal OSErr DoAEOpenApp(const AppleEvent *event,AppleEvent *reply,long refCon)
 #else
 	pascal OSErr DoAEOpenApp(AppleEvent *event,AppleEvent reply,long refCon)
-#endif //carbon_build
+#endif //OP_PLATFORM_MAC_CARBON_FLAG
 {
 						
 	return noErr;
@@ -147,7 +149,7 @@ OSErr AERemove(void)
 //
 //----------------------------------------------------------------------
 
-#if (carbon_build)
+#if (OP_PLATFORM_MAC_CARBON_FLAG)
 	pascal OSErr DoAEQuitApp(const AppleEvent *event,AppleEvent *reply,long refCon)
 #else
 	pascal OSErr DoAEQuitApp(AppleEvent *event,AppleEvent reply,long refCon)
@@ -170,11 +172,11 @@ OSErr AERemove(void)
 //
 //----------------------------------------------------------------------
 
-#if (carbon_build)
+#if (OP_PLATFORM_MAC_CARBON_FLAG)
 	pascal OSErr DoAEOpenDoc(const AppleEvent *event,AppleEvent *reply,long refCon)
 #else
 	pascal OSErr DoAEOpenDoc(AppleEvent *event,AppleEvent reply,long refCon)
-#endif //carbon_build
+#endif //OP_PLATFORM_MAC_CARBON_FLAG
 {
 	#pragma unused( event, reply, refCon )
 	
@@ -191,11 +193,11 @@ OSErr AERemove(void)
 //
 //----------------------------------------------------------------------
 
-#if (carbon_build)
+#if (OP_PLATFORM_MAC_CARBON_FLAG)
 	pascal OSErr DoAEPrintDoc(const AppleEvent *event,AppleEvent *reply,long refCon)
 #else
 	pascal OSErr DoAEPrintDoc(AppleEvent *event,AppleEvent reply,long refCon)
-#endif //carbon_build
+#endif //OP_PLATFORM_MAC_CARBON_FLAG
 {
 	#pragma unused( event, reply, refCon )
 	

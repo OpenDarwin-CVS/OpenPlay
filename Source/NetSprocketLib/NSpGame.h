@@ -33,9 +33,8 @@
 	#ifndef __OPENPLAY__
 	#include 			"OpenPlay.h"
 	#endif
-
-	#if macintosh_build
-		#include <OpenTransport.h>
+	#ifndef __NETMODULE__
+	#include 			"NetModule.h"
 	#endif
 
 	#include "NSp_InterruptSafeList.h"
@@ -174,9 +173,9 @@
 		
 		NSpPlayerID						mPlayerID;
 		
-		OTLIFO							*mEventQ;
-		OTLIFO							*mFreeQ;
-		OTLIFO							*mCookieQ;
+		NMLIFO							*mEventQ;
+		NMLIFO							*mFreeQ;
+		NMLIFO							*mCookieQ;
 		ERObject						*mPendingMessages;
 		NMUInt32						mCookieQLen, 
 										mFreeQLen, 

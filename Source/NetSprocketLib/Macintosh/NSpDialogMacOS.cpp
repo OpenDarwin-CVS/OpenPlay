@@ -27,7 +27,15 @@
  
 //	------------------------------	Includes
 
-#if (macho_build)
+#ifndef __OPENPLAY__
+#include 			"OpenPlay.h"
+#endif
+#ifndef __NETMODULE__
+#include 			"NetModule.h"
+#endif
+
+
+#ifdef OP_PLATFORM_MAC_MACHO
 	#include <Carbon/Carbon.h>
 #else
 	#include <Dialogs.h>
@@ -38,9 +46,6 @@
 #endif
 
 
-#ifndef __OPENPLAY__
-#include 			"OpenPlay.h"
-#endif
 #include "OPUtils.h"
 #include "portable_files.h"
 #include "op_definitions.h"
@@ -443,10 +448,10 @@ DoDialogLoop( DialogPtr dialog,
 	NMSInt16   hitItem = 0;
     NMBoolean  status = true;
 	
-	#if (macho_build)
-		NMBoolean tcpPresent = true;
+	#ifdef OP_API_NETWORK_OT
+		NMBoolean	tcpPresent = OTUtils::HasOpenTransportTCP();
 	#else
-		NMBoolean  tcpPresent = OTUtils::HasOpenTransportTCP();
+		NMBoolean	tcpPresent = true;
 	#endif
 	
 	do {

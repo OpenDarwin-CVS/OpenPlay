@@ -35,10 +35,13 @@
 	#ifndef __OPENPLAY__
 	#include 			"OpenPlay.h"
 	#endif
+	#ifndef __NETMODULE__
+	#include 			"NetModule.h"
+	#endif
 	#include "OPUtils.h"
 	#include "machine_lock.h"
 
-#if !macintosh_build
+#ifndef OP_API_NETWORK_OT
 	#include "LinkedList.h"
 #endif
 
@@ -105,7 +108,7 @@
 		NMUInt32		backlog;
 		NMBoolean		sendInProgress;
 		NMBoolean		goData;
-		OTList			*sendQ;
+		NMList			*sendQ;
 		machine_lock	QLock;
 	} SendInfo;
 

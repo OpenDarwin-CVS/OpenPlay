@@ -30,9 +30,9 @@
 
 //	------------------------------	Includes
 
-#if (macintosh_build)
+#ifdef OP_PLATFORM_MAC_CFM
 	#include <errors.h>
-#endif //macintosh_build
+#endif
 
 //	------------------------------	Public Definitions
 

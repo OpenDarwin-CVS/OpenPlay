@@ -28,16 +28,11 @@
 #ifndef __PORTABLE_FILES__
 #define __PORTABLE_FILES__
 
-#if (macho_build)
-	#if (project_builder)
-		#include <CoreServices/CoreServices.h>	
-	#endif
-#endif
 
 #include "OpenPlay.h"
 
 /*--------------------------------Windows Section-----------------------------*/
-#if defined(windows_build)
+#ifdef OP_PLATFORM_WINDOWS
 
   #define MAX_PATHNAME_LENGTH (256)
   #define EXTENSION_LENGTH (4) /* whee! */
@@ -55,7 +50,7 @@
 
 
 /*-------------------------------Macintosh Section----------------------------*/
-#elif defined(macintosh_build)
+#elif defined(OP_PLATFORM_MAC_CFM)
 
 //#if PRAGMA_ALIGN_SUPPORTED
 #pragma options align=mac68k
@@ -77,8 +72,25 @@
   #define d_ERR_FILE_EOF       -39
   #define d_ERR_FILE_NOTFOUND  -43
 
+#elif defined(OP_PLATFORM_MAC_MACHO)
+/*----------------------------------Core Foundation Section-----------------------------*/
+
+	typedef struct
+	{
+		CFBundleRef bundle;
+
+	} FileDesc;
+
+
+	#define d_LIBRARY_TYPE  1482  /* constant used for File Type in searching */
+
+	#define d_ERR_FILE_EOF       1
+	#define d_ERR_FILE_NOTFOUND  2
+
+	#define d_OPENPLAY_LIB_LOCATION  "/usr/share/openplay/netmodules"
+
 /*----------------------------------Posix Section-----------------------------*/
-#elif defined(posix_build)
+#elif defined(OP_PLATFORM_UNIX)
 
 #include <sys/types.h>
 #include <sys/param.h>
@@ -89,20 +101,16 @@
 
   typedef struct
   {
-  	#if (project_builder)
-		CFBundleRef bundle;
-	#else
    		char name[PATH_MAX];
-	#endif
-  } FileDesc;
+	} FileDesc;
 
 
-  #define d_LIBRARY_TYPE  1482  /* constant used for File Type in searching */
+	#define d_LIBRARY_TYPE  1482  /* constant used for File Type in searching */
 
-  #define d_ERR_FILE_EOF       1
-  #define d_ERR_FILE_NOTFOUND  2
+	#define d_ERR_FILE_EOF       1
+	#define d_ERR_FILE_NOTFOUND  2
 
-  #define d_OPENPLAY_LIB_LOCATION  "/usr/local/lib/OpenPlay"
+	#define d_OPENPLAY_LIB_LOCATION  "/usr/share/openplay/netmodules"
 
 /*------------------------------------Unknown---------------------------------*/
 #else
@@ -118,12 +126,12 @@
 
 //defined in the mac precomp header
 
-	#if !macintosh_build
+#ifndef OP_PLATFORM_MAC_CFM
 
 		typedef NMUInt32	FileType;   /* same as an OSType. For DOS, this is the extension... */
 		typedef NMErr 		FileError;          /* same as NMErr */
 
-	#endif /* macintosh_build */
+#endif /* OP_PLATFORM_MAC_CFM */
 
 /* FIXME - this enum needs a name! */
 enum
@@ -132,4 +140,6 @@ enum
   errFileNotFound  = d_ERR_FILE_NOTFOUND
 };
 
-#endif
+#endif /* __PORTABLE_FILES__ */
+
+

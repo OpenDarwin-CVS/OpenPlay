@@ -122,7 +122,7 @@
 #include <stdio.h>
 #include <unistd.h>
 
-#if defined( macintosh_build )
+#if defined( OP_PLATFORM_MAC_CFM )
 	#include <sioux.h>
 #endif
 
@@ -217,11 +217,11 @@ void          Enumeration_Callback( void *inContext,
 int 
 main( void ) 
 {	
-	EVENT event;
+	NMEvent event;
 	char  mode;
 	NMBoolean  gotEvent;
 	
-#if defined( macintosh_build )
+#if defined( OP_PLATFORM_MAC_CFM )
 	SIOUXSettings.asktosaveonclose = false;
 #endif
 	
@@ -244,7 +244,7 @@ main( void )
 		// else things get ugly. Linux/Windows developers,
 		// this should be the only line you need to change.
 		   
-#if defined(macintosh_build)
+#if defined(OP_PLATFORM_MAC_CFM)
 
 		gotEvent = WaitNextEvent( everyEvent, &event, 1, NULL );
 		
@@ -449,7 +449,7 @@ Do_Server_Menu( void )
 	
 	if ( success ) {
 		printf( "Waiting for client to connect... \n\n");
-		#if (macintosh_build)
+		#if (OP_PLATFORM_MAC_CFM)
 			printf("Press 'q' to stop or Client Send Close)\n\n" );
 		#endif
 		fflush(stdout);

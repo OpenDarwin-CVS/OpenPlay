@@ -578,7 +578,7 @@ static LRESULT CALLBACK configure_protocol_proc(
 {
 	LRESULT returnhand= 0;				// sjb 19990311 yes, this was handled by default. I don't like this
 	static struct list_item_data list_items;
-	EVENT event;
+	NMEvent event;
 	NMErr err;
 	BOOLEAN handled;
 	static PConfigRef config;
@@ -605,7 +605,7 @@ static LRESULT CALLBACK configure_protocol_proc(
 		{
 			case WM_INITDIALOG:
 			{
-				RECT min_bounds;
+				NMRect min_bounds;
 			
 				list_items.dialog= dialog;
 				list_items.count= 0;

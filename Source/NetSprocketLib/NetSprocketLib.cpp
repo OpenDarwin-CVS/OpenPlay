@@ -25,15 +25,18 @@
  * Revision: $Id$
  */
 #ifndef __OPENPLAY__
-#include "OpenPlay.h"
+#include 			"OpenPlay.h"
 #endif
-#include "NSpPrefix.h"
+#include 			"NSpPrefix.h"
+#ifndef __NETMODULE__
+#include 			"NetModule.h"
+#endif
 
-#if macintosh_build
+#ifdef OP_API_NETWORK_OT
 	#include <Gestalt.h>
 	#include <OpenTransport.h>
 	#include "OTUtils.h"
-#endif	/*	macintosh_build	*/
+#endif
 
 #include "NetSprocketLib.h"
 #include "NSpGamePrivate.h"
@@ -44,14 +47,14 @@
 #include "String_Utils.h"
 #include "NSpVersion.h"
 
-#if macintosh_build
+#ifdef OP_API_NETWORK_OT
 	extern "C" int __initialize(CFragInitBlockPtr ibp);
 	extern "C" int __terminate(void);
 	
 //	extern OSErr	__init_lib(CFragInitBlockPtr initBlockPtr);
 //	extern void		__term_lib(void);
 
-#endif	/*	macintosh_build	*/
+#endif
 
 //	NMSInt32  gFileRefNum = 0;
 
@@ -89,9 +92,9 @@ NMBoolean				gDebugMode;
 NMBoolean				gPolling;
 
 
-#if macintosh_build
+#ifdef OP_API_NETWORK_OT
 	FSSpec					gFSSpec;
-#endif	/*	macintosh_build	*/
+#endif
 
 // Async stuff
 NSpJoinRequestHandlerProcPtr gJoinRequestHandler;
@@ -121,7 +124,7 @@ NSpInitialize(NMUInt32 inStandardMessageSize, NMUInt32 inBufferSize, NMUInt32 in
 	if (gPPInitialized)
 		return (kNSpAlreadyInitializedErr);
 	
-#if macintosh_build
+#ifdef OP_API_NETWORK_OT
 	NMErr			status = kNMNoError;
 
 	NMErr		theErr;
@@ -138,7 +141,7 @@ NSpInitialize(NMUInt32 inStandardMessageSize, NMUInt32 inBufferSize, NMUInt32 in
 	if (status != kNMNoError)
 		return (kNSpInitializationFailedErr);
 	
-#endif	/*	macintosh_build	*/
+#endif
 
 	
 	//Ä	Set the standard message size
@@ -437,7 +440,7 @@ NSpProtocolPriv		*theProtocol;
 NSpProtocolReference
 NSpProtocol_CreateAppleTalk(NMConstStr31Param inNBPName, NMConstStr31Param inNBPType, NMUInt32 inMaxRTT, NMUInt32 inMinThruput)
 {
-#if macintosh_build
+#ifdef OP_API_NETWORK_OT
 
 	UNUSED_PARAMETER(inMaxRTT);
 	UNUSED_PARAMETER(inMinThruput);
@@ -497,7 +500,7 @@ NSpProtocol_CreateAppleTalk(NMConstStr31Param inNBPName, NMConstStr31Param inNBP
 	UNUSED_PARAMETER(inMinThruput);
 	return (NULL);
 	
-#endif // macintosh_build
+#endif
 }
 
 //----------------------------------------------------------------------------------------
@@ -528,13 +531,13 @@ NSpProtocol_CreateIP(NMInetPort inPort, NMUInt32 inMaxRTT, NMUInt32 inMinThruput
 		// Stupid OpenPlay Windows bug requires that you include the whole config
 		// string even when you only want to override one specific value...
 		
-#if macintosh_build
+#ifdef OP_API_NETWORK_OT
 			sprintf(customConfig, "IPport=%u\tnetSprocket=true\0", inPort);
 #else
 			sprintf(customConfig, "type=%u\tversion=256\tgameID=%u\tgameName=unknown\t"
 							"mode=%u\tIPaddr=127.0.0.1\tIPport=%u\tnetSprocket=true", 
 							netModuleType, gameID, kUberMode, inPort);
-#endif	/*	macintosh_build	*/
+#endif
 	}
 	else
 		strcpy(customConfig, "netSprocket=true");
@@ -563,17 +566,8 @@ NSpProtocol_CreateIP(NMInetPort inPort, NMUInt32 inMaxRTT, NMUInt32 inMinThruput
 #pragma mark  === Human Interface ===
 #endif
 
-//dialog stubs for the unimplemented platforms
-#if (macho_build)
-	#define HAS_NSP_DIALOGS 1
-#elif (macintosh_build)
-	#define HAS_NSP_DIALOGS 1
-#else
-	#define HAS_NSP_DIALOGS 0
-#endif
+#if (! defined(OP_PLATFORM_MAC_MACHO)) && (! defined(OP_PLATFORM_MAC_CFM))
 
-
-#if (!HAS_NSP_DIALOGS)
 //----------------------------------------------------------------------------------------
 // NSpDoModalJoinDialog
 //----------------------------------------------------------------------------------------
@@ -612,56 +606,8 @@ NSpDoModalHostDialog			(NSpProtocolListReference	ioProtocolList,
 	return false;
 }
 
-#endif	/*	HAS_NSP_DIALOGS	*/
+#endif
 
-/*
-
-//----------------------------------------------------------------------------------------
-// NSpDoModalJoinDialog
-//----------------------------------------------------------------------------------------
-
-NSpAddressReference
-NSpDoModalJoinDialog			(const unsigned char 	inGameType[32],
-								 const unsigned char 	inEntityListLabel[256],
-								 unsigned char 			ioName[32],
-								 unsigned char 			ioPassword[32],
-								 NSpEventProcPtr 		inEventProcPtr)
-{
-	NSpAddressReference		addressReference;
-	char					gameType[32];
-	char					gameName[32];
-	char					theZone[32] = "*";
-	
-	sprintf(gameName, "%#s", ioName);
-	sprintf(gameType, "%#s", inGameType);
-	
-	addressReference = NSpCreateATlkAddressReference(gameName, gameType, theZone);
-	
-	return addressReference;
-}
-
-
-//----------------------------------------------------------------------------------------
-// NSpDoModalHostDialog
-//----------------------------------------------------------------------------------------
-
-NMBoolean
-NSpDoModalHostDialog			(NSpProtocolListReference	ioProtocolList,
-								 unsigned char 				ioGameName[32],
-								 unsigned char 				ioPlayerName[32],
-								 unsigned char 				ioPassword[32],
-								 NSpEventProcPtr 			inEventProcPtr)
-{
-	UNUSED_PARAMETER(ioProtocolList)
-	UNUSED_PARAMETER(ioGameName)
-	UNUSED_PARAMETER(ioPlayerName)
-	UNUSED_PARAMETER(ioPassword)
-	UNUSED_PARAMETER(inEventProcPtr)
-
-	return true;
-}
-								 
-*/
 
 #if defined(__MWERKS__)
 #pragma mark === Hosting and Joining ===
@@ -799,7 +745,7 @@ NSpGame_Host(
 			{
 				case kATModuleType:
 				{
-#if macintosh_build
+#ifdef OP_API_NETWORK_OT
 					status = master->HostAT(theProt);
 					//ThrowIfOSErr_(err);
 					if (status)
@@ -813,7 +759,7 @@ NSpGame_Host(
 				goto error;
 				//Throw_(kNSpFeatureNotImplementedErr);
 
-#endif		/*	macintosh_build	*/
+#endif
 				}
 				break;
 				 
@@ -1160,9 +1106,9 @@ NSpGame			*game;
 
 
 	//keep our memory reserve full
-#if macintosh_build
+#ifdef OP_API_NETWORK_OT
 		UpkeepOTMemoryReserve();
-#endif //macintosh_build
+#endif
 	
 	return (err);
 }
@@ -1230,9 +1176,9 @@ NSpMessage_Get(NSpGameReference inGame)
 	}	
 	
 	//keep our memory reserve full - i hope this function isnt called at interrupt time...
-#if macintosh_build
+#ifdef OP_API_NETWORK_OT
 		UpkeepOTMemoryReserve();
-#endif //macintosh_build
+#endif
 	
 	return (theMessage);
 }
@@ -1577,7 +1523,7 @@ NMNumVersion
 NSpGetVersion(void)
 {
 
-#if macintosh_build
+#ifdef OP_API_NETWORK_OT
 	NMSInt16	refNum;
 	Handle		versResource = NULL;
 
@@ -1593,7 +1539,7 @@ NSpGetVersion(void)
 		CloseResFile (refNum);
 	}
 	else
-#endif	/*	macintosh_build	*/
+#endif
 	{
 
 	//Ä	Note that we do nothing fancy to obtain the version if this is a non-Mac platform.
@@ -1696,7 +1642,7 @@ NSpPlayer_GetIPAddress(
 }
 
 
-#if mac_cfm_build
+#ifdef OP_API_NETWORK_OT
 
 //----------------------------------------------------------------------------------------
 // NSpPlayer_GetOTAddress
@@ -1950,7 +1896,7 @@ NSpReleaseOTAddress(OTAddress *inAddress)
 	}
 
 }
-#endif	/*	mac_cfm_build	*/
+#endif	//	OP_API_NETWORK_OT
 
 //----------------------------------------------------------------------------------------
 // NSpCreateATlkAddressReference
@@ -1959,7 +1905,7 @@ NSpReleaseOTAddress(OTAddress *inAddress)
 NSpAddressReference NSpCreateATlkAddressReference(char *inName, char *inType, char *inZone)
 {
 
-#ifdef macintosh_build
+#ifdef OP_API_NETWORK_OT
 	
 	NMErr			status;
 	PConfigRef		outConfigRef = NULL;	
@@ -1998,7 +1944,7 @@ NSpAddressReference NSpCreateATlkAddressReference(char *inName, char *inType, ch
 	
 		return (NULL); 
 		
-	#endif /* macintosh_build	*/
+	#endif
 }
 
 //----------------------------------------------------------------------------------------

@@ -29,14 +29,17 @@
 #include "NSpGameSlave.h"
 #include "NetSprocketLib.h"
 #include "ByteSwapping.h"
+#ifndef __NETMODULE__
+#include 		"NetModule.h"
+#endif
 
 #include "String_Utils.h"
 
-#if macintosh_build
+#ifdef OP_API_NETWORK_OT
 	#include <OpenTptAppleTalk.h>
 	#include <OpenTptInternet.h>
 	#include <OpenTptSerial.h>
-#endif	/*	macintosh_build	*/
+#endif
 
 
 
@@ -123,14 +126,14 @@ NSpGameSlave::Join(
 		{
 			case kATModuleType:
 			{
-#if macintosh_build
+#ifdef OP_API_NETWORK_OT
 				mEndpoint = (CEndpoint *) new COTATEndpoint(this);			
 #else
 				status = kNSpFeatureNotImplementedErr;
 				goto error;
 				//Throw_(kNSpFeatureNotImplementedErr);
 
-#endif		/*	macintosh_build	*/
+#endif
 			}
 			break;
 			 

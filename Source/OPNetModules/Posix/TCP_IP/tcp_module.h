@@ -32,10 +32,13 @@
 #define __TCP_MODULE__
 
 //	------------------------------	Includes
+	#ifndef __NETMODULE__
+	#include 			"NetModule.h"
+	#endif
 	
-#if (windows_build)
+#ifdef OP_API_NETWORK_WINSOCK
 	#include <winsock.h>
-#elif (posix_build)
+#elif defined(OP_API_NETWORK_SOCKETS)
 	#include <sys/types.h>
 	#include <sys/socket.h>
 	#include <netinet/in.h>
@@ -46,6 +49,7 @@
 	#include <errno.h>
 #endif
 
+	#include "NetModulePrivate.h"
 	#include "OPUtils.h"
 	#include "machine_lock.h"
 	#include "ip_enumeration.h"
@@ -56,7 +60,7 @@
 //	------------------------------	Public Types
 
 	//define some stuff for windows to keep our codebase mostly-unmodified
-	#if (windows_build)
+	#ifdef OP_PLATFORM_WINDOWS
 		typedef WORD word;
 		#define op_errno WSAGetLastError()
 		#define EINPROGRESS WSAEINPROGRESS
@@ -68,6 +72,16 @@
 	#else
 		#define op_errno errno
 	#endif
+
+
+	#if defined(OP_PLATFORM_MAC_MACHO) || defined(OP_PLATFORM_WINDOWS)
+		typedef int 			posix_size_type;
+	#else
+		typedef unsigned int 	posix_size_type;
+	#endif
+
+
+
 
 	// without a worker thread, message retrieval is dependant on NMIdle() calls
 	#define USE_WORKER_THREAD 1
@@ -137,10 +151,12 @@
 		char name[kMaxGameNameLen+1];
 		long host;
 		word port;
-#if (posix_build)
+#ifdef OP_API_NETWORK_SOCKETS
 		int sockets[NUMBER_OF_SOCKETS];
-#elif (windows_build)
+#elif defined(OP_API_NETWORK_WINSOCK)
 		unsigned int sockets[NUMBER_OF_SOCKETS];
+#else
+	#error "This posix types is not known"		
 #endif		
 		NMBoolean flowBlocked[NUMBER_OF_SOCKETS];
 		NMBoolean newDataCallbackSent[NUMBER_OF_SOCKETS];
@@ -202,15 +218,19 @@
 
 #if (USE_WORKER_THREAD)
 	void createWorkerThread(void);
-	#if (posix_build)
+	#ifdef OP_API_NETWORK_SOCKETS
 		void* worker_thread_func(void *arg);
-	#elif (windows_build)
+	#elif defined(OP_API_NETWORK_WINSOCK)
 		DWORD WINAPI worker_thread_func(LPVOID arg);
 	#endif
 	void killWorkerThread(void);
 #endif
 	
-#if (windows_build)
+int createWakeSocket(void);
+void disposeWakeSocket(void);
+void sendWakeMessage(void);
+	
+#ifdef OP_API_NETWORK_WINSOCK
 	void initWinsock(void);
 	void shutdownWinsock(void);
 #endif
@@ -222,6 +242,7 @@
 	extern NMUInt32 endpointListState;
 	extern NMEndpointPriv *endpointList;
 	extern machine_lock *endpointListLock;
+	extern machine_lock *endpointWaitingListLock;
 	extern machine_lock *notifierLock;
 	extern NMSInt32	module_inited;
 #endif  // __TCP_MODULE__

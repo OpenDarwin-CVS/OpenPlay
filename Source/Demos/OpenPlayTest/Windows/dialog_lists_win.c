@@ -38,7 +38,7 @@
 /* ------------- local prototypes */
 /* ------------- code */
 NMBoolean new_list(
-	DIALOGPTR dialog, 
+	NMDialogPtr dialog, 
 	short item_number,
 	NMUInt16 flags)
 {
@@ -50,7 +50,7 @@ NMBoolean new_list(
 }
 
 void free_list(
-	DIALOGPTR dialog,
+	NMDialogPtr dialog,
 	short item)
 {
 	UNUSED_PARAMETER(dialog)
@@ -61,7 +61,7 @@ void free_list(
 
 /* swiped from tag_interface.c */
 short get_listbox_value(
-	DIALOGPTR dialog,
+	NMDialogPtr dialog,
 	short item)
 {
 	UNUSED_PARAMETER(dialog)
@@ -71,7 +71,7 @@ short get_listbox_value(
 }
 
 void set_listbox_doubleclick_itemhit(
-	DIALOGPTR dialog,
+	NMDialogPtr dialog,
 	short item,
 	short double_click_item)
 {
@@ -83,7 +83,7 @@ void set_listbox_doubleclick_itemhit(
 }
 
 void select_list_item(
-	DIALOGPTR dialog,
+	NMDialogPtr dialog,
 	short item,
 	short row)
 {
@@ -94,7 +94,7 @@ void select_list_item(
 }
 
 short add_text_to_list(
-	DIALOGPTR dialog, 
+	NMDialogPtr dialog, 
 	short item, 
 	char *text)
 {
@@ -105,7 +105,7 @@ short add_text_to_list(
 }
 
 short find_text_in_list(
-	DIALOGPTR dialog, 
+	NMDialogPtr dialog, 
 	short item, 
 	char *text)
 {
@@ -116,7 +116,7 @@ short find_text_in_list(
 }
 
 void delete_from_list(
-	DIALOGPTR dialog, 
+	NMDialogPtr dialog, 
 	short item, 
 	short list_index)
 {
@@ -127,7 +127,7 @@ void delete_from_list(
 }
 
 void empty_list(
-	DIALOGPTR dialog,
+	NMDialogPtr dialog,
 	short item)
 {
 	UNUSED_PARAMETER(dialog)
@@ -137,7 +137,7 @@ void empty_list(
 
 /* LR -- no prototype
 void activate_dialog_lists(
-	DIALOGPTR dialog,
+	NMDialogPtr dialog,
 	NMBoolean becoming_active)
 {
 	UNUSED_PARAMETER(dialog)

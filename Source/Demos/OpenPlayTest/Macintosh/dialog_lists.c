@@ -27,10 +27,11 @@
 
 #include "OpenPlay.h"
 #include "OPUtils.h"
+#include "log.h"
 #include "dialog_lists.h"
 #include "dialog_utils.h"
 
-#if (!macho_build)
+#if (!OP_PLATFORM_MAC_MACHO)
 	#include <StringCompare.h>
 #endif
 
@@ -63,23 +64,23 @@ static struct dialog_list_data dialog_lists= {
 };
 
 /* ------------- local prototypes */
-static void handle_tab(DialogPtr dialog, NMBoolean forward, short *item_hit);
-static struct list_data *find_active_list(DialogPtr dialog);
-static NMBoolean should_draw_border_on_dialog_list(DialogPtr dialog);
-static pascal void draw_list(DialogPtr dialog, short which_item);
-static struct list_data *find_dialog_list_data(DialogPtr dialog, short item);
+static void handle_tab(NMDialogPtr dialog, NMBoolean forward, short *item_hit);
+static struct list_data *find_active_list(NMDialogPtr dialog);
+static NMBoolean should_draw_border_on_dialog_list(NMDialogPtr dialog);
+static pascal void draw_list(NMDialogPtr dialog, short which_item);
+static struct list_data *find_dialog_list_data(NMDialogPtr dialog, short item);
 static void make_cell_visible(ListHandle list, Cell cell);
-static void mark_list_for_redraw(DialogPtr dialog, short item);
-static short find_selected_list_or_edittext(DialogPtr dialog);
-static void select_list(DialogPtr dialog, short item);
+static void mark_list_for_redraw(NMDialogPtr dialog, short item);
+static short find_selected_list_or_edittext(NMDialogPtr dialog);
+static void select_list(NMDialogPtr dialog, short item);
 static pascal short match_next_alphabetically(Ptr cellDataPtr,  Ptr searchDataPtr,  short cellDataLen,  short searchDataLen);
-static NMBoolean dialog_has_edit_items(DialogPtr dialog);
+static NMBoolean dialog_has_edit_items(NMDialogPtr dialog);
 
 /* ------------- code */
 NMBoolean new_list(
-	DialogPtr dialog, 
+	NMDialogPtr dialog, 
 	short item_number,
-	UInt16 flags)
+	NMUInt16 flags)
 {
 	Point cell_size;
 	Rect list_bounds, data_bounds;
@@ -147,7 +148,7 @@ NMBoolean new_list(
 }
 
 void free_list(
-	DialogPtr dialog,
+	NMDialogPtr dialog,
 	short item)
 {
 	struct list_data *list_data= dialog_lists.first;
@@ -173,7 +174,7 @@ void free_list(
 
 /* swiped from tag_interface.c */
 short get_listbox_value(
-	DialogPtr dialog,
+	NMDialogPtr dialog,
 	short item)
 {
 	Cell cell;
@@ -193,7 +194,7 @@ short get_listbox_value(
 }
 
 void set_listbox_doubleclick_itemhit(
-	DialogPtr dialog,
+	NMDialogPtr dialog,
 	short item,
 	short double_click_item)
 {
@@ -208,7 +209,7 @@ void set_listbox_doubleclick_itemhit(
 }
 
 void select_list_item(
-	DialogPtr dialog,
+	NMDialogPtr dialog,
 	short item,
 	short row)
 {
@@ -237,7 +238,7 @@ void select_list_item(
 }
 
 short add_text_to_list(
-	DialogPtr dialog, 
+	NMDialogPtr dialog, 
 	short item, 
 	char *text)
 {
@@ -283,7 +284,7 @@ short add_text_to_list(
 }
 
 short find_text_in_list(
-	DialogPtr dialog, 
+	NMDialogPtr dialog, 
 	short item, 
 	char *text)
 {
@@ -303,7 +304,7 @@ short find_text_in_list(
 }
 
 void delete_from_list(
-	DialogPtr dialog, 
+	NMDialogPtr dialog, 
 	short item, 
 	short list_index)
 {
@@ -317,7 +318,7 @@ void delete_from_list(
 }
 
 void empty_list(
-	DialogPtr dialog,
+	NMDialogPtr dialog,
 	short item)
 {
 	struct list_data *list_data;
@@ -332,7 +333,7 @@ void empty_list(
 }
 
 void activate_dialog_lists(
-	DialogPtr dialog,
+	NMDialogPtr dialog,
 	NMBoolean becoming_active)
 {
 	struct list_data *list_data= dialog_lists.first;
@@ -350,7 +351,7 @@ void activate_dialog_lists(
 }
 
 NMBoolean list_handled_click(
-	DialogPtr dialog, 
+	NMDialogPtr dialog, 
 	Point where,  // in local coords
 	short *item_hit, 
 	short modifiers)
@@ -402,7 +403,7 @@ NMBoolean list_handled_click(
 }
 
 static NMBoolean dialog_has_edit_items(
-	DialogPtr dialog)
+	NMDialogPtr dialog)
 {
 	short item_count, item;
 	short item_type;
@@ -424,7 +425,7 @@ static NMBoolean dialog_has_edit_items(
 }
 
 NMBoolean list_handled_key(
-	DialogPtr dialog,
+	NMDialogPtr dialog,
 	short *item_hit,
 	short modifiers,
 	short key)
@@ -503,7 +504,7 @@ NMBoolean list_handled_key(
 }
 
 static void select_list(
-	DialogPtr dialog,
+	NMDialogPtr dialog,
 	short item)
 {
 	struct list_data *list_data= dialog_lists.first;
@@ -528,7 +529,7 @@ static void select_list(
 }
 
 static void mark_list_for_redraw(
-	DialogPtr dialog,
+	NMDialogPtr dialog,
 	short item)
 {
 	short item_type;
@@ -538,7 +539,7 @@ static void mark_list_for_redraw(
 
 	GetPort(&old_port);
 	
-	#ifdef carbon_build
+#ifdef OP_PLATFORM_MAC_CARBON_FLAG
 		SetPortDialogPort(dialog);
 	#else
 		SetPort(dialog);
@@ -546,7 +547,7 @@ static void mark_list_for_redraw(
 	
 	GetDialogItem(dialog, item, &item_type, &item_handle, &item_rectangle);
 	InsetRect(&item_rectangle, -4, -4);
-#ifndef carbon_build
+#ifndef OP_PLATFORM_MAC_CARBON_FLAG
 	InvalRect(&item_rectangle);
 #else
 	InvalWindowRect(GetDialogWindow(dialog), &item_rectangle);
@@ -558,7 +559,7 @@ static void mark_list_for_redraw(
 }
 
 static short find_selected_list_or_edittext(
-	DialogPtr dialog)
+	NMDialogPtr dialog)
 {
 	short old_field;
 	struct list_data *list_data= find_active_list(dialog);
@@ -576,7 +577,7 @@ static short find_selected_list_or_edittext(
 }
 
 static void handle_tab(
-	DialogPtr dialog,
+	NMDialogPtr dialog,
 	NMBoolean forward,
 	short *item_hit)
 {
@@ -618,7 +619,7 @@ static void handle_tab(
 }
 
 void select_dialog_list_or_edittext(
-	DialogPtr dialog,
+	NMDialogPtr dialog,
 	short item)
 {
 	short item_type, old_item_type, old_item;
@@ -650,7 +651,7 @@ void select_dialog_list_or_edittext(
 }
 	
 static struct list_data *find_active_list(
-	DialogPtr dialog)
+	NMDialogPtr dialog)
 {
 	struct list_data *active_list= NULL;
 	struct list_data *list_data= dialog_lists.first;
@@ -672,7 +673,7 @@ static struct list_data *find_active_list(
 }
 
 static NMBoolean should_draw_border_on_dialog_list(
-	DialogPtr dialog)
+	NMDialogPtr dialog)
 {
 	struct list_data *list_data= dialog_lists.first;
 	short count= 0;
@@ -702,11 +703,11 @@ static NMBoolean should_draw_border_on_dialog_list(
 }
 
 static pascal void draw_list(
-	DialogPtr dialog, 
+	NMDialogPtr dialog, 
 	short which_item)
 {
 	struct list_data *list_data;
-	#if carbon_build
+#ifdef OP_PLATFORM_MAC_CARBON_FLAG
 		Pattern		thePattern;
 	#endif
 	
@@ -721,7 +722,7 @@ static pascal void draw_list(
 		PenState	current_pen;
 
 		GetPort(&old_port);
-		#if carbon_build
+#ifdef OP_PLATFORM_MAC_CARBON_FLAG
 			SetPortDialogPort(dialog);
 		#else
 			SetPort(dialog);
@@ -731,14 +732,14 @@ static pascal void draw_list(
 		
 		GetDialogItem(dialog, which_item, &item_type, &item_handle, &item_box);
 		InsetRect(&item_box, -1, -1);
-		#if carbon_build
+#ifdef OP_PLATFORM_MAC_CARBON_FLAG
 			PenPat(GetQDGlobalsBlack(&thePattern));
 		#else
 			PenPat(&qd.black);
 		#endif
 		FrameRect(&item_box);
 
-		#if carbon_build
+#ifdef OP_PLATFORM_MAC_CARBON_FLAG
 		{
 			RgnHandle	windowRgn = NewRgn();
 			GetPortVisibleRegion(GetDialogPort(dialog), windowRgn);
@@ -770,13 +771,13 @@ static pascal void draw_list(
 			/* Only if this one is selected... */
 			if((*list_data->list)->lActive && list_data->selected)
 			{
-				#if carbon_build
-					PenPat(GetQDGlobalsBlack(&thePattern));
-				#else
-					PenPat(&qd.black);
-				#endif
+#ifdef OP_PLATFORM_MAC_CARBON_FLAG
+				PenPat(GetQDGlobalsBlack(&thePattern));
+#else
+				PenPat(&qd.black);
+#endif
 			} else {
-				#if carbon_build
+#ifdef OP_PLATFORM_MAC_CARBON_FLAG
 					PenPat(GetQDGlobalsWhite(&thePattern));
 				#else
 					PenPat(&qd.white);
@@ -794,7 +795,7 @@ static pascal void draw_list(
 }
 
 static struct list_data *find_dialog_list_data(
-	DialogPtr dialog,
+	NMDialogPtr dialog,
 	short item)
 {
 	struct list_data *list_data= dialog_lists.first;

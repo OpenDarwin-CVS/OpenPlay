@@ -40,7 +40,7 @@ typedef enum
 /* Get ready to rumble.  On mac carbon Open-Transport based builds, you can optionally pass
 an OTContext to be used - otherwise a new context will be inited using kInitOTForApplicationMask. */
 
-#if (carbon_build)
+#if (OP_PLATFORM_MAC_CARBON_FLAG)
 	void OPHTTPInit(OTClientContextPtr theOTContext);
 #else
 	void OPHTTPInit(void *unused);

@@ -102,7 +102,7 @@
 		static NMBoolean		sOTInitialized;
 	};
 
-#ifdef carbon_build
+#ifdef OP_PLATFORM_MAC_CARBON_FLAG
 
 	// current ot context
 	extern OTClientContextPtr	gOTClientContext;
@@ -117,7 +117,7 @@
 #else
 	#define NM_OTOpenMapper(config, oflag, err) OTOpenMapper(config, oflag, err)
 
-#endif // carbon_build
+#endif
 
 
 #endif	// __OTUTILS__

@@ -37,19 +37,15 @@
 #include <time.h>
 #include "String_Utils.h"
 
-#if defined (macintosh_build)
-	#if (!macho_build)
-		#include <OpenTransport.h>
-	#endif
-#elif windows_build	
+#ifdef OP_PLATFORM_WINDOWS
 	#if DEBUG
 		#include <winsock.h>
 	#endif
-#elif posix_build
+#elif (! defined(OP_PLATFORM_MAC_CFM))
 	#include <errno.h>
 	#include <sys/time.h>
 	#include <unistd.h>
-#endif //macintosh_build
+#endif
 
 
 //	------------------------------	Private Definitions
@@ -69,14 +65,12 @@
 	char sz_temporary[1024];
 #endif
 
-#if (macintosh_build)
+#ifdef OP_PLATFORM_MAC_CFM
 	NMBoolean gCheckedOSVersion = false;
 	NMBoolean gRunningOSX;
 	
-	#if (!macho_build)
 		extern	OTClientContextPtr  gOTClientContext;
-	#endif
-#endif //macintosh_build
+#endif
 
 //	------------------------------	Private Functions
 
@@ -89,7 +83,7 @@
 
 /* --------- macintosh code */
 
-#if macintosh_build
+#ifdef OP_PLATFORM_MAC_CFM
 //----------------------------------------------------------------------------------------
 //checkMacOSVersion
 // -figure out if we're running OS-X or not
@@ -105,7 +99,7 @@ void checkMacOSVersion()
 	}
 }
 
-#endif //macintosh_build
+#endif
 
 //----------------------------------------------------------------------------------------
 // debug_message 
@@ -114,8 +108,7 @@ void checkMacOSVersion()
 static void
 debug_message(const char *inMessage)
 {
-#if macintosh_build
-
+#ifdef OP_PLATFORM_MAC_CFM
 	
 	//see if we're running OS-X
 	if (gCheckedOSVersion == false)
@@ -164,7 +157,7 @@ debug_message(const char *inMessage)
 		UNUSED_PARAMETER(inMessage)
 	#endif	
 
-#elif windows_build
+#elif OP_PLATFORM_WINDOWS
 
 	#if DEBUG
 //LR		MessageBox(NULL, inMessage, NULL, MB_OK);
@@ -174,8 +167,12 @@ debug_message(const char *inMessage)
 		UNUSED_PARAMETER(inMessage)
 	#endif	
 #else
-	fprintf(stderr, "%s\n",inMessage);
-	fflush(stderr);
+	#if DEBUG
+		fprintf(stderr, "%s\n",inMessage);
+		fflush(stderr);
+	#else
+		UNUSED_PARAMETER(inMessage)
+	#endif
 #endif	
 }
 
@@ -186,9 +183,9 @@ debug_message(const char *inMessage)
 NMUInt32
 machine_tick_count(void)
 {
-#if macintosh_build
+#ifdef OP_PLATFORM_MAC_CFM
 	return TickCount();
-#elif windows_build
+#elif defined(OP_PLATFORM_WINDOWS)
 	return GetTickCount();
 #else
   struct timeval tp;
@@ -212,14 +209,14 @@ NMUInt32 GetTimestampMilliseconds()
 	NMUInt32		timestamp = 0;
 	NMUInt32 		clocksPerSec;
 	
-#if defined( macintosh_build )
+#ifdef OP_PLATFORM_MAC_CFM
 	double		clocks;
 #else
 	clock_t		clocks;
 #endif
 
 
-#if defined( macintosh_build )
+#ifdef OP_PLATFORM_MAC_CFM
 	UnsignedWide mSeconds;
 	clocksPerSec = 1000000;  // Magic Number = Microseconds
 	Microseconds( &mSeconds );
@@ -297,10 +294,10 @@ NMSInt16	length;
 	}
 
 	//----------------------------------------------------------------------------------------
-	// dprintf
+	// op_dprintf
 	//----------------------------------------------------------------------------------------
 
-	NMSInt32 dprintf(const char *format, ...)
+	NMSInt32 op_dprintf(const char *format, ...)
 	{
 	  char		buffer[257];   /* [length byte] + [255 string bytes] + [null] */
 	  va_list	arglist;
@@ -316,7 +313,7 @@ NMSInt16	length;
 	  return(return_value);
 	}
 
-#if macintosh_build
+#ifdef OP_PLATFORM_MAC_CFM
 
 	//----------------------------------------------------------------------------------------
 	// dprintf_oterr
@@ -467,14 +464,14 @@ NMSInt16	length;
 				DEBUG_PRINT("EP: %p (state: %s), OTError for %s: %s (%d). File: %s, %d",ep, state, message, error, err, file, line);
 			}
 		}
-#elif windows_build
+#elif defined(OP_PLATFORM_WINDOWS)
 
 	//----------------------------------------------------------------------------------------
-	// dprintf_winsockerr
+	// dprintf_err
 	//----------------------------------------------------------------------------------------
 
 	NMErr
-	dprintf_winsockerr(
+	dprintf_err(
 		char	*message,
 		NMErr	err,
 		char		*file,
@@ -547,14 +544,14 @@ NMSInt16	length;
 		return err;
 	}
 
-#elif posix_build
+#elif defined(OP_PLATFORM_UNIX) || defined(OP_PLATFORM_MAC_MACHO)
 
 	//----------------------------------------------------------------------------------------
-	// dprintf_sockerr
+	// dprintf_err
 	//----------------------------------------------------------------------------------------
 
 	NMErr
-	dprintf_sockerr(
+	dprintf_err(
 		char	*message,
 		NMErr	err,
 		char		*file,
@@ -643,7 +640,7 @@ NMSInt16	length;
 			PRINT_CASE(ENOLCK);
 			PRINT_CASE(ENOSYS);
 			PRINT_CASE(EOVERFLOW);
-			#if (os_darwin)
+#if (OP_PLATFORM_MAC_MACHO)
 				PRINT_CASE(EPROCLIM);
 				PRINT_CASE(EBADRPC);
 				PRINT_CASE(ERPCMISMATCH);
@@ -668,12 +665,11 @@ NMSInt16	length;
 		return err;
 	}
 
-#endif // windows_build = false
+#endif // OP_PLATFORM_WINDOWS = false
 
 #endif 
 
-#if macintosh_build
-#if (!macho_build)
+#if OP_PLATFORM_MAC_CFM
 
 // The following is based on code written by Quinn - see comments in OPUtils.h for what it does/how it works
 /////////////////////////////////////////////////////////////////
@@ -779,7 +775,7 @@ NMErr UpkeepOTMemoryReserve(void)
 		thisChunk = nil;
 		if ( FreeMem() >= (gFreeHeapSpaceRequired + gReserveChunkSize) ) {
 			//thisChunk = OTAllocMemInContext(chunkSize, clientContext);
-			#if (carbon_build)
+			#if (OP_PLATFORM_MAC_CARBON_FLAG)
 				thisChunk = (OTLink*)OTAllocMemInContext(gReserveChunkSize,gOTClientContext);
 			#else
 				thisChunk = (OTLink*)OTAllocMem(gReserveChunkSize);
@@ -855,21 +851,21 @@ void *OTAllocMemFromReserve(OTByteCount size)
 	
 	//if the memory-reserve hasnt been inited yet, just return a normal call
 	if (gReserveInited == false)
-	#if (carbon_build)
+#ifdef OP_PLATFORM_MAC_CARBON_FLAG
 		return OTAllocMemInContext(size,gOTClientContext);
 	#else
 		return OTAllocMem(size);
-	#endif //carbon_build
+#endif
 	
 	//when running OSX we just return what we get the first time
-	#if carbon_build
+	#if OP_PLATFORM_MAC_CARBON_FLAG
 		if (gRunningOSX)
 			return OTAllocMemInContext(size,gOTClientContext);
 	
 		result = OTAllocMemInContext(size,gOTClientContext);
 	#else
 		result = OTAllocMem(size);
-	#endif //carbon_build
+	#endif
 	while (result == nil) {
 		OTLink *thisChunk;
 		
@@ -882,7 +878,7 @@ void *OTAllocMemFromReserve(OTByteCount size)
 			OTFreeMem(thisChunk);
 			gReserveChunksAllocated--;
 				
-			#if (carbon_build)
+			#if (OP_PLATFORM_MAC_CARBON_FLAG)
 				result = OTAllocMemInContext(size,gOTClientContext);
 			#else
 				result = OTAllocMem(size);
@@ -905,16 +901,16 @@ void *OTAllocMemFromReserve(OTByteCount size)
 		ByteCount targetBytes = (((gReserveChunksAllocated * gReserveChunkSize) * 9) / 10);
 		op_assert(gReserveChunkSize != 0);		// You must init the module before doing the test.
 
-		#if (carbon_build)
+		#if (OP_PLATFORM_MAC_CARBON_FLAG)
 			return; //cant use OTEnterIntertupt();
 		#endif
 		
 		// Tell OT that we’re at interrupt time so that it won’t 
 		// grow the client pool.
 		
-		#if (!carbon_build)
+		#if (!OP_PLATFORM_MAC_CARBON_FLAG)
 			OTEnterInterrupt();
-		#endif //carbon_build
+		#endif
 		
 		// Allocate all of the memory that OT will give us - or until we get what we need...
 		blockList.fHead = nil;
@@ -942,13 +938,12 @@ void *OTAllocMemFromReserve(OTByteCount size)
 			}
 		} while (thisBlock != nil);
 		
-		#if (!carbon_build)
+		#if (!OP_PLATFORM_MAC_CARBON_FLAG)
 			OTLeaveInterrupt();		
-		#endif //carbon_build
+		#endif
 		
 	}
 	#endif //DEBUG
 
-#endif //!macho_build
-#endif //macintosh_build
+#endif //OP_PLATFORM_MAC_CFM
 

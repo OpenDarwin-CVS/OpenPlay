@@ -34,7 +34,7 @@
 #include "testbed.h"
 #include "String_Utils.h"
 
-#if (!macho_build)
+#if (!OP_PLATFORM_MAC_MACHO)
 	#include <TextUtils.h>
 #endif
 
@@ -115,7 +115,7 @@ static void initialize_application(
 	Handle menubar;
 	StringHandle		userName;
 
-#ifndef carbon_build
+#ifndef OP_PLATFORM_MAC_CARBON_FLAG
 	MaxApplZone();
 	MoreMasters();
 	MoreMasters();
@@ -129,7 +129,7 @@ static void initialize_application(
 	InitDialogs(NULL);
 #else
 	MoreMasterPointers(192);
-#endif // carbon_build
+#endif // ! OP_PLATFORM_MAC_CARBON_FLAG
 
 	InitCursor();
 
@@ -174,6 +174,10 @@ static void process_event(
 
 	switch(event->what)
 	{
+		case kHighLevelEvent:
+				AEProcessAppleEvent(event);
+			break;
+	
 		case mouseDown:
 			/* Did we hit one of the floaters? */
 			part_code= FindWindow(event->where, &window);
@@ -194,7 +198,7 @@ static void process_event(
 					break;
 
 				case inDrag:
-					#ifdef carbon_build
+			#ifdef OP_PLATFORM_MAC_CARBON_FLAG
 					{
 						Rect	tempRect;
 						GetRegionBounds(GetGrayRgn(), &tempRect);
@@ -206,7 +210,7 @@ static void process_event(
 					break;
 
 				case inGrow:
-					#if carbon_build
+			#ifdef OP_PLATFORM_MAC_CARBON_FLAG
 						GetRegionBounds(GetGrayRgn(), &size_rect);
 					#else
 						size_rect = qd.screenBits.bounds;
@@ -234,9 +238,10 @@ static void process_event(
 					{
 						GetPort(&old_port);
 						SetPortWindowPort(window);
-						#if carbon_build
+					#ifdef OP_PLATFORM_MAC_CARBON_FLAG
 						{
 							Rect windowBounds;
+                                                
 							GetWindowPortBounds(window, &windowBounds);
 							EraseRect(&windowBounds);
 						}
@@ -276,7 +281,7 @@ static void process_event(
 					if (event->message&resumeFlag)
 					{
 						/* resume */
-						#if carbon_build
+					#ifdef OP_PLATFORM_MAC_CARBON_FLAG
 						{
 							Cursor		arrowCursor;
 							SetCursor(GetQDGlobalsArrow(&arrowCursor));
@@ -361,7 +366,7 @@ static void draw_window_contents(
 
 	/* Any specific updating stuff.... */
 	
-	#if carbon_build
+#ifdef OP_PLATFORM_MAC_CARBON_FLAG
 	{
 		Rect	windowBounds;
 		GetWindowPortBounds(wp, &windowBounds);
@@ -442,7 +447,7 @@ void attach_new_endpoint_to_application(
 		
 		//add a close box
 		//FIXME: i forgot how to do this on classic =)
-		#if (carbon_build)
+#ifdef OP_PLATFORM_MAC_CARBON_FLAG
 			ChangeWindowAttributes(wp,kWindowCloseBoxAttribute,0);
 		#endif
 		
@@ -647,7 +652,7 @@ NMBoolean configure_protocol(
 	DialogPtr dialog;
 	short item_hit= NONE;
 	NMErr err;
-	RECT min_bounds;
+	NMRect min_bounds;
 	struct list_item_data list_items;
 	ModalFilterUPP configure_protocol_upp;
 	short DITLCount;
@@ -758,7 +763,7 @@ configuration_filter_proc(
 					GrafPtr old_port;
 					
 					GetPort(&old_port);
-					#if carbon_build
+				#ifdef OP_PLATFORM_MAC_CARBON_FLAG
 						SetPortDialogPort(dialog);
 					#else
 						SetPort(dialog);

@@ -30,12 +30,14 @@
 
 //	------------------------------	Includes
 
+	#ifndef __NETMODULE__
+		#include "NetModule.h"
+	#endif
+		#include "CEndpoint_OP.h"
 
-	#if macintosh_build
+	#ifdef OP_API_NETWORK_OT
 		#include <OpenTptInternet.h>
 	#endif
-
-	#include "CEndpoint_OP.h"
 
 //	------------------------------	Public Types
 

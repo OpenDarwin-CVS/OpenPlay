@@ -70,7 +70,7 @@ int main(int argc, char **argv)
 	FILE *theFile;
 	
 #if defined(__MWERKS__)
-	#if (macintosh_build)
+	#if (OP_PLATFORM_MAC_CFM)
 	    SIOUXSettings.autocloseonquit = FALSE;	// don't close the SIOUX window on program termination
 	    SIOUXSettings.asktosaveonclose = FALSE;	// don't offer to save on a close
 	#endif

@@ -122,14 +122,7 @@ static NMErr _handle_packets(NMConfigRef Config)
 	struct sockaddr_in source_address;
 	int bytes_read;
 	int done = 0;
-
-	#if (os_darwin)
-		int source_address_len = sizeof(source_address);
-	#elif (windows_build)
-		int source_address_len = sizeof(source_address);
-	#else
-		unsigned int source_address_len = sizeof(source_address);
-	#endif
+	posix_size_type source_address_len = sizeof(source_address);
 
 	if (!Config->enumerating || (Config->enumeration_socket == INVALID_SOCKET))
 	return(kNMNotEnumeratingErr);
@@ -140,9 +133,10 @@ static NMErr _handle_packets(NMConfigRef Config)
 		bytes_read = recvfrom(Config->enumeration_socket, Config->buffer, (unsigned long)MAXIMUM_CONFIG_LENGTH,
 		0, (sockaddr*)&source_address, &source_address_len);
 
-		DEBUG_PRINT("read %d bytes",bytes_read);
 		if (bytes_read >= 0)
 		{
+			DEBUG_PRINT("read %d bytes",bytes_read);
+			
 			IPEnumerationResponsePacket *packet = (IPEnumerationResponsePacket *) Config->buffer;
 
 			if (packet->responseCode == htonl(kReplyFlag))
@@ -213,17 +207,17 @@ static void _send_game_request_packet(NMConfigRef Config)
 		
 		bytes_sent = sendto(Config->enumeration_socket, request_packet, packet_length, 0,
 		(sockaddr*)&dest_address, sizeof(dest_address));
-		DEBUG_PRINT("bytes sent: %d",bytes_sent);
 		if (bytes_sent == -1)
 		{
 			DEBUG_NETWORK_API("sendto()",bytes_sent);
 		} 
-
+		else{
+			DEBUG_PRINT("bytes sent: %d",bytes_sent);
 		#ifdef DEBUG
 			if (bytes_sent != packet_length)
-			dprintf("Error in  _send_game_request_packet: sendto only delivered %d bytes of %d", bytes_sent, packet_length);
-		#endif
-
+				op_dprintf("Error in  _send_game_request_packet: sendto only delivered %d bytes of %d", bytes_sent, packet_length);
+			#endif
+		}
 	}
 
 	return;
@@ -608,7 +602,7 @@ NMErr NMEndEnumeration(NMConfigRef Config)
 		if (status)
 		{
 			#ifdef _DEBUG
-				dprintf("Error in NMEndEnumeration: closesocket returned %d", op_errno);
+				op_dprintf("Error in NMEndEnumeration: closesocket returned %d", op_errno);
 			#endif
 		}
 

@@ -19,7 +19,9 @@
 #
 ***********************************************************************/
 
-#if (!macho_build)
+#include "OpenPlay.h"
+
+#if (!OP_PLATFORM_MAC_MACHO)
 	#include <AppleEvents.h>
 	#include <Displays.h>
 	#include <Events.h>
@@ -70,14 +72,14 @@ OSErr Initialize(void)
 void ToolBoxInit(void)
 {
 
-	#if (!carbon_build)
+	#if (!OP_PLATFORM_MAC_CARBON_FLAG)
 		InitGraf(&qd.thePort);
 		InitFonts();
 		InitWindows();
 		InitMenus();
 		TEInit();
 		InitDialogs(nil);
-	#endif //!carbon_build
+	#endif //!OP_PLATFORM_MAC_CARBON_FLAG
 	
 	InitCursor();
 		
@@ -139,9 +141,9 @@ void MenuSetup(void)
 	SetMenuBar(menu);
 	DisposeHandle(menu);
 	
-	#if (!carbon_build)
+	#if (!OP_PLATFORM_MAC_CARBON_FLAG)
 		AppendResMenu(GetMenuHandle(mApple ), 'DRVR');		//	add apple menu items
-	#endif //!carbon_build
+	#endif //!OP_PLATFORM_MAC_CARBON_FLAG
 
 	DrawMenuBar();
 

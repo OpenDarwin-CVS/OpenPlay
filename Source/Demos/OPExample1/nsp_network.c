@@ -46,6 +46,7 @@
 
 #include <ctype.h>
 #include <stdio.h>
+#include <string.h>
 #include <time.h>
 #include <string.h>
 #include <stdlib.h>
@@ -114,6 +115,24 @@ static NMBoolean _response;		/* true if we get a response following a request to
 	#pragma mark -
 #endif
 
+/* -----------------------------------------------------------
+	Utility function to convert c strings to pascal strings
+	(NetSprocket currently uses pascal strings in some places)
+
+	 EXIT:	no return value
+*/
+static void doCopyC2PStr(const char *sourceString, NMUInt8 *destString)
+{
+	NMSInt32		charIndex;
+	NMSInt32		strLength;
+	
+	strLength = (NMSInt32) strlen(sourceString);
+	
+	destString[0] = strLength;		
+	for (charIndex = 0; charIndex <= strLength; charIndex++)
+		destString[charIndex + 1] = sourceString[charIndex];
+
+}
 
 /*--------------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------------*/
@@ -498,6 +517,9 @@ NMErr NetworkStartServer
 		protocolRef = NSpProtocol_CreateIP( port, 0, 0 );
 		if( protocolRef )
 		{
+			unsigned char passwordPStr[32];
+			doCopyC2PStr("Password",passwordPStr);
+		
 			/* We got a good reference, append it to the list we created earlier */
 
 			err = NSpProtocolList_Append( _protocolListRef, protocolRef );
@@ -507,7 +529,7 @@ NMErr NetworkStartServer
 					to host, using the parms sent in and defaulting rest of the "unused" hosting parms */
 
 				err = NSpGame_Host( &_gameReference, _protocolListRef, maxPlayers, gameName,
-									"\pPassword", playerName, kPlayerType, kNSpClientServer, 0 );
+									passwordPStr, playerName, kPlayerType, kNSpClientServer, 0 );
 			}
 		}
 		else
@@ -539,12 +561,15 @@ NMErr NetworkStartClient
 	addRef = NSpCreateIPAddressReference( ipAddr, port );
 	if( addRef )
 	{
+		unsigned char passwordPStr[32];
+		doCopyC2PStr("Password",passwordPStr);
+		
 		printf( "\nAttempting to join game..." );
 		fflush(stdout);
 
 		/* Now, look for a server on the IP/Port given and see if we can connect */
 
-		err = NSpGame_Join( &_gameReference, addRef, playerName, "\pPassword", kPlayerType, NULL, 0, 0 );
+		err = NSpGame_Join( &_gameReference, addRef, playerName, passwordPStr, kPlayerType, NULL, 0, 0 );
 		if( !err )
 		{
 			NMUInt32 startTime, currentTime;

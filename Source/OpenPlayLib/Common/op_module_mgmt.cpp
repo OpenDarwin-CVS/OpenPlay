@@ -26,13 +26,20 @@
  */
 
 #ifndef __OPENPLAY__
-#if (macho_build)
-	#if (project_builder)
+#include 			"OpenPlay.h"
+#endif
+#ifndef __NETMODULE__
+#include 			"NetModule.h"
+#endif
+
+
+#ifdef OP_API_PLUGIN_MACHO
+	#ifndef __CORESERVICES__
 		#include <CoreServices/CoreServices.h>
 	#endif
 #endif
-#include "OpenPlay.h"
-#endif
+
+
 
 
 #include "OPUtils.h"
@@ -45,6 +52,10 @@
 #include "String_Utils.h"
 #include "module_management.h"
 
+#ifdef OP_API_PLUGIN_WINDOWS
+    #define MAX_STRINGS_PER_GROUP 128 /* must match that in build_rc.c */
+#endif
+
 /* -------- local prototypes */
 	static void find_protocols(void);
 	static void build_find_protocol_search_start(FileDesc *search_start);
@@ -52,7 +63,7 @@
 	static NMBoolean get_module_name_and_type(FileDesc *file, NMType *type, char *name);
 	static NMBoolean valid_protocol_file(FileDesc *file, void *data);
 
-#if (os_darwin)
+#ifdef OP_API_PLUGIN_MACHO
 	extern "C"{
 	void _init(void);
 	}
@@ -62,13 +73,13 @@
 
 //we currently check at the beginning of api calls to see if openplay is inited yet
 //for the darwin build.  If mach-o dylibs have something like an _init func, we should use that...
-#if (os_darwin)
-	NMBoolean OPInited = false;
+#ifdef OP_API_PLUGIN_MACHO
+	NMBoolean gOPInited = false;
 #endif
 
-#if defined(macintosh_build)
+#ifdef OP_API_PLUGIN_MAC_CFM
 	static NMBoolean haveRefreshedProtocols = false;
-#endif //macintosh_build
+#endif //OP_API_PLUGIN_MAC_CFM
 
 /* -------- Protocol Management Layer */
 
@@ -98,19 +109,19 @@ NMErr GetIndexedProtocol(
 	NMErr err;
 
 //do mach-o dylibs have init funcs ala linux "_init"?
-#if (os_darwin)
-	if (!OPInited){
+#ifdef OP_API_PLUGIN_MACHO
+	if (!gOPInited){
 		_init();
-		OPInited = true;
+		gOPInited = true;
 	}
 #endif
 
-#if defined (macintosh_build)
+#ifdef OP_API_PLUGIN_MAC_CFM
 	if (haveRefreshedProtocols == false){
 		refresh_protocols();
 		haveRefreshedProtocols = true;
 	}
-#endif //macintosh_build
+#endif //OP_API_PLUGIN_MAC_CFM
 	
 	/* call as often as possible (anything that is synchronous) */
 	op_idle_synchronous(); 
@@ -180,19 +191,19 @@ NMErr ProtocolCreateConfig(
 	NMErr err= kNMNoError;
 
 //do mach-o dylibs have init funcs ala linux "_init"?
-#if (os_darwin)
-	if (!OPInited){
+#ifdef OP_API_PLUGIN_MACHO
+	if (!gOPInited){
 		_init();
-		OPInited = true;
+		gOPInited = true;
 	}
 #endif
 
-#if defined(macintosh_build)
-	if (haveRefreshedProtocols == false){
+#ifdef OP_API_PLUGIN_MAC_CFM
+	if (haveRefreshedProtocols == false) {
 		refresh_protocols();
 		haveRefreshedProtocols = true;
 	}
-#endif //macintosh_build
+#endif //OP_API_PLUGIN_MAC_CFM
 
 	/* call as often as possible (anything that is synchronous) */
 	op_idle_synchronous(); 
@@ -487,7 +498,8 @@ static void find_protocols(
 static void build_find_protocol_search_start(
 	FileDesc *search_start)
 {
-#if defined(macintosh_build)
+
+#ifdef OP_API_PLUGIN_MAC_CFM
 /*-------------------------------Macintosh Section----------------------------*/
 
 	char name[64];
@@ -507,7 +519,7 @@ static void build_find_protocol_search_start(
 
 
 
-#elif defined(windows_build)
+#elif defined(OP_API_PLUGIN_WINDOWS)
 /*--------------------------------Windows Section-----------------------------*/
 
 	char subfolder_name[100];
@@ -519,7 +531,6 @@ static void build_find_protocol_search_start(
 	op_assert(dest);
 	*dest= 0;
 	strcat(search_start->name, "\\");
-#define MAX_STRINGS_PER_GROUP 128 /* must match that in build_rc.c */
 	
 	op_assert(gOp_globals.dll_instance);
 	
@@ -529,68 +540,19 @@ static void build_find_protocol_search_start(
 	
 	strcat(search_start->name, subfolder_name);
 
-#elif defined(posix_build)
+#elif defined(OP_API_PLUGIN_MACHO)
 /*----------------------------------Posix Section-----------------------------*/
 
 	// for the project-builder build, we load netmodules from bundles contained as
 	// resources within the openplay framework.  for all other posix builds,
 	// we load plugins from disk based on an absolute location specified
 	// by an environment variable (or a default location if not set)
-	#if (project_builder)
-	{
+	
 		search_start->bundle = CFBundleGetBundleWithIdentifier(CFSTR("com.apple.OpenPlay"));
 		op_assert(search_start->bundle);
 		
-		/*CFBundleRef requestedBundle;
-		DEBUG_PRINT("gonna look for bundle");
-		requestedBundle = CFBundleGetBundleWithIdentifier(CFSTR("com.apple.OpenPlay"));
-		DEBUG_PRINT("looked for bundle - result 0x%X",requestedBundle);
-	
-		CFArrayRef moduleURLs;
-		moduleURLs = CFBundleCopyResourceURLsOfType(requestedBundle,CFSTR("netmodule"),CFSTR("OpenPlay Modules"));
-		long count = CFArrayGetCount(moduleURLs);
-		DEBUG_PRINT("%d values",count);
-		
-		{
-			Boolean didLoad = false;
-			CFBundleRef moduleBundle = NULL;
-			void *function;
-			long counter;
-			CFURLRef theURL;
-			char buffer[256];
-			
-			for (counter = 0;counter < count;counter++){
-				theURL = (CFURLRef)CFArrayGetValueAtIndex(moduleURLs,counter);
-				if (theURL){
-					if (CFURLGetFileSystemRepresentation(theURL,true,(UInt8*)buffer,sizeof(buffer)))
-						DEBUG_PRINT("got it.. %s",buffer);
-					else
-						DEBUG_PRINT("didnt get it");
-				}	
-				else
-					DEBUG_PRINT("couldnt get array value");
-				moduleBundle = CFBundleCreate(kCFAllocatorDefault,theURL);
-				if (moduleBundle){
-					//Try to load the executable from the bundle.
-					didLoad = CFBundleLoadExecutable(moduleBundle);
-					if (didLoad){
-						DEBUG_PRINT("loaded!");
-						function = (void*)CFBundleGetFunctionPointerForName(moduleBundle,CFSTR("_init"));
-						DEBUG_PRINT("our function: 0X%X",function);
-					}
-					else
-						DEBUG_PRINT("couldn't load");
-					CFRelease(moduleBundle);
-				}
-			}
-		}
-		
-		CFRelease(requestedBundle);
-		CFRelease(moduleURLs);
-		*/
-	}
-	//#endif
-	#else
+#elif defined(OP_API_PLUGIN_POSIX) || defined(OP_API_PLUGIN_POSIX_DARWIN)
+
   char *env_ptr;
 
   env_ptr = getenv("OPENPLAY_LIB");
@@ -608,13 +570,13 @@ static void build_find_protocol_search_start(
   }
   else
     strcpy(search_start->name, d_OPENPLAY_LIB_LOCATION);
-#endif
 
 /*----------------------------------------------------------------------------*/
 
 #else
 	#error "Porting Error - Unknown platform"
 #endif
+
 } /* build_find_protocol_search_start */
 
 //----------------------------------------------------------------------------------------
@@ -633,7 +595,8 @@ static NMBoolean find_protocol_callback(
       new_module.module_spec= *file;
       
       //keep the temporary bundle from being disposed 
-      #if (project_builder)
+
+#ifdef OP_API_PLUGIN_MACHO
 		CFRetain(new_module.module_spec.bundle);
       #endif
       
@@ -671,7 +634,7 @@ static NMBoolean valid_protocol_file(
 {
   NMBoolean valid_protocol_module = false;	
 
-#if defined(macintosh_build)
+#ifdef OP_API_PLUGIN_MAC_CFM
 /*-------------------------------Macintosh Section----------------------------*/
 UNUSED_PARAMETER(file);
 
@@ -682,7 +645,7 @@ UNUSED_PARAMETER(file);
     valid_protocol_module = true;
   }
 
-#elif defined(windows_build)
+#elif defined(OP_API_PLUGIN_WINDOWS)
 /*--------------------------------Windows Section-----------------------------*/
 
   WIN32_FIND_DATA *pb= (WIN32_FIND_DATA *) data;
@@ -697,12 +660,12 @@ UNUSED_PARAMETER(file);
     valid_protocol_module = true;
   }
 
-#elif defined(posix_build)
-/*----------------------------------Posix Section-----------------------------*/
+#elif defined(OP_API_PLUGIN_MACHO)
 
-#if (project_builder)
 	valid_protocol_module = true;
-#else
+
+#elif defined(OP_API_PLUGIN_POSIX) || defined(OP_API_PLUGIN_POSIX_DARWIN)
+/*----------------------------------Posix Section-----------------------------*/
 	
   NMSInt32 namelen;
   NMSInt32 dirlen;
@@ -743,16 +706,15 @@ UNUSED_PARAMETER(file);
     }
   }
 
-	//DEBUG_PRINT("Checked module \"%s\" return = %d\n", file->name, valid_protocol_module);
-#endif
-
 #else
 /*----------------------------------------------------------------------------*/
 
-#error "Porting Error - Unknown platform"
+	#error "Porting Error - Unknown platform"
+
 #endif
 
   return valid_protocol_module;
+
 } /* valid_protocol_file */
 
 //----------------------------------------------------------------------------------------

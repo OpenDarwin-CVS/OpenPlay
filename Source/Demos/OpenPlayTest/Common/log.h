@@ -28,9 +28,13 @@
 #ifndef __LOG__
 #define __LOG__
 
-#ifdef macintosh_build
+#ifndef __OPENPLAY__
+#include "OpenPlay.h"
+#endif
+    
+#if defined(OP_PLATFORM_MAC_CFM) || defined(OP_PLATFORM_MAC_MACHO)
 typedef WindowPtr WINDOWPTR;
-#elif defined(windows_build)
+#elif defined(OP_PLATFORM_WINDOWS)
 typedef HWND WINDOWPTR;
 typedef struct point2d {
 	short x;
@@ -53,7 +57,7 @@ int interrupt_safe_log_text(const char *format, ...);
 
 void set_current_log_window(WINDOWPTR wp);
 
-#ifdef windows_build
+#ifdef OP_PLATFORM_WINDOWS
 void handle_log_message(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 #endif
 

@@ -40,19 +40,8 @@
 NMBoolean 
 machine_acquire_lock(machine_lock *lockPtr)
 {
-#if defined(macintosh_build)
-	return OTAcquireLock(lockPtr);
-#elif defined(__OPENTRANSPORT__)
-	return OTAcquireLock(lockPtr);
-#elif defined(windows_build)
 	op_assert(lockPtr);
 	return lockPtr->acquire();
-#elif defined(posix_build)
-	op_assert(lockPtr);
-	return lockPtr->acquire();
-#else
-	#error "undefined machine_acquire_lock";
-#endif
 }
 
 //----------------------------------------------------------------------------------------
@@ -62,17 +51,6 @@ machine_acquire_lock(machine_lock *lockPtr)
 void
 machine_clear_lock(machine_lock *lockPtr)
 {
-#if defined(macintosh_build)
-	OTClearLock(lockPtr);
-#elif defined(__OPENTRANSPORT__)
-	OTClearLock(lockPtr);
-#elif defined(windows_build)
 	op_assert(lockPtr);
 	lockPtr->release();
-#elif defined (posix_build)
-	op_assert(lockPtr);
-	lockPtr->release();
-#else
-	#error "undefined machine_clear_lock";
-#endif
 }

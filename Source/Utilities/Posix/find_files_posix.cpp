@@ -25,9 +25,11 @@
  * Revision: $Id$
  */
 
-
-#include "portable_files.h"
-#include "find_files.h"
+#ifndef __NETMODULE__
+#include 			"NetModule.h"
+#endif
+#include			"portable_files.h"
+#include			"find_files.h"
 
 /* --------- local prototypes */
 static int alphabetical_names(const FileDesc *a, const FileDesc *b);
@@ -83,7 +85,7 @@ NMBoolean equal_filedescs(
 	FileDesc *a, 
 	FileDesc *b)
 {
-#if (project_builder)
+#if (OP_API_PLUGIN_MACHO)
 	//This function isn't currently used, but it would be good to fill this in.
 	return false;
 #else
@@ -102,7 +104,7 @@ static int alphabetical_names(
 	const FileDesc *a, 
 	const FileDesc *b)
 {
-#if (project_builder)
+#if (OP_API_PLUGIN_MACHO)
 	op_vhalt("alphabetical_names unimplemented for this version");
 	return 0;
 #else
@@ -112,7 +114,7 @@ static int alphabetical_names(
 
 static FileError enumerate_files(struct find_file_pb *param_block)
 {
-#if (project_builder)
+#if (OP_API_PLUGIN_MACHO)
 	CFArrayRef moduleURLs;
 	CFURLRef theURL;
 	long counter;

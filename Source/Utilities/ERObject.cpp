@@ -168,7 +168,7 @@ void RecursiveReverse(ERObject **headRef)
 	
 	RecursiveReverse(&rest);
 	
-	first->fNext->fNext = (OTLink *) first;
+	first->fNext->fNext = (NMLink *) first;
 	first->fNext = NULL;
 	
 	*headRef = rest;

@@ -24,10 +24,9 @@
  * Modified: $Date$
  * Revision: $Id$
  */
-#ifndef __PREFIXDARWIN__
-	#define __PREFIXDARWIN__
+#ifndef __PREFIXMACH__
+	#define __PREFIXMACH__
 	
-	//os_darwin is used for some conditionals within the posix code
-	//this should not be used outside of the posix code (ie: in the carbon codebase)
-	#define os_darwin 1
-#endif // __PREFIXDARWIN__
+	#define	DEBUG	1
+		
+#endif // __PREFIXMACH__

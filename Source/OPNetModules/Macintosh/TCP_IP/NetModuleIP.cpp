@@ -239,7 +239,7 @@ NMShutdown(void)
 {
 	gTerminating = true;
 
-/*#ifndef carbon_build
+/*#ifndef OP_PLATFORM_MAC_CARBON_FLAG
 	if (OTEndpoint::sServiceEPCacheSystemTask)
 		OTDestroySystemTask(OTEndpoint::sServiceEPCacheSystemTask);
 #endif*/
@@ -290,8 +290,10 @@ NMOpen(NMConfigRef inConfig, NMEndpointCallbackFunction *inCallback, void *inCon
 
 	NMErr				status = kNMNoError;
 	NMIPEndpointPriv	*epRef = NULL;
+	NMIPConfigPriv		*theConfig = (NMIPConfigPriv *) inConfig;
 
 	op_vassert_return((outEndpoint != NULL),"outEndpoint is NIL!",kNMParameterErr);
+	op_vassert_return((inConfig != NULL),"Config is NIL!",kNMParameterErr);
 	op_vassert_return((inCallback != NULL),"Callback function is NIL!",kNMParameterErr);
 
 	*outEndpoint = NULL;	// assume an error
@@ -300,13 +302,11 @@ NMOpen(NMConfigRef inConfig, NMEndpointCallbackFunction *inCallback, void *inCon
 	//	config
 	if (! inActive)
 	{
-		NMIPConfigPriv *theConfig = (NMIPConfigPriv *) inConfig;
-		
 		theConfig->address.fHost = 0;
 	}
 	
 	//	Alloc, but don't initialize the NMEndpoint
-	status = MakeNewIPEndpointPriv(inConfig, inCallback, inContext, kNMNormalMode, false, &epRef);	// If this returns an error, there's nothing to clean up
+	status = MakeNewIPEndpointPriv(inConfig, inCallback, inContext, theConfig->connectionMode, false, &epRef);	// If this returns an error, there's nothing to clean up
 	
 	if (kNMNoError != status)
 		return (status);
@@ -982,7 +982,7 @@ NMIPConfigPriv *theConfig = (NMIPConfigPriv *) inConfig;
 //----------------------------------------------------------------------------------------
 
 NMErr
-NMSetupDialog(DIALOGPTR dialog, short frame,  short inBaseItem,NMConfigRef config)
+NMSetupDialog(NMDialogPtr dialog, short frame,  short inBaseItem,NMConfigRef config)
 {
 	DEBUG_ENTRY_EXIT("NMSetupDialog");
 
@@ -1068,8 +1068,8 @@ NMSetupDialog(DIALOGPTR dialog, short frame,  short inBaseItem,NMConfigRef confi
 
 NMBoolean
 NMHandleEvent(
-	DIALOGPTR	dialog,
-	EVENT		*event,
+	NMDialogPtr	dialog,
+	NMEvent		*event,
 	NMConfigRef	config)
 {
 NMIPConfigPriv	*theConfig = (NMIPConfigPriv *) config;
@@ -1089,7 +1089,7 @@ SetTempPort		port(dialog);
 //----------------------------------------------------------------------------------------
 
 NMErr
-NMHandleItemHit(DIALOGPTR dialog, short inItemHit, NMConfigRef inConfig)
+NMHandleItemHit(NMDialogPtr dialog, short inItemHit, NMConfigRef inConfig)
 {
 	DEBUG_ENTRY_EXIT("NMHandleItemHit");
 
@@ -1117,7 +1117,7 @@ SetTempPort		port(dialog);
 
 NMBoolean
 NMTeardownDialog(
-	DIALOGPTR	dialog,
+	NMDialogPtr	dialog,
 	NMBoolean	inUpdateConfig,
 	NMConfigRef	ioConfig)
 {
@@ -1172,7 +1172,7 @@ SetTempPort		port(dialog);
 //----------------------------------------------------------------------------------------
 
 void
-NMGetRequiredDialogFrame(RECT *r, NMConfigRef inConfig)
+NMGetRequiredDialogFrame(NMRect *r, NMConfigRef inConfig)
 {
 	DEBUG_ENTRY_EXIT("NMGetRequiredDialogFrame");
 

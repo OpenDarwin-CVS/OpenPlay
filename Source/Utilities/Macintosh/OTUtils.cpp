@@ -59,9 +59,9 @@ NMSInt32	OTUtils::sOTGestaltResult = 0;
 NMSInt32	OTUtils::sOTVersion = 0;
 NMBoolean	OTUtils::sOTInitialized = false;
 
-#ifdef carbon_build
+#ifdef OP_PLATFORM_MAC_CARBON_FLAG
 OTClientContextPtr	gOTClientContext;
-#endif // carbon_build
+#endif // OP_PLATFORM_MAC_CARBON_FLAG
 
 
 //Ä	------------------------------	Private Functions
@@ -167,7 +167,7 @@ OTUtils::StartOpenTransport( OTProtocolTest inProtocolTest, long reserveMemory, 
 			return (kNSpOTVersionTooOldErr);
 		
 		if (inProtocolTest == kOTCheckForAppleTalk) {
-#ifndef carbon_build
+#ifndef OP_PLATFORM_MAC_CARBON_FLAG
 			if (!HasOpenTransportAppleTalk())
 				return kNMProtocolInitFailedErr;
 #endif
@@ -178,7 +178,7 @@ OTUtils::StartOpenTransport( OTProtocolTest inProtocolTest, long reserveMemory, 
 				return kNMProtocolInitFailedErr;
 		}
 		
-#ifdef carbon_build
+#ifdef OP_PLATFORM_MAC_CARBON_FLAG
 		status = ::InitOpenTransportInContext(kInitOTForExtensionMask, &gOTClientContext);
 #else
 		status = ::InitOpenTransport();
@@ -227,12 +227,12 @@ OTUtils::CloseOpenTransport(void)
 	//kill our reserve
 	TermOTMemoryReserve();
 	
-#ifdef carbon_build
+#ifdef OP_PLATFORM_MAC_CARBON_FLAG
 		::CloseOpenTransportInContext(gOTClientContext);
 		gOTClientContext = NULL;
 #else
 		::CloseOpenTransport();
-#endif // carbon_build
+#endif // OP_PLATFORM_MAC_CARBON_FLAG
 
 		sOTInitialized = false;
 	}
@@ -509,7 +509,7 @@ OTUtils::MakeInetNameFromAddress(const InetHost inHost, InetDomainName ioName)
 	//Try_
 	{
 		//	Open a mapper to convert this into an InetAddress
-#ifndef carbon_build
+#ifndef OP_PLATFORM_MAC_CARBON_FLAG
 		service = OTOpenInternetServices(kDefaultInternetServicesPath, 0, &status);
 #else
 		service = OTOpenInternetServicesInContext(kDefaultInternetServicesPath, 0, &status, gOTClientContext);

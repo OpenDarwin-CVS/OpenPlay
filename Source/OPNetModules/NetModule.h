@@ -20,6 +20,9 @@
  * under the License.
  *
  * @APPLE_LICENSE_HEADER_END@
+ *
+ * Modified: $Date$
+ * Revision: $Id$
  */
 
 #ifndef __NETMODULE__
@@ -31,9 +34,41 @@
 	#include 			"OpenPlay.h"
 	#endif
 
+
+	#ifdef	OP_PLATFORM_MAC_CFM
+	
+		#define OP_API_NETWORK_OT				1
+		#define OP_API_PLUGIN_MAC_CFM			1
+
+	#elif defined(OP_PLATFORM_MAC_MACHO)
+	
+		#define OP_API_NETWORK_SOCKETS			1
+		#define OP_API_PLUGIN_MACHO				1
+
+
+	#elif defined(OP_PLATFORM_WINDOWS)
+	
+		#define OP_API_NETWORK_WINSOCK			1
+		#define OP_API_PLUGIN_WINDOWS			1
+
+
+	#elif defined(OP_PLATFORM_UNIX)
+	
+		#define OP_API_NETWORK_SOCKETS			1
+		
+		#if defined(os_darwin)
+			#define OP_API_PLUGIN_POSIX			1
+		#else
+			#define OP_API_PLUGIN_POSIX_DARWIN	1
+		#endif
+
+	#else
+		#error "undefined platform"
+	#endif
+
 //	------------------------------	Public Definitions
 
-	#if defined(posix_build)
+	#if defined(OP_PLATFORM_UNIX)
 		#define PENDPOINT_COOKIE      0x4f504c59  /* hex for "OPLY" */
 		#define PENDPOINT_BAD_COOKIE  0x62616420  /* hex for "bad " */
 	#else
@@ -47,8 +82,8 @@
 //	------------------------------	Public Types
 
 
-	typedef 	struct NMProtocolConfigPriv	*		NMConfigRef;
-	typedef  	struct NMEndpointPriv			*	NMEndpointRef;
+	typedef 	struct NMProtocolConfigPriv	*	NMConfigRef;
+	typedef  	struct NMEndpointPriv		*	NMEndpointRef;
 
 	typedef void 
 	(NMEndpointCallbackFunction)(	NMEndpointRef	 			inEndpoint, 
@@ -59,8 +94,8 @@
 
 //	------------------------------	Public Variables
 
-#if (windows_build)
-		extern HINSTANCE application_instance;
+#ifdef OP_PLATFORM_WINDOWS
+		extern HINSTANCE 	application_instance;
 #endif
 
 //	------------------------------	Public Functions
@@ -186,27 +221,27 @@ extern "C" {
 	/* Dialog functions */
 
 		OP_DEFINE_API_C(void)
-		NMGetRequiredDialogFrame(	RECT *			r, 
+		NMGetRequiredDialogFrame(	NMRect *		r, 
 									NMConfigRef 	inConfig);
 		
 		OP_DEFINE_API_C(NMErr)
-		NMSetupDialog		(	DIALOGPTR 			dialog, 
+		NMSetupDialog		(	NMDialogPtr 		dialog, 
 								NMSInt16 			frame, 
 								NMSInt16			inBaseItem, 
 								NMConfigRef			inConfig);
 
 		OP_DEFINE_API_C(NMBoolean)
-		NMHandleEvent		(	DIALOGPTR			dialog, 
-								EVENT *				event, 
+		NMHandleEvent		(	NMDialogPtr			dialog, 
+								NMEvent *			event, 
 								NMConfigRef 		inConfig);
 		
 		OP_DEFINE_API_C(NMErr)
-		NMHandleItemHit		(	DIALOGPTR			dialog, 
+		NMHandleItemHit		(	NMDialogPtr			dialog, 
 								NMSInt16			inItemHit, 
 								NMConfigRef 		inConfig);
 		
 		OP_DEFINE_API_C(NMBoolean)
-		NMTeardownDialog	(	DIALOGPTR 			dialog, 
+		NMTeardownDialog	(	NMDialogPtr 		dialog, 
 								NMBoolean			inUpdateConfig, 
 								NMConfigRef 		ioConfig);
 

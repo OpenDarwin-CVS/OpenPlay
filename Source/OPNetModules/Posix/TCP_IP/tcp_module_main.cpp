@@ -7,22 +7,45 @@
  *------------------------------------------------------------- 
  *   Author: Kevin Holbrook
  *  Created: June 23, 1999
- *
- * Modified: $Date$
- * Revision: $Id$
- *
  *-------------------------------------------------------------
  *          Copyright (c) 1999 Kevin Holbrook
  *-------------------------------------------------------------
  */
+/*
+ * Copyright (c) 1999-2002 Apple Computer, Inc. All rights reserved.
+ *
+ * @APPLE_LICENSE_HEADER_START@
+ * 
+ * Portions Copyright (c) 1999-2002 Apple Computer, Inc.  All Rights
+ * Reserved.  This file contains Original Code and/or Modifications of
+ * Original Code as defined in and that are subject to the Apple Public
+ * Source License Version 1.1 (the "License").  You may not use this file
+ * except in compliance with the License.  Please obtain a copy of the
+ * License at http://www.apple.com/publicsource and read it before using
+ * this file.
+ * 
+ * The Original Code and all software distributed under the License are
+ * distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, EITHER
+ * EXPRESS OR IMPLIED, AND APPLE HEREBY DISCLAIMS ALL SUCH WARRANTIES,
+ * INCLUDING WITHOUT LIMITATION, ANY WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE OR NON- INFRINGEMENT.  Please see the
+ * License for the specific language governing rights and limitations
+ * under the License.
+ * 
+ * @APPLE_LICENSE_HEADER_END@
+ *
+ * Modified: $Date$
+ * Revision: $Id$
+ */
 
 
 #include "NetModule.h"
+#include "NetModulePrivate.h"
 #include "tcp_module.h"
 #include "OPUtils.h"
 #include <stdio.h>
 
-#if (posix_build)
+#ifdef OP_API_NETWORK_SOCKETS
 	#include <pthread.h>
 #endif
 
@@ -31,7 +54,7 @@ extern "C"{
 void _init(void);
 void _fini(void);
 
-#if (windows_build)
+#ifdef OP_API_NETWORK_WINSOCK
 		BOOL WINAPI DllMain(HINSTANCE hInst, DWORD fdwReason, LPVOID lpvReserved);
 #endif
 }
@@ -45,11 +68,12 @@ static const char *kModuleCopyright = "1996-1999 Apple Computer, Inc.";
 NMEndpointPriv *endpointList = NULL;
 NMUInt32 endpointListState = 0;
 machine_lock *endpointListLock; //dont access the list without locking it!
+machine_lock *endpointWaitingListLock;
 machine_lock *notifierLock; //dont call the user back without locking it!
 
 NMSInt32 module_inited = 0;
 
-#if (windows_build)
+#ifdef OP_API_NETWORK_WINSOCK
 	HINSTANCE application_instance;
 #endif
 
@@ -94,7 +118,14 @@ void _init(void)
 
 	//create the lock for our main list
 	endpointListLock = new machine_lock;
+	endpointWaitingListLock = new machine_lock;
 	notifierLock = new machine_lock;	
+	
+	if (createWakeSocket())
+		DEBUG_PRINT("createWakeSocket succeeded");
+	else
+		DEBUG_PRINT("createWakeSocket failed");
+	
 } /* _init */
 
 
@@ -130,12 +161,15 @@ void _fini(void)
 	#endif
 	
 	//on widnows, kill winsock
-	#if (windows_build)
+	#ifdef OP_API_NETWORK_WINSOCK
 		shutdownWinsock();
 	#endif
 	
 	delete endpointListLock;
+	delete endpointWaitingListLock;
 	delete notifierLock;
+	
+	disposeWakeSocket();
 	
 } /* _fini */
 
@@ -144,7 +178,7 @@ void _fini(void)
  *	Function: DllMain
 	called when windows dll is loaded/unloaded.  Simply hooks to _init/_fini
  */
-#if (windows_build)
+#ifdef OP_API_NETWORK_WINSOCK
 
 BOOL WINAPI
 DllMain(

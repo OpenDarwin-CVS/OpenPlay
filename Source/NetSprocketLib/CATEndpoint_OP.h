@@ -31,9 +31,14 @@
 
 //	------------------------------	Includes
 
-	#if macintosh_build
-		#include <OpenTptAppleTalk.h>
+	#ifndef __NETMODULE__
+	#include 			"NetModule.h"
 	#endif
+	
+	#ifdef OP_API_NETWORK_OT
+		#include 		<OpenTptAppleTalk.h>
+	#endif
+
 	#include "CEndpoint_OP.h"
 	
 //	------------------------------	Public Types

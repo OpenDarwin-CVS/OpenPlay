@@ -46,10 +46,13 @@
 #include "NSpGameMaster.h"
 #include "NetSprocketLib.h"
 #include "ByteSwapping.h"
+#ifndef __NETMODULE__
+#include 			"NetModule.h"
+#endif
 
 
 
-#if macintosh_build
+#ifdef OP_API_NETWORK_OT
 	#include <OpenTptAppleTalk.h>
 	#include <OpenTptInternet.h>
 	#include <OpenTptSerial.h>
@@ -126,7 +129,7 @@ NSpGameMaster::~NSpGameMaster()
 		delete mSystemGroupIterator;
 }
 
-#if macintosh_build
+#ifdef OP_API_NETWORK_OT
 
 //----------------------------------------------------------------------------------------
 // NSpGameMaster::HostAT
@@ -183,7 +186,7 @@ NSpGameMaster::HostAT(NSpProtocolPriv *inProt)
 	return (status);
 }
 
-#endif 	/*	macintosh_build	*/
+#endif //	OP_API_NETWORK_OT
 
 //----------------------------------------------------------------------------------------
 // NSpGameMaster::HostIP
@@ -304,7 +307,7 @@ NSpGameMaster::AddLocalPlayer(NMConstStr31Param inPlayerName, NSpPlayerType inPl
 			//Ä	Create our endpoint
 			if (bAdvertisingAT)
 			{
-#if macintosh_build
+#ifdef OP_API_NETWORK_OT
 				ep = mAdvertisingATEndpoint;
 				mPlayersEndpoint = new COTATEndpoint(this);
 				//ThrowIfNULL_(mPlayersEndpoint);
@@ -315,8 +318,7 @@ NSpGameMaster::AddLocalPlayer(NMConstStr31Param inPlayerName, NSpPlayerType inPl
 #else
 				return (kNSpFeatureNotImplementedErr);
 
-#endif		/*	macintosh_build	*/
-
+#endif
 			}
 			else if (bAdvertisingIP)
 			{
@@ -1732,7 +1734,7 @@ PlayerListItem					*thePlayer;
 	return (kNSpInvalidPlayerIDErr);
 }
 
-#if mac_cfm_build
+#if OP_API_NETWORK_OT
 
 //----------------------------------------------------------------------------------------
 // NSpGameMaster::GetPlayerAddress
@@ -1768,7 +1770,7 @@ PlayerListItem					*thePlayer;
 	return (kNSpInvalidPlayerIDErr);
 }
 
-#endif		/*	macintosh_build	*/
+#endif
 
 //----------------------------------------------------------------------------------------
 // NSpGameMaster::ChangePlayerType

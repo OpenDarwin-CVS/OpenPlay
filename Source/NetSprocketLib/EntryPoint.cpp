@@ -28,11 +28,14 @@
 //#include "platform.h"
 
 #ifndef __OPENPLAY__
-#include "OpenPlay.h"
+#include 			"OpenPlay.h"
 #endif
 #include "OPUtils.h"
+#ifndef __NETMODULE__
+#include 			"NetModule.h"
+#endif
 
-#if defined(windows_build)
+#if defined(OP_API_PLUGIN_WINDOWS)
 
 	#ifdef __cplusplus
 	extern "C" {

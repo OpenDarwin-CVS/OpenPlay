@@ -43,7 +43,9 @@
 #include "configfields.h"
 #include "ip_enumeration.h"
 
-#include "NetModule.h"
+#ifndef __NETMODULE__
+#include 			"NetModule.h"
+#endif
 #include "tcp_module.h"
 
 
@@ -388,7 +390,7 @@ NMErr NMCreateConfig(char *ConfigStr,
 	UNUSED_PARAMETER(EnumDataLen)
 
 	//make sure we've inited winsock (doing this duringDllMain causes problems)
-	#if (windows_build)
+	#ifdef OP_API_NETWORK_WINSOCK
 		initWinsock();
 	#endif
 
@@ -411,11 +413,13 @@ NMErr NMCreateConfig(char *ConfigStr,
 		_config->hostAddr.sin_addr.s_addr = INADDR_NONE;
 
 		_config->enumeration_socket = INVALID_SOCKET;
+		_config->enumerating = false;
 		_config->connectionMode = 3; /* stream and datagram. */
 		_config->netSprocketMode = kDefaultNetSprocketMode;
 		_config->callback = NULL;
 		_config->games = NULL;
 		_config->game_count = 0;
+		_config->new_game_count = 0;
 	}
 	else
 	{

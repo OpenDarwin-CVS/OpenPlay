@@ -25,23 +25,25 @@
  * Revision: $Id$
  */
 
-#include "portable_files.h"
-
 #ifndef __OPENPLAY__
-#include "OpenPlay.h"
+#include			"OpenPlay.h"
+#endif
+#ifndef __NETMODULE__
+#include 			"NetModule.h"
 #endif
 
-#include "OPUtils.h"
+#include			"portable_files.h"
 
-#include "NetModule.h"
-#include "NetModulePrivate.h"
+#include			"OPUtils.h"
+#include 			"NetModulePrivate.h"
 
-#include "op_definitions.h"
-#include "op_globals.h"
-#include "module_management.h"
-#include "OPDLLUtils.h"
+#include 			"op_definitions.h"
+#include 			"op_globals.h"
+#include 			"module_management.h"
+#include 			"OPDLLUtils.h"
 
 /* ------------ local code */
+
 static void net_module_callback_function(NMEndpointRef inEndpoint, 
 	                   void* inContext, NMCallbackCode inCode, 
                            NMErr inError, void* inCookie);
@@ -55,12 +57,6 @@ static void clean_up_endpoint(PEndpointRef endpoint, NMBoolean return_to_cache);
 #if (DEBUG)
 	char* GetOPErrorName(NMErr err);
 #endif 
-
-#if defined(windows_build)
-  #define RETURN_TO_CACHE false
-#elif defined(macintosh_build)
-  #define RETURN_TO_CACHE true
-#endif
 
 
 /* ---------- opening/closing */
@@ -244,10 +240,10 @@ static void clean_up_endpoint(
 
   unbind_from_protocol(endpoint->type, true);
 	
-#if defined(windows_build)
-  dispose_pointer(endpoint);
-#elif defined(macintosh_build)
-  if(return_to_cache)
+#ifdef OP_API_NETWORK_WINSOCK
+	dispose_pointer(endpoint);
+#elif defined(OP_API_NETWORK_OT)
+	if (return_to_cache)
     {
       if(gOp_globals.cache_size+1 <= MAXIMUM_CACHED_ENDPOINTS)
 	{
@@ -1126,11 +1122,11 @@ static Endpoint *create_endpoint_for_accept(
 {
 	Endpoint *new_endpoint= NULL;
 
-#if defined(windows_build)
+#ifdef OP_API_NETWORK_WINSOCK
 	/* We must create the wrapper for it.. */
 	new_endpoint= create_endpoint_and_bind_to_protocol_library(endpoint->type, &endpoint->library_file, err);
 	*from_cache= false;
-#elif defined(macintosh_build)
+#elif defined(OP_API_NETWORK_OT)
 	if(gOp_globals.cache_size>0)
 	{
 		new_endpoint= gOp_globals.endpoint_cache[--gOp_globals.cache_size];
@@ -1188,7 +1184,7 @@ static Endpoint *create_endpoint_for_accept(
 	} else {
 		*err= kNMOutOfMemoryErr;
 	}
-#elif posix_build
+#elif defined(OP_API_NETWORK_SOCKETS)
 	new_endpoint = (Endpoint*)new_pointer(sizeof(Endpoint));
 
 	if(new_endpoint) 
@@ -1238,7 +1234,7 @@ static Endpoint *create_endpoint_for_accept(
 			new_endpoint= NULL;
 		}
 	} else {
-		*err= errNoMemory;
+		*err= kNMOutOfMemoryErr;
 	}
 #else
 	#error create_endpoint_for_accept not defined for this platform

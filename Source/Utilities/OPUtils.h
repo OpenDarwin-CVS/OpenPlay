@@ -39,11 +39,6 @@
 	#include <stdlib.h>
 	#include <string.h>
 	
-	#if defined(macintosh_build)
-		#if (!macho_build)
-			#include <OpenTransport.h>
-		#endif
-	#endif
 	
 //	------------------------------	Public Definitions
 
@@ -67,15 +62,15 @@
 
 	#define MILLISECS_PER_SEC		1000
 
-	#if defined(macintosh_build)
+	#ifdef OP_PLATFORM_MAC_CFM
 
 	  #define MACHINE_TICKS_PER_SECOND  (60)
 
-	#elif defined(windows_build)
+	#elif defined(OP_PLATFORM_WINDOWS)
 
 	  #define MACHINE_TICKS_PER_SECOND  (1000)
 
-	#elif defined(posix_build)
+	#elif defined(OP_PLATFORM_UNIX) || defined(OP_PLATFORM_MAC_MACHO)
 	  
 	  #include <time.h>
 	  #define MACHINE_TICKS_PER_SECOND  (1000) //we're using millisecs here now
@@ -93,18 +88,21 @@
 	};
 
 //	------------------------------	Public Variables
-#if (macintosh_build)
+#ifdef OP_PLATFORM_MAC_CFM
 //call checkMacOSVersion somewhere in your code 
 //before you use this (at non-interrupt time)
+
 extern NMBoolean gRunningOSX; 
 
-#endif //macintosh_build
+#endif
 
 //	------------------------------	Public Functions
 
-#if (macintosh_build)
+#if (OP_PLATFORM_MAC_CFM)
+
 	void checkMacOSVersion();
-#endif //macintosh_build
+
+#endif
 
 #ifdef __cplusplus
 extern "C" {
@@ -136,21 +134,22 @@ extern "C" {
 		#define op_vassert_return(expr,diag,err) if (!(expr)) { _assertion_failure(diag, __FILE__, __LINE__, true); return err; }
 		#define op_vassert_justreturn(expr,diag) if (!(expr)) { _assertion_failure(diag, __FILE__, __LINE__, true); return; }
 
-		extern NMSInt32 dprintf(const char *format, ...);
-		#define DEBUG_PRINT		dprintf
-		#define DEBUG_PRINTonERR(format,err)	if(err) dprintf(format,err);
+		extern	NMSInt32						op_dprintf(const char *format, ...);
+		#define DEBUG_PRINT						op_dprintf
+		#define DEBUG_PRINTonERR(format,err)	if(err) op_dprintf(format,err);
 		
-		#if macintosh_build
-			void dprintf_oterr(EndpointRef endpoint, char *message, NMErr err, char *file, NMSInt32 line);
-			#define DEBUG_NETWORK_API(endpoint, message, err)	if (err != kNMNoError) dprintf_oterr(endpoint, message, err, __FILE__, __LINE__)
-		#elif windows_build
-				NMErr dprintf_winsockerr( char	*message, NMErr	err, char *file,NMSInt32	line);
-			#define DEBUG_NETWORK_API(message, err)	if (err) { dprintf_winsockerr(message, err, __FILE__, __LINE__);}
+		#ifdef OP_PLATFORM_MAC_CFM
+
+			void 	dprintf_oterr		(EndpointRef endpoint, char *message, NMErr err, char *file, NMSInt32 line);
+			#define DEBUG_NETWORK_API(endpoint, message, err)	if (err != kNMNoError)	dprintf_oterr(endpoint, message, err, __FILE__, __LINE__)
+
 		#else
-			//#define DEBUG_NETWORK_API(message, err) if (err) DEBUG_PRINT("%s return error type %d",message,err);
-			NMErr dprintf_sockerr( char	*message, NMErr	err, char *file,NMSInt32	line);
-			#define DEBUG_NETWORK_API(message, err)	if (err != kNMNoError) dprintf_sockerr(message, err, __FILE__, __LINE__)
+
+			NMErr	dprintf_err			( char	*message, NMErr	err, char *file,NMSInt32	line);
+			#define DEBUG_NETWORK_API(message, err)	if (err != kNMNoError) { dprintf_err(message, err, __FILE__, __LINE__);}
+
 		#endif
+
 	#else
 
 		#define op_halt()
@@ -166,10 +165,9 @@ extern "C" {
 
 		#define DEBUG_PRINT
 		#define DEBUG_PRINTonERR(format,err)
-		#if macintosh_build
+
+		#ifdef OP_PLATFORM_MAC_CFM
 			#define DEBUG_NETWORK_API(endpoint, message, err)
-		#elif windows_build
-			#define DEBUG_NETWORK_API( message, err)
 		#else
 			#define DEBUG_NETWORK_API( message,err)
 		#endif
@@ -181,35 +179,25 @@ extern "C" {
 // Memory copy/ move functions....
 //====================================================================================================================
 
-	#if macintosh_build
+	#ifdef OP_PLATFORM_MAC_CFM
 
 		#define machine_move_data(srcPtr, destPtr, dataLength)	BlockMoveData(srcPtr, destPtr, dataLength);
 		#define machine_copy_data(srcPtr, destPtr, dataLength)	BlockMoveData(srcPtr, destPtr, dataLength);
-		#define machine_mem_zero(startLoc, zeroLength) OTMemzero(startLoc, zeroLength);
+		#define machine_mem_zero(startLoc, zeroLength) 			OTMemzero(startLoc, zeroLength);
 
-	#elif windows_build
-
-		#define machine_move_data(srcPtr, destPtr, dataLength)	memmove(destPtr, srcPtr, dataLength);
-		#define machine_copy_data(srcPtr, destPtr, dataLength)	memcpy(destPtr, srcPtr, dataLength);
-		#define machine_mem_zero(startLoc, zeroLength) memset(startLoc, 0, zeroLength)
-	
-	#elif posix_build
+	#else
 
 		#define machine_move_data(srcPtr, destPtr, dataLength)	memmove(destPtr, srcPtr, dataLength);
 		#define machine_copy_data(srcPtr, destPtr, dataLength)	memcpy(destPtr, srcPtr, dataLength);
-		#define machine_mem_zero(startLoc, zeroLength) memset(startLoc, 0, zeroLength)
+		#define machine_mem_zero(startLoc, zeroLength)			memset(startLoc, 0, zeroLength)
 	
-	#endif //macintosh_build
+	#endif //OP_PLATFORM_MAC_CFM
 
 //====================================================================================================================
 // Alloc/Free functions....
 //====================================================================================================================
 
-	#if macintosh_build
-		#if (macho_build)
-			#define  new_pointer(size)      malloc(size)
-			#define  dispose_pointer(x)  	if (x != NULL) {free(x);}
-		#else
+	#ifdef OP_PLATFORM_MAC_CFM
 		
 			#define  new_pointer(size)      NewPtr(size)
 			#define  dispose_pointer(x)  	if (x != NULL) {DisposePtr((char*)x);}
@@ -270,17 +258,16 @@ extern "C" {
 			#if DEBUG
 				extern void OTMemoryReserveTest(void);
 			#endif
-			// See comment in implementation part.
-		#endif //macho_build
-	#elif windows_build
+
+	#elif defined(OP_PLATFORM_WINDOWS)
 
 		#define  new_pointer(size)      (void *)GlobalAlloc(GPTR, size)
-		#define  dispose_pointer(x)  	if (x != NULL) {GlobalFree((HGLOBAL) x);}
+		#define  dispose_pointer(x)  	if (x != NULL) { GlobalFree((HGLOBAL) x); }
 
-	#elif posix_build
+	#else
 
 		#define  new_pointer(size)      malloc(size)
-		#define  dispose_pointer(x)  	if (x != NULL) {free(x);}
+		#define  dispose_pointer(x)  	if (x != NULL) { free(x); }
 
 	#endif
 
@@ -288,21 +275,26 @@ extern "C" {
 // InterruptSafe Alloc/Free functions....
 //====================================================================================================================
 
-	#if macintosh_build
+	#ifdef OP_PLATFORM_MAC_CFM
 	
-		//#ifdef carbon_build		// carbon opentransport fixes and workarounds
-			//extern	OTClientContextPtr					gOTClientContext;
-			//#define InterruptSafe_alloc(s)				OTAllocMemInContext(s, gOTClientContext)
+		//#ifdef	OP_PLATFORM_MAC_CARBON_FLAG					// carbon opentransport fixes and workarounds
+		//extern	OTClientContextPtr				gOTClientContext;
+		//#define	InterruptSafe_alloc(s)			OTAllocMemInContext(s, gOTClientContext)
 		//#else
-			#define InterruptSafe_alloc(size) 			OTAllocMemFromReserve(size)
-		//#endif //carbon_build
 
-		#define InterruptSafe_free(mem)					OTFreeMem(mem)
+			#define InterruptSafe_alloc(size) 			OTAllocMemFromReserve(size)
+
+		//#endif
+
+		#define InterruptSafe_free(mem)				OTFreeMem(mem)
 		
 		//memory reserve functions to augment 
+
 	#else
-		#define InterruptSafe_alloc(size) 				new_pointer(size)
-		#define InterruptSafe_free(mem)					dispose_pointer(mem)
+
+		#define InterruptSafe_alloc(size) 			new_pointer(size)
+		#define InterruptSafe_free(mem)				dispose_pointer(mem)
+
 	#endif
 
 
@@ -311,10 +303,6 @@ extern "C" {
 //====================================================================================================================
 
 
-	#if macintosh_build
-	//	extern char *getpstr(unsigned char *buffer, NMSInt16 resource_number, NMSInt16 string_number);
-	//	extern char *getcstr(char *buffer, NMSInt16 resource_number, NMSInt16 string_number);
-	#endif
 	
 	extern NMSInt32 	psprintf(unsigned char *buffer, const char *format, ...);
 

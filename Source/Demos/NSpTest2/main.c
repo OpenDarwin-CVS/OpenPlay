@@ -26,7 +26,9 @@
 #
 *************************************************************************************/
 
-#if (!macho_build)
+#include "OpenPlay.h"
+
+#if (!OP_PLATFORM_MAC_MACHO)
 	#include <NumberFormatting.h>
 	#include <Sound.h>
 	#include <TextUtils.h>
@@ -41,7 +43,7 @@
 
 #include <stdio.h>
 
-#if (!macho_build)
+#if (!OP_PLATFORM_MAC_MACHO)
 	#include <sioux.h>
 #endif
 
@@ -57,7 +59,7 @@ int main(void)
 	OSErr			err;
 	short			m = 5;
 		
-	#if (!macho_build)
+	#if (!OP_PLATFORM_MAC_MACHO)
 		SIOUXSettings.autocloseonquit = false;
 		SIOUXSettings.asktosaveonclose = true;
 		SIOUXSettings.initializeTB = false;
@@ -65,9 +67,9 @@ int main(void)
 		SIOUXSettings.standalone = true;
 	#endif
 
-	#if (!carbon_build)
+	#if (!OP_PLATFORM_MAC_CARBON_FLAG)
 		MaxApplZone();
-	#endif //!carbon_build
+	#endif //!OP_PLATFORM_MAC_CARBON_FLAG
 	
 	for (;m == 0;m--) 				// alloc the master pointers
 	{
@@ -108,7 +110,7 @@ void HandleError(short errNo,Boolean fatal)
 	GetPort(&oldPort);
 	SysBeep(30);
 	
-	#if (carbon_build)
+	#if (OP_PLATFORM_MAC_CARBON_FLAG)
 	{
 		Cursor theCursor;
 		GetQDGlobalsArrow(&theCursor);
@@ -116,12 +118,12 @@ void HandleError(short errNo,Boolean fatal)
 	}
 	#else
 		SetCursor(&qd.arrow);
-	#endif //carbon_build
+	#endif //OP_PLATFORM_MAC_CARBON_FLAG
 	
 	errDialog = GetNewDialog(rErrorDlg, nil, (WindowPtr) -1);
 	if (errDialog != nil) 
 	{
-		#if (carbon_build)
+		#if (OP_PLATFORM_MAC_CARBON_FLAG)
 		{
 			Pattern grayPat;
 			GetQDGlobalsGray(&grayPat);
@@ -133,7 +135,7 @@ void HandleError(short errNo,Boolean fatal)
 			ShowWindow(errDialog);
 			SetPort(errDialog);
 			PenPat(&qd.gray);								// frame user areas
-		#endif //carbon_build
+		#endif //OP_PLATFORM_MAC_CARBON_FLAG
 		
 		for (c = 7;c < 9;c++) 
 		{
@@ -163,11 +165,11 @@ void HandleError(short errNo,Boolean fatal)
 		
 		SetPort( oldPort );
 
-		#if (carbon_build)
+		#if (OP_PLATFORM_MAC_CARBON_FLAG)
 			DisposeDialog(errDialog);
 		#else
 			DisposeWindow( errDialog );
-		#endif //carbon_build
+		#endif //OP_PLATFORM_MAC_CARBON_FLAG
 	}
 	else
 		ExitToShell();		// since didn't have mem to open dialog assume the worst

@@ -37,37 +37,10 @@
 #define __LINKEDLIST__
 
 
-//we cant just use "macintosh_build" - the mac macho_build is designated as "posix_build" but may 
-//include open transport in some cases
-#ifndef __OPENTRANSPORT__
-//#if (!macintosh_build)
+#include <stddef.h>
+#include "OPUtils.h"
 
-#include <stddef.h>		//for OTGetLinkObject replacement
-
-#include "OPUtils.h"	//for true/false
-
-#if (windows_build)
-
-// ECF 010928 win32 syncronization routines for safe critical sections.  We can't simply use TryEnterCriticalSection()
-// to return a true/false value because it's not available in win95 and 98
-class OSCriticalSection
-{
-	public:
-		NMBoolean locked;
-		OSCriticalSection() {locked = false; InitializeCriticalSection(&theCriticalSection);}
-		~OSCriticalSection() {DeleteCriticalSection(&theCriticalSection);}
-		NMBoolean	acquire()	{	if (locked == true) return false; //dont have to wait in this case	
-								EnterCriticalSection(&theCriticalSection);
-								if (locked) {LeaveCriticalSection(&theCriticalSection); return false;}
-								else {locked = true; LeaveCriticalSection(&theCriticalSection); return true;}}
-		void	release()	{	EnterCriticalSection(&theCriticalSection);
-								locked = false; LeaveCriticalSection(&theCriticalSection);}
-
-	CRITICAL_SECTION theCriticalSection;
-};
-#endif //windows_build
-
-#if (posix_build)
+#if defined(OP_PLATFORM_UNIX) || defined(OP_PLATFORM_MAC_MACHO)
 #include <pthread.h>
 class OSCriticalSection
 {
@@ -77,67 +50,96 @@ class OSCriticalSection
 		NMBoolean	acquire()	{	int error = pthread_mutex_trylock(&theMutex);
 									if (error) return false; else return true;}
 		void	release()	{	pthread_mutex_unlock(&theMutex);}
-
+		private:
 		pthread_mutex_t theMutex;
 };
-
-#endif //(posix_build)
+#elif (OP_PLATFORM_MAC_CFM)
+	class OSCriticalSection
+	{
+		public:
+			OSCriticalSection() {OTClearLock(&theLock);}
+			~OSCriticalSection() {}
+			NMBoolean	acquire() {	return OTAcquireLock(&theLock);}
+			void	release() 	{OTClearLock(&theLock);}
+		private:
+			OTLock theLock;
+	};
+#elif (OP_PLATFORM_WINDOWS)
+	// ECF 010928 win32 syncronization routines for safe critical sections.  We can't simply use TryEnterCriticalSection()
+	// to return a true/false value because it's not available in win95 and 98
+	class OSCriticalSection
+	{
+		public:
+			OSCriticalSection() {	locked = false; InitializeCriticalSection(&theCriticalSection);}
+			~OSCriticalSection() {	DeleteCriticalSection(&theCriticalSection);}
+			NMBoolean	acquire()	{	if (locked == true) return false; //dont have to wait in this case	
+									EnterCriticalSection(&theCriticalSection);
+									if (locked) {LeaveCriticalSection(&theCriticalSection); return false;}
+									else {locked = true; LeaveCriticalSection(&theCriticalSection); return true;}}
+			void	release()	{	EnterCriticalSection(&theCriticalSection);
+									locked = false; LeaveCriticalSection(&theCriticalSection);}
+		private:
+			NMBoolean locked;
+			CRITICAL_SECTION theCriticalSection;
+	};
+#else
+	#error "Linked list OSCriticalSection undefined"
+#endif
 
 /*	-------------------------------------------------------------------------
-	** OTLIFO
+	** NMLIFO
 	**
 	** These are functions to implement a LIFO list that is interrupt-safe.
-	** The only function which is not is OTReverseList.  Normally, you create
-	** a LIFO list, populate it at interrupt time, and then use OTLIFOStealList
-	** to atomically remove the list, and OTReverseList to flip the list so that
+	** The only function which is not is NMReverseList.  Normally, you create
+	** a LIFO list, populate it at interrupt time, and then use NMLIFOStealList
+	** to atomically remove the list, and NMReverseList to flip the list so that
 	** it is a FIFO list, which tends to be more useful.
 	------------------------------------------------------------------------- */
 
-	class OTLink;
-	class OTLIFO;
+	class NMLink;
+	class NMLIFO;
 
-	class OTLink
+	class NMLink
 	{
 		public:
-			OTLink*	fNext;
+			NMLink*	fNext;
 			void	Init()
 						{ fNext = NULL; }
 	};
 
-	class OTLIFO
+	class NMLIFO
 	{
 		public:
 			OSCriticalSection theLock;
-			OTLink*	fHead;
+			NMLink*	fHead;
 		
 			void	Init()	
 					{ fHead = NULL; }
 		
-			void	Enqueue(OTLink* link)
+			void	Enqueue(NMLink* link)
 							{ 
 								while (true) {if (theLock.acquire()) break;}
 								link->fNext = fHead;
 								fHead = link;	
-								theLock.release();		
+								theLock.release();	
 							}
 					
 
-			OTLink*	Dequeue()
+			NMLink*	Dequeue()
 							{
 								while (true) {if (theLock.acquire()) break;}						
-								OTLink *origHead = fHead;
+								NMLink *origHead = fHead;
 								if (fHead) /* check for empty list */
 									fHead = fHead->fNext;
-								fHead = fHead->fNext;
 								theLock.release();									
 								return origHead;
 							}
 
 						
-			OTLink*	StealList()
+			NMLink*	StealList()
 							{	
 								while (true) {if (theLock.acquire()) break;}
-								OTLink *origHead = fHead;
+								NMLink *origHead = fHead;
 								fHead = NULL;
 								theLock.release();
 								return origHead;
@@ -151,31 +153,31 @@ class OSCriticalSection
 	};
 
 /*	-------------------------------------------------------------------------
-	** OTList
+	** NMList
 	**
-	** An OTList is a non-interrupt-safe list, but has more features than the
-	** OTLIFO list. It is a standard singly-linked list.
+	** An NMList is a non-interrupt-safe list, but has more features than the
+	** NMLIFO list. It is a standard singly-linked list.
 	------------------------------------------------------------------------- */
 
-	typedef struct OTList	OTList;
+	typedef struct NMList	NMList;
 
-		typedef NMBoolean (*OTListSearchProcPtr)(const void* ref, OTLink* linkToCheck);
+		typedef NMBoolean (*NMListSearchProcPtr)(const void* ref, NMLink* linkToCheck);
 		//
 		// Remove the last link from the list
 		//
-	extern OTLink*		OTRemoveLast(OTList* pList);
+	extern NMLink*		NMRemoveLast(NMList* pList);
 		//
 		// Return the first link from the list
 		//
-	extern OTLink*		OTGetFirst(OTList* pList);
+	extern NMLink*		NMGetFirst(NMList* pList);
 		//
 		// Return the last link from the list
 		//
-	extern OTLink*		OTGetLast(OTList* pList);
+	extern NMLink*		NMGetLast(NMList* pList);
 		//
 		// Return true if the link is present in the list
 		//
-	extern NMBoolean		OTIsInList(OTList* pList, OTLink* link);
+	extern NMBoolean		NMIsInList(NMList* pList, NMLink* link);
 		//
 		// Find a link in the list which matches the search criteria
 		// established by the search proc and the refPtr.  This is done
@@ -183,23 +185,23 @@ class OSCriticalSection
 		// link in the list, until the search proc returns true.
 		// NULL is returned if the search proc never returned true.
 		//
-	extern OTLink*		OTFindLink(OTList* pList, OTListSearchProcPtr proc, const void* refPtr);
+	extern NMLink*		NMFindLink(NMList* pList, NMListSearchProcPtr proc, const void* refPtr);
 		//
 		// Remove the specified link from the list, returning true if it was found
 		//
-	extern NMBoolean		OTRemoveLink(OTList*, OTLink*);
+	extern NMBoolean		NMRemoveLink(NMList*, NMLink*);
 		//
-		// Similar to OTFindLink, but it also removes it from the list.
+		// Similar to NMFindLink, but it also removes it from the list.
 		//
-	extern OTLink*		OTFindAndRemoveLink(OTList* pList, OTListSearchProcPtr proc, const void* refPtr);
+	extern NMLink*		NMFindAndRemoveLink(NMList* pList, NMListSearchProcPtr proc, const void* refPtr);
 		//
 		// Return the "index"th link in the list
 		//
-	extern OTLink*		OTGetIndexedLink(OTList* pList, size_t index);
+	extern NMLink*		NMGetIndexedLink(NMList* pList, size_t index);
 
-	struct OTList
+	struct NMList
 	{
-		OTLink*		fHead;
+		NMLink*		fHead;
 		
 		void		Init()	
 						{ fHead = NULL; }
@@ -207,19 +209,19 @@ class OSCriticalSection
 		NMBoolean		IsEmpty()
 						{ return fHead == NULL; }
 						
-		void		AddFirst(OTLink* link)
+		void		AddFirst(NMLink* link)
 							{ 
 								link->fNext = fHead;
 								fHead = link;			
 							}
 
-		void		AddLast(OTLink* link)
+		void		AddLast(NMLink* link)
 							{
 								if (fHead == NULL)
 									fHead = link->fNext;
 								else
 								{
-									OTLink *current = fHead;
+									NMLink *current = fHead;
 									
 									while (current->fNext != NULL)
 										current = current->fNext;
@@ -233,79 +235,79 @@ class OSCriticalSection
 							}
 
 		
-		OTLink*		GetFirst()
-						{ return OTGetFirst(this); }
+		NMLink*		GetFirst()
+						{ return NMGetFirst(this); }
 		
-		OTLink*		GetLast()
-						{ return OTGetLast(this); }
+		NMLink*		GetLast()
+						{ return NMGetLast(this); }
 		
-		OTLink*		RemoveFirst()
+		NMLink*		RemoveFirst()
 							{
-								OTLink *origHead = fHead;
+								NMLink *origHead = fHead;
 								fHead = fHead->fNext;
 								return origHead;
 							}
 								
-		OTLink*		RemoveLast()
-						{ return OTRemoveLast(this); }
+		NMLink*		RemoveLast()
+						{ return NMRemoveLast(this); }
 						
-		NMBoolean		IsInList(OTLink* link)
-						{ return OTIsInList(this, link); }
+		NMBoolean		IsInList(NMLink* link)
+						{ return NMIsInList(this, link); }
 						
-		OTLink*		FindLink(OTListSearchProcPtr proc, const void* ref)
-						{ return OTFindLink(this, proc, ref); }
+		NMLink*		FindLink(NMListSearchProcPtr proc, const void* ref)
+						{ return NMFindLink(this, proc, ref); }
 						
-		NMBoolean		RemoveLink(OTLink* link)
-						{ return OTRemoveLink(this, link); }
+		NMBoolean		RemoveLink(NMLink* link)
+						{ return NMRemoveLink(this, link); }
 						
-		OTLink*		RemoveLink(OTListSearchProcPtr proc, const void* ref)
-						{ return OTFindAndRemoveLink(this, proc, ref); }
+		NMLink*		RemoveLink(NMListSearchProcPtr proc, const void* ref)
+						{ return NMFindAndRemoveLink(this, proc, ref); }
 						
-		OTLink*		GetIndexedLink(size_t index)
-						{ return OTGetIndexedLink(this, index); }
+		NMLink*		GetIndexedLink(size_t index)
+						{ return NMGetIndexedLink(this, index); }
 	};
 	
 	
 //ecf 020619 changed to a non-recursive method so large lists won't cause problems.
 
-static void NewReverseOTLink(OTLink **object)
+static void NewReverseNMLink(NMLink **object)
 {
-	OTLink *oldNext;
-	OTLink *newNext = NULL;
+	NMLink *oldNext;
+	NMLink *newNext = NULL;
 
 	if (object == NULL)
 		return;
 	if (*object == NULL)
 		return;
-	oldNext = (OTLink*)(*object)->fNext;
+	oldNext = (NMLink*)(*object)->fNext;
 	
 	while (oldNext)
 	{
 		(*object)->fNext = newNext;
 		newNext = *object;
 		*object = oldNext;
-		oldNext = (OTLink*)(*object)->fNext;
+		oldNext = (NMLink*)(*object)->fNext;
 	}
 	(*object)->fNext = newNext;
 }
-static OTLink* OTReverseList(OTLink *headRef)
+static NMLink* NMReverseList(NMLink *headRef)
 {
 
-	NewReverseOTLink(&headRef);
+	NewReverseNMLink(&headRef);
 	return headRef;
 	
 	/*
-	OTLink	*first;
-	OTLink	*rest;
+	NMLink	*first;
+	NMLink	*rest;
 
 	if (headRef == NULL) return NULL;
 	
 	first = headRef;
-	rest = (OTLink *) first->fNext;
+	rest = (NMLink *) first->fNext;
 	
 	if (rest == NULL) return headRef;
 	
-	rest = OTReverseList(rest);
+	rest = NMReverseList(rest);
 	
 	first->fNext->fNext = first;
 	first->fNext = NULL;
@@ -315,9 +317,8 @@ static OTLink* OTReverseList(OTLink *headRef)
 }
 	
 
-	#define OTGetLinkObject(link, struc, field)	\
+	#define NMGetLinkObject(link, struc, field)	\
 		((struc*)((char*)(link) - offsetof(struc, field)))
 
-#endif //!macintosh_build
 #endif	/* __LINKEDLIST__ */
 

@@ -40,7 +40,7 @@
 //typedefs
 typedef struct OPEnumMessage
 {
-	OTLink fNext;
+	NMLink fNext;
 	NMEnumerationCommand command;
 	NMEnumerationItem item;
 }OPEnumMessage;
@@ -58,12 +58,12 @@ NMBoolean getEnumMessage(NMEnumerationCommand *command, NMEnumerationItem *item)
 
 //global variables
 NMBoolean endpointClosed = false;
-OTLIFO enumItemList;
+NMLIFO enumItemList;
 OPEnumGamePtr enumGameList;
 NMBoolean someoneTriedToConnect = false;
-#ifdef carbon_build
+#ifdef OP_PLATFORM_MAC_CARBON_FLAG
 	static OTClientContextPtr theOTContext;
-#endif //carbon_build
+#endif
 
 class OPEnumGame
 {
@@ -105,18 +105,18 @@ int main(int argc, char **argv)
 	enumGameList = NULL;
 	
 	//on mac we use OpenTransport's interrupt-safe allocation routines, so we need to init it
-	#ifdef macintosh_build
-		#ifdef carbon_build
+	#ifdef OP_PLATFORM_MAC_CFM
+		#ifdef OP_PLATFORM_MAC_CARBON_FLAG
 			err = InitOpenTransportInContext(kInitOTForApplicationMask,&theOTContext);
 		#else
 			err = InitOpenTransport();
-		#endif //carbon_build
+		#endif
 		if (err){
 			printf("err initing OpenTransport: %d\n",err);
 			fflush(stdout);
 			return 0;
 		}
-	#endif //macintosh_build	
+	#endif //OP_PLATFORM_MAC_CFM	
 
 	//list our protocols and let the user choose one
 	while (true)
@@ -368,19 +368,17 @@ void  ourEnumerationCallback( void *inContext, NMEnumerationCommand inCommand, N
 void storeEnumMessage(NMEnumerationCommand command, NMEnumerationItem *item)
 {
 	OPEnumMessage *theMessage;
-	#if (macintosh_build)
-		#ifdef carbon_build
+	#ifdef OP_PLATFORM_MAC_CFM
+		#ifdef OP_PLATFORM_MAC_CARBON_FLAG
 			theMessage = (OPEnumMessage*)OTAllocMemInContext(sizeof(OPEnumMessage),theOTContext);
 		#else
 			theMessage = (OPEnumMessage*)OTAllocMem(sizeof(OPEnumMessage));
-		#endif //carbon_build
-	#endif
-	#if (windows_build)
+		#endif
+	#elif defined(OP_PLATFORM_WINDOWS)
 		theMessage = (OPEnumMessage*)GlobalAlloc(GPTR,sizeof(OPEnumMessage));
-	#endif //windows build
-	#if (posix_build)
+	#elif defined((OP_PLATFORM_UNIX)
 		theMessage = (OPEnumMessage*)malloc(sizeof(OPEnumMessage));
-	#endif //posix_build
+	#endif
 	
 	//fill it in and add it to the list
 	theMessage->fNext.Init();
@@ -393,31 +391,31 @@ void storeEnumMessage(NMEnumerationCommand command, NMEnumerationItem *item)
 //retrieves the next enumeration command that's come in
 NMBoolean getEnumMessage(NMEnumerationCommand *command, NMEnumerationItem *item)
 {
-	static OTLink *currentList = NULL;
+	static NMLink *currentList = NULL;
 	
 	//if theres no current list, steal the incoming LIFO and reverse it to make it a nice FIFO
 	if (currentList == NULL){
 		currentList = enumItemList.StealList();
 		if (currentList)
-			currentList = OTReverseList(currentList);
+			currentList = NMReverseList(currentList);
 	}
 	
 	//now return the first thing on our current list and dispose of it
 	if (currentList){
-		OPEnumMessage *theMessage = OTGetLinkObject(currentList,OPEnumMessage,fNext);
+		OPEnumMessage *theMessage = NMGetLinkObject(currentList,OPEnumMessage,fNext);
 		*command = theMessage->command;
 		*item = theMessage->item;
 		currentList = currentList->fNext;
 		//dispose of our interrupt-safely allocated pointer
-		#if (macintosh_build)
+		#if (OP_PLATFORM_MAC_CFM)
 			OTFreeMem(theMessage);
-		#endif //macintosh_build
-		#if (windows_build)
+		#endif //OP_PLATFORM_MAC_CFM
+		#if (OP_PLATFORM_WINDOWS)
 			GlobalFree((HGLOBAL)theMessage);
-		#endif //windows_build
-		#if (posix_build)
+		#endif //OP_PLATFORM_WINDOWS
+		#if (OP_PLATFORM_UNIX)
 			free(theMessage);
-		#endif //posix_build
+		#endif //OP_PLATFORM_UNIX
 		return true;
 	}
 	return false;

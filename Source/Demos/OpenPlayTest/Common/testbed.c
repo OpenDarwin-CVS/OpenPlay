@@ -202,15 +202,13 @@ void do_menu_command(
 				case iAbout:
 					break;
 				default:
-#ifdef macintosh_build
-#ifndef carbon_build
+#if defined(OP_PLATFORM_MAC_CFM) && !defined(OP_PLATFORM_MAC_CARBON_FLAG)
 					{
 						Str255 daName;
 						
 						GetMenuItemText(GetMenuHandle(mApple), menuItem, daName);
 						OpenDeskAcc(daName);
 					}
-#endif // carbon_build
 #endif
 					break;
 			}
@@ -287,7 +285,7 @@ void do_menu_command(
 					break;
 			}
 	}
-#ifdef macintosh_build
+#if OP_PLATFORM_MAC_CFM || OP_PLATFORM_MAC_MACHO
 	HiliteMenu(0);
 #endif
 	adjust_menus();
@@ -337,10 +335,10 @@ void set_menu_enabled(
 	short item,
 	NMBoolean enabled)
 {
-#ifdef macintosh_build
+#if defined(OP_PLATFORM_MAC_CFM) || defined(OP_PLATFORM_MAC_MACHO)
 	MenuHandle menu= GetMenuHandle(menu_id);
 
-#ifndef carbon_build
+#ifndef OP_PLATFORM_MAC_CARBON_FLAG
 	if (enabled)
 	{
 		EnableItem(menu, item);
@@ -353,9 +351,9 @@ void set_menu_enabled(
 	} else {
 		DisableMenuItem(menu, item);
 	}
-#endif // carbon_build
+#endif // OP_PLATFORM_MAC_CARBON_FLAG
 
-#elif defined(windows_build)
+#elif defined(OP_PLATFORM_WINDOWS)
 	HMENU menu= GetMenu(screen_window);
 
 	op_assert(menu);
@@ -371,13 +369,13 @@ void check_menu_item(
 	short item,
 	NMBoolean checked)
 {
-#ifdef macintosh_build
-#ifndef carbon_build
+#if OP_PLATFORM_MAC_CFM || OP_PLATFORM_MAC_MACHO
+	#ifndef OP_PLATFORM_MAC_CARBON_FLAG
 	CheckItem(GetMenuHandle(menu), item, checked);
 #else
 	CheckMenuItem(GetMenuHandle(menu), item, checked);
-#endif // carbon_build
-#elif defined(windows_build)
+	#endif
+#elif defined(OP_PLATFORM_WINDOWS)
 	CheckMenuItem(GetMenu(screen_window), MAKE_MENU_COMMAND(menu, item), MF_BYCOMMAND | (checked ? MF_CHECKED : MF_UNCHECKED));
 #endif
 	return;

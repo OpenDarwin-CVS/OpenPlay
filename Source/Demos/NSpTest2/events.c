@@ -26,7 +26,9 @@
 #
 *************************************************************************************/
 
-#if (!macho_build)
+#include "OpenPlay.h"
+
+#if (!OP_PLATFORM_MAC_MACHO)
 	#include <Devices.h>
 	#include <DiskInit.h>
 	#include <Events.h>
@@ -43,7 +45,7 @@
 #include "App.h"
 #include "Proto.h"
 
-#if (!macho_build)
+#if (!OP_PLATFORM_MAC_MACHO)
 	#include <sioux.h>
 #endif
 
@@ -144,7 +146,7 @@ void DoEvent(EventRecord *event)
 			break;
 			
 		case mouseDown:
-			#if (!macho_build)
+			#if (!OP_PLATFORM_MAC_MACHO)
 				if (SIOUXHandleOneEvent(event))
 					return;
 			#endif
@@ -152,7 +154,7 @@ void DoEvent(EventRecord *event)
 			break;
 							
 		case mouseUp:
-			#if (!macho_build)
+			#if (!OP_PLATFORM_MAC_MACHO)
 				if (SIOUXHandleOneEvent(event))
 					return;		
 			#endif
@@ -173,7 +175,7 @@ void DoEvent(EventRecord *event)
 			break;
 							
 		case activateEvt:
-			#if (!macho_build)
+			#if (!OP_PLATFORM_MAC_MACHO)
 				if (SIOUXHandleOneEvent(event))
 					return;		
 			#endif
@@ -183,7 +185,7 @@ void DoEvent(EventRecord *event)
 			break;
 							
 		case updateEvt:
-			#if (!macho_build)
+			#if (!OP_PLATFORM_MAC_MACHO)
 				if (SIOUXHandleOneEvent(event))
 					return;		
 			#endif
@@ -194,11 +196,11 @@ void DoEvent(EventRecord *event)
 			if (HiWord(event->message) != noErr) 
 			{
 				SetPt(&thePoint, 50, 50);
-				#if (!carbon_build)
+				#if (!OP_PLATFORM_MAC_CARBON_FLAG)
 				{
 					OSErr err = DIBadMount(thePoint, event->message);
 				}
-				#endif //carbon_build
+				#endif //OP_PLATFORM_MAC_CARBON_FLAG
 			}
 			break;
 							
@@ -275,9 +277,9 @@ void HandleMouseDown(EventRecord *event)
 			break;
 
 		case inSysWindow:
-			#if (!carbon_build)
+			#if (!OP_PLATFORM_MAC_CARBON_FLAG)
 				SystemClick(event,window);
-			#endif //carbon_build
+			#endif //OP_PLATFORM_MAC_CARBON_FLAG
 			
 			break;
 												
@@ -285,7 +287,7 @@ void HandleMouseDown(EventRecord *event)
 			if (window != FrontWindow())
 				SelectWindow(window);
 				
-			#if (carbon_build)
+			#if (OP_PLATFORM_MAC_CARBON_FLAG)
 			{
 				BitMap screenBitMap;
 				GetQDGlobalsScreenBits(&screenBitMap);
@@ -293,7 +295,7 @@ void HandleMouseDown(EventRecord *event)
 			}
 			#else
 				DragWindow(window, event->where,&qd.screenBits.bounds);			
-			#endif //carbon_build
+			#endif //OP_PLATFORM_MAC_CARBON_FLAG
 			
 			break;
 						
@@ -346,12 +348,12 @@ void HandleMenuChoice(WindowRef window, void *refCon)
 
 				default:
 					GetMenuItemText(GetMenuHandle(mApple),item,daName);
-					#if (!carbon_build)
+					#if (!OP_PLATFORM_MAC_CARBON_FLAG)
 					{
 						short		daRefNum;
 						daRefNum = OpenDeskAcc(daName);
 					}
-					#endif //!carbon_build
+					#endif //!OP_PLATFORM_MAC_CARBON_FLAG
 					break;
 			}	
 			break;
@@ -401,7 +403,7 @@ void AdjustMainMenus(void)
 	
 	menu = GetMenuHandle(mFile);
 	
-	#if (carbon_build)
+	#if (OP_PLATFORM_MAC_CARBON_FLAG)
 		EnableMenuItem(menu, iHost);
 		EnableMenuItem(menu, iJoin);
 		EnableMenuItem(menu, iLeave);
@@ -413,7 +415,7 @@ void AdjustMainMenus(void)
 
 	if (gNetGame)
 	{
-		#if (carbon_build)
+		#if (OP_PLATFORM_MAC_CARBON_FLAG)
 			DisableMenuItem(menu, iHost);
 			DisableMenuItem(menu, iJoin);
 			EnableMenuItem(menu, iLeave);
@@ -421,11 +423,11 @@ void AdjustMainMenus(void)
 			DisableItem(menu, iHost);
 			DisableItem(menu, iJoin);
 			EnableItem(menu, iLeave);
-		#endif //carbon_build
+		#endif //OP_PLATFORM_MAC_CARBON_FLAG
 	}
 	else
 	{
-		#if (carbon_build)
+		#if (OP_PLATFORM_MAC_CARBON_FLAG)
 			EnableMenuItem(menu, iHost);
 			EnableMenuItem(menu, iJoin);
 			DisableMenuItem(menu, iLeave);
@@ -433,7 +435,7 @@ void AdjustMainMenus(void)
 			EnableItem(menu, iHost);
 			EnableItem(menu, iJoin);
 			DisableItem(menu, iLeave);
-		#endif //carbon_build
+		#endif //OP_PLATFORM_MAC_CARBON_FLAG
 	}	
 
 
@@ -494,11 +496,11 @@ void UpdateWindow(WindowRef window)
 	
 	GetPort(&oldPort);
 	
-	#if (carbon_build)
+	#if (OP_PLATFORM_MAC_CARBON_FLAG)
 		SetPortWindowPort(window);
 	#else
 		SetPort(window);
-	#endif //carbon_build
+	#endif //OP_PLATFORM_MAC_CARBON_FLAG
 
 	BeginUpdate(window);
 //	CustomWindowEvent(kUpdateProc, window, nil);
@@ -522,11 +524,11 @@ void DoActivate(WindowRef window, void *refCon)
 //	Boolean		becomingActive;
 //	DocHnd		doc;
 	
-	#if (carbon_build)
+	#if (OP_PLATFORM_MAC_CARBON_FLAG)
 		SetPortWindowPort(window);
 	#else
 		SetPort(window);
-	#endif //carbon_build
+	#endif
 /*
 	doc = (DocHnd)GetWRefCon(window);
 

@@ -46,7 +46,7 @@
 		inline	SetTempPort(WindowRef window) { 	GetPort(&fCurPort);
 													if (fCurPort != (GrafPtr)GetWindowPort(window))
 														SetPortWindowPort(window); }
-	#ifdef carbon_build
+	#ifdef OP_PLATFORM_MAC_CARBON_FLAG
 		inline SetTempPort(DialogRef dialog)
 												{
 													GetPort(&fCurPort);

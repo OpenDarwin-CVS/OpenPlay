@@ -26,7 +26,10 @@
  */
 
 #ifndef __OPENPLAY__
-#include "OpenPlay.h"
+#include 			"OpenPlay.h"
+#endif
+#ifndef __NETMODULE__
+#include 			"NetModule.h"
 #endif
 #include "OPUtils.h"
 #include "portable_files.h"
@@ -150,7 +153,7 @@ static void release_openplay(
 	module_management_idle_time();
 	
 	/* Free the endpoint cache */
-#if defined(macintosh_build)
+#ifdef OP_API_NETWORK_OT
 	if(gOp_globals.cache_size > 0)
 	{
 		NMSInt16 index;

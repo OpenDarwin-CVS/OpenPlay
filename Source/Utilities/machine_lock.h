@@ -30,24 +30,8 @@
 #define __MACHINELOCK__
 
 //	------------------------------	Includes
-
-	#if defined(macintosh_build)
-		#include <OpenTransport.h>
-		#define machine_lock OTLock
-	#elif defined (windows_build)
-		#include "LinkedList.h"
-		#define machine_lock OSCriticalSection
-	#elif defined (posix_build)
-		#ifdef __OPENTRANSPORT__
-			#define machine_lock OTLock
-		#else
-			#include "LinkedList.h"
-			#define machine_lock OSCriticalSection
-		#endif
-	#else
-		#error need to define machine_lock for this platform
-	#endif
-	
+	#include "LinkedList.h"
+	#define machine_lock OSCriticalSection	
 //	------------------------------	Public Functions
 
 	extern	NMBoolean	machine_acquire_lock(machine_lock *lockPtr);

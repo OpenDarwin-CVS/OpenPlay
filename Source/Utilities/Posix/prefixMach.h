@@ -24,42 +24,7 @@
  * Modified: $Date$
  * Revision: $Id$
  */
-
-#ifndef __NETSPROCKETLIB__
-#define __NETSPROCKETLIB__
-
-//	------------------------------	Includes
-
-	#ifdef OP_API_PLUGIN_MAC_CFM
-		#include <CodeFragments.h>
-	#endif
-
-	#ifndef __OPENPLAY__
-	#include 			"OpenPlay.h"
-	#endif
-	#ifndef __NETMODULE__
-	#include 			"NetModule.h"
-	#endif
-
-//	------------------------------	Public Functions
-
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-	#ifdef OP_API_PLUGIN_MAC_CFM
-		OSErr 	cfInitialize(CFragInitBlockPtr ibp);
-		void 	cfTerminate(void);
-	#endif
-
-	void GetQState(NSpGameReference inGame, NMUInt32 *outFreeQ, NMUInt32 *outCookieQ, NMUInt32 *outMessageQ);
-	NMBoolean GetDebugMode( void );
-	NMBoolean GetSynchronous( void );
-	void SetDebugMode(NMBoolean inDebugMode);	
-
-#ifdef __cplusplus
-}
-#endif
-
-#endif // __NETSPROCKETLIB__
+#ifndef __PREFIXMACH__
+	#define __PREFIXMACH__
+		
+#endif // __PREFIXMACH__

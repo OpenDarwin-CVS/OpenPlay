@@ -31,7 +31,7 @@
 #include <string.h>
 #include <stdio.h>
 
-#if (!macho_build)
+#if (!OP_PLATFORM_MAC_MACHO)
 	#include <ControlDefinitions.h> // For Universal Headers 3.3+ support
 #endif
 
@@ -89,7 +89,7 @@ void new_log(
 	GetPort(&old_port);
 	SetPortWindowPort(wp);
 
-	#if carbon_build
+#ifdef OP_PLATFORM_MAC_CARBON_FLAG
 		GetWindowPortBounds(wp, &viewRect);
 	#else
 		viewRect= wp->portRect;
@@ -173,7 +173,7 @@ void update_log(
 		op_assert(log->te);
 		EraseRect(&(**(log->te)).viewRect);
 
-	#if carbon_build
+#ifdef OP_PLATFORM_MAC_CARBON_FLAG
 	{
 		Rect		windowRect;
 		GetWindowPortBounds(wp, &windowRect);
@@ -223,7 +223,7 @@ void set_log_status_text(
 		va_end(arglist);
 		op_assert(return_value<sizeof(log->status));
 
-		#if carbon_build
+#ifdef OP_PLATFORM_MAC_CARBON_FLAG
 			GetWindowPortBounds(log->wp, &bounds);
 		#else
 			bounds= log->wp->portRect;
@@ -234,11 +234,11 @@ void set_log_status_text(
 		/* Make sure it gets redrawn. */	
 		GetPort(&old_port);
 		SetPortWindowPort(log->wp);
-#ifdef carbon_build
+#ifdef OP_PLATFORM_MAC_CARBON_FLAG
 		InvalWindowRect(log->wp, &bounds);
 #else
 		InvalRect(&bounds);
-#endif // carbon_build
+#endif // OP_PLATFORM_MAC_CARBON_FLAG
 		SetPort(old_port);
 	}
 	
@@ -399,7 +399,7 @@ static void create_scrollbar(
 	Rect scrollRect;
 	
 	/* Add the scrollbar */
-	#if carbon_build
+#ifdef OP_PLATFORM_MAC_CARBON_FLAG
 		GetWindowPortBounds(wp, &scrollRect);
 	#else
 		scrollRect= wp->portRect;
@@ -428,7 +428,7 @@ static short scroll_text_window(
 	short lineheight;
 	struct log_data *log;
 
-	#if carbon_build
+	#if OP_PLATFORM_MAC_CARBON_FLAG
 		wp = GetControlOwner(control);
 	#else
 		wp= (**control).contrlOwner;

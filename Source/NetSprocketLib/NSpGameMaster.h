@@ -33,8 +33,11 @@
 
 
 	#include "NSpGame.h"
+	#ifndef __NETMODULE__
+	#include 			"NetModule.h"
+	#endif
 
-	#if macintosh_build
+	#ifdef OP_API_NETWORK_OT
 		#include <OpenTptInternet.h>
 	#endif
 
@@ -68,9 +71,9 @@
 				NMErr		FreePlayerAddress(void **outAddress);
 				NMErr		GetPlayerIPAddress(const NSpPlayerID inPlayerID, char **outAddress);
 
-	#if macintosh_build
+	#if OP_API_NETWORK_OT
 				NMErr		GetPlayerAddress(const NSpPlayerID inPlayerID, OTAddress **outAddress);
-	#endif	/*	macintosh_build	*/
+	#endif
 
 				NMErr		ChangePlayerType(const NSpPlayerID inPlayerID, const NSpPlayerType inNewType);
 				NMErr		ForceRemovePlayer(const NSpPlayerID inPlayerID);

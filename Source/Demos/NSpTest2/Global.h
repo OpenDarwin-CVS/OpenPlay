@@ -19,7 +19,7 @@
 #
 ***********************************************************************/
 
-#if (!macho_build)
+#if (!OP_PLATFORM_MAC_MACHO)
 	#include <Drag.h>
 #endif
 

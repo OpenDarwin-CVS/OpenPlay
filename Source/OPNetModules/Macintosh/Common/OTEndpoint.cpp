@@ -27,7 +27,13 @@
 
 //	------------------------------	Includes
 
+#ifndef __NETMODULE__
+#include 			"NetModule.h"
+#endif
+
+#ifdef OP_API_NETWORK_OT
 #include <OpenTptClient.h>
+#endif
 
 #include "EndpointDisposer.h"
 #include "EndpointHander.h"
@@ -132,9 +138,16 @@ OTEndpoint::OTEndpoint(NMEndpointRef inRef, NMUInt32 inMode) : Endpoint(inRef, i
 	mSndUData.opt = mRcvUData.opt;
 	mSndUData.addr = mRcvUData.addr;
 	
-	mRcvUData.udata.buf = (NMUInt8 *) &mDatagramEndpoint->mBuffer;
-	mRcvUData.udata.maxlen = kOTNetbufDataIsOTBufferStar;
-
+	if ( inMode & kNMDatagramMode )
+	{
+		mRcvUData.udata.buf = (NMUInt8 *) &mDatagramEndpoint->mBuffer;
+		mRcvUData.udata.maxlen = kOTNetbufDataIsOTBufferStar;
+    }
+    else
+    {
+        mRcvUData.udata.buf = NULL;
+        mRcvUData.udata.maxlen = 0;
+    }
 	bConnectionConfirmed = false;
 	
 	machine_mem_zero(&mCall, sizeof (TCall));

@@ -30,20 +30,23 @@
 
 //	------------------------------	Includes
 
-	#include "NetModule.h"
-	#include "NetModulePrivate.h"
+	#ifndef __NETMODULE__
+	#include 			"NetModule.h"
+	#endif
+	#ifndef __NETMODULEPRIVATE__
+	#include 			"NetModulePrivate.h"
+	#endif
 
 //	------------------------------	Public Types
-#if (posix_build)
-	#if (project_builder)
-		typedef CFBundleRef		ConnectionRef;
-	#else
-		typedef NMSInt32		ConnectionRef;
-	#endif
-#elif (macintosh_build)
+
+#ifdef OP_API_PLUGIN_MAC_CFM
 	typedef CFragConnectionID	ConnectionRef;
-#elif defined(windows_build)
+#elif defined(OP_API_PLUGIN_MACHO)
+		typedef CFBundleRef		ConnectionRef;
+#elif defined(OP_API_PLUGIN_WINDOWS)
 	typedef	HINSTANCE		ConnectionRef; /* unknown for now */
+#elif defined(OP_API_PLUGIN_POSIX) || defined(OP_API_PLUGIN_POSIX_DARWIN)
+		typedef NMSInt32		ConnectionRef;
 #else
 	#error "Porting Error - need ConnectionRef type."
 #endif

@@ -73,7 +73,7 @@ void new_log(
 		new_log->interrupt_safe_buffer[0] = '\0';
 		if(new_log->edit_buffer)
 		{
-			RECT bounds;
+			NMRect bounds;
 			
 			GetClientRect(wp, &bounds);
 			new_log->edit= CreateWindow("EDIT", NULL,

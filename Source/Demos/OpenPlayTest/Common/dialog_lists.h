@@ -32,20 +32,20 @@ enum {
 	_list_is_alphabetical= 0x01
 };
 
-NMBoolean new_list(DIALOGPTR dialog, short item_number, NMUInt16 flags);
-void free_list(DIALOGPTR dialog, short item);
+NMBoolean new_list(NMDialogPtr dialog, short item_number, NMUInt16 flags);
+void free_list(NMDialogPtr dialog, short item);
 
-void select_dialog_list_or_edittext(DIALOGPTR dialog, short item);
+void select_dialog_list_or_edittext(NMDialogPtr dialog, short item);
 
-short get_listbox_value(DIALOGPTR dialog, short item);
-void set_listbox_doubleclick_itemhit(DIALOGPTR dialog, short item, short double_click_item);
-short add_text_to_list(DIALOGPTR dialog, short item, char *text);
-void delete_from_list(DIALOGPTR dialog, short item, short list_index);
-void empty_list(DIALOGPTR dialog, short item);
-void select_list_item(DIALOGPTR dialog, short item,	short row);
-short find_text_in_list(DIALOGPTR dialog, short item, char *text);
+short get_listbox_value(NMDialogPtr dialog, short item);
+void set_listbox_doubleclick_itemhit(NMDialogPtr dialog, short item, short double_click_item);
+short add_text_to_list(NMDialogPtr dialog, short item, char *text);
+void delete_from_list(NMDialogPtr dialog, short item, short list_index);
+void empty_list(NMDialogPtr dialog, short item);
+void select_list_item(NMDialogPtr dialog, short item,	short row);
+short find_text_in_list(NMDialogPtr dialog, short item, char *text);
 
-#ifdef macintosh_build
+#ifdef OP_PLATFORM_MAC_CFM
 // --- these are only used by the general_filter_proc.
 void activate_dialog_lists(DialogPtr dialog, NMBoolean becoming_active);
 NMBoolean list_handled_key(DialogPtr dialog, short *item_hit, short modifiers, short key);

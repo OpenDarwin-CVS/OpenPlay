@@ -16,18 +16,22 @@
  */
 
 
+#include "Openplay.h"
 #include "OPUtils.h"
 #include "configuration.h"
 #include "configfields.h"
 #include "ip_enumeration.h"
 #include <signal.h>
 
-#include "NetModule.h"
+#ifndef __NETMODULE__
+#include 			"NetModule.h"
+#endif
 #include "tcp_module.h"
 #include <fcntl.h>
 
-#if (posix_build)
+#ifdef OP_API_NETWORK_SOCKETS
 	#include <sys/time.h>
+	#include <pthread.h>
 #endif
 
 // -------------------------------  Private Definitions
@@ -41,8 +45,11 @@
 
 //locks the endpoint list - you must lock this when adding or removing endpoints, and increment endpointListState whenever you change it (while locked of course)
 #define TRY_LOCK_ENDPOINT_LIST() machine_acquire_lock(endpointListLock)
+#define TRY_LOCK_ENDPOINT_WAITING_LIST() machine_acquire_lock(endpointWaitingListLock)
 #define LOCK_ENDPOINT_LIST() {while (machine_acquire_lock(endpointListLock) == false) {}}
+#define LOCK_ENDPOINT_WAITING_LIST() {while (machine_acquire_lock(endpointWaitingListLock) == false) {}}
 #define UNLOCK_ENDPOINT_LIST() {machine_clear_lock(endpointListLock);}
+#define UNLOCK_ENDPOINT_WAITING_LIST() {machine_clear_lock(endpointWaitingListLock);}
 
 #define MARK_ENDPOINT_AS_VALID(e, t) ((e)->valid_endpoints |= (1<<(t)))
 
@@ -57,10 +64,12 @@ static long socketReadResult(NMEndpointRef endpoint,int socketType);
 
 //  ------------------------------  Private Variables
 
-#if (windows_build)
+#if (OP_API_NETWORK_WINSOCK)
 	NMBoolean	winSockRunning = false;
 #endif
 
+static int wakeSocket;
+static int wakeHostSocket;
 
 //for notifier locks
 static long notifierLockCount = 0;
@@ -70,9 +79,9 @@ static long notifierLockCount = 0;
 	NMBoolean workerThreadAlive = false;
 	NMBoolean dieWorkerThread = false;
 	
-	#if (posix_build)
+	#ifdef OP_API_NETWORK_SOCKETS
 		pthread_t	worker_thread;
-	#elif (windows_build)
+	#elif defined(OP_API_NETWORK_WINSOCK)
 		DWORD	worker_thread;
 		HANDLE	worker_thread_handle;
 	#endif
@@ -159,13 +168,7 @@ static NMErr _create_sockets(int *sockets, word required_port, NMBoolean active)
 {
 	NMErr status = kNMNoError;
 	struct sockaddr_in address;
-	#if (os_darwin)
-		int size = sizeof(address);
-	#elif (windows_build)
-		int size = sizeof(address);
-	#else
-		unsigned int size = sizeof(address);
-	#endif
+	posix_size_type size = sizeof(address);
 	int opt = true;
 
 	DEBUG_ENTRY_EXIT("_create_sockets");
@@ -256,6 +259,8 @@ static NMErr _create_sockets(int *sockets, word required_port, NMBoolean active)
 		counter--;
 	}
 	
+	if (status == -1)
+		status = kNMOpenFailedErr;
 	return status;
 }
 /* 
@@ -277,9 +282,11 @@ static NMErr _create_sockets(int *sockets, word required_port, NMBoolean active)
  *--------------------------------------------------------------------
  */
 
-static NMErr _setup_socket(NMEndpointRef new_endpoint, int index,
-                            struct sockaddr_in *hostAddr, 
-                            NMBoolean Active, int *preparedSockets)
+static NMErr _setup_socket(	NMEndpointRef 			new_endpoint, 
+							int						index,
+                            struct sockaddr_in *	hostAddr, 
+                            NMBoolean 				Active, 
+                            int *					preparedSockets)
 {
 	int socket_types[] = {SOCK_DGRAM, SOCK_STREAM};
 	int status = kNMNoError;
@@ -325,14 +332,7 @@ static NMErr _setup_socket(NMEndpointRef new_endpoint, int index,
 		if (!status)
 		{
 			sockaddr_in address;
-
-			#if (os_darwin)
-				int size = sizeof(address);
-			#elif (windows_build)
-				int size = sizeof(address);
-			#else
-				unsigned int size = sizeof(address);
-			#endif
+			posix_size_type size = sizeof(address);
 					
 			// get the host and port...
 			status = getsockname(new_endpoint->sockets[index], (sockaddr*) &address, &size);
@@ -355,12 +355,11 @@ static NMErr _setup_socket(NMEndpointRef new_endpoint, int index,
 									
 			if (!status)
 			{
-				//we dont want the datagram socket to connect in netsprocket mode because
-				//it won't be sending and receiving to the same port
+				//we dont want the datagram socket to connect() in netsprocket mode because
+				//it won't be sending and receiving to the same port (and connect locks it to one)
 				//(we send data to the port we connect to, but they use a random port to send us data)
 				if ((Active) && ((new_endpoint->netSprocketMode == false) || (index == _stream_socket)))
 				{
-					
 					status = connect(new_endpoint->sockets[index], (sockaddr*)hostAddr, sizeof(*hostAddr));
 
 					//if we get EINPROGRESS, it just means the socket can't be created immediately, but that
@@ -537,11 +536,7 @@ _create_endpoint(
 				if (new_endpoint->connectionMode & (1 << index))
 				{
 					struct sockaddr_in  address;
-					#if (os_darwin)
-						int addr_size = sizeof(address);
-					#else
-						unsigned int addr_size = sizeof(address);
-					#endif
+					posix_size_type		addr_size = sizeof(address);
 
 					if (!err)
 						err = _setup_socket(new_endpoint, index, hostInfo, Active, preparedSocketsPtr);
@@ -559,13 +554,20 @@ _create_endpoint(
 		return(err);
 	}
 
-	//add it to the list of live endpoints. remember to lock that list!
+	// now we add ourself to our list of live endpoints.
+	// the worker thread might be in the middle of a long select() call,
+	// so we hop on the waiting list to keep the worker thread from re-acquiring the lock,
+	// then attempt to "wake up" out of the select() call to get it to relenquish its current lock,
+	// and hopefully grab the lock quickly ourselves
+
+	LOCK_ENDPOINT_WAITING_LIST();
+	sendWakeMessage();
 	LOCK_ENDPOINT_LIST();
 	new_endpoint->next = endpointList;
 	endpointList = new_endpoint;
 	endpointListState++;
 	UNLOCK_ENDPOINT_LIST();
-	
+	UNLOCK_ENDPOINT_WAITING_LIST();
 	return(kNMNoError);
 }
 
@@ -588,8 +590,11 @@ _create_endpoint(
  *--------------------------------------------------------------------
  */
 
-static NMErr _send_data(NMEndpointRef Endpoint, int socket_index,
-                        void *Data, unsigned long Size, NMFlags Flags)
+static NMErr _send_data(	NMEndpointRef 		Endpoint, 
+							int					socket_index,
+                        	void *				Data, 
+                        	unsigned long 		Size, 
+                        	NMFlags 			Flags)
 {
 	int result;
 	int done = 0;
@@ -713,14 +718,7 @@ static void _send_datagram_socket(NMEndpointRef endpoint)
 	struct sockaddr_in  address;
 	int    status;
 	NMErr  err;
-	
-	#if (os_darwin)
-		int size;
-	#elif (windows_build)
-		int size;
-	#else
-		unsigned int size;
-	#endif
+	posix_size_type size;
 	
 	DEBUG_ENTRY_EXIT("_send_datagram_socket");
 	
@@ -733,7 +731,7 @@ static void _send_datagram_socket(NMEndpointRef endpoint)
 		struct udp_port_struct_from_server  port_data;
 		
 		port_data.port = address.sin_port;
-		DEBUG_PRINT("sending port %d",ntohs(port_data.port));
+		DEBUG_PRINT("sending udp port: %d",ntohs(port_data.port));
 		
 		err = _send_data(endpoint, _stream_socket, (void *)&port_data, sizeof(port_data), 0);
 	}
@@ -797,14 +795,7 @@ internally_handled_datagram(NMEndpointRef endpoint)
 			sockaddr	remote_address;
 			char		response_packet[512];
 			NMSInt32	bytes_to_send, result;
-			#if (os_darwin)
-				int                 remote_address_size  = sizeof(remote_address);
-			#elif (windows_build)
-				int					remote_address_size = sizeof(remote_address);
-			#else
-				unsigned int        remote_address_size  = sizeof(remote_address);
-			#endif	
-			
+			posix_size_type   remote_address_size  = sizeof(remote_address);
 
 			DEBUG_PRINT("got an enumeraion-request object");
 
@@ -953,7 +944,7 @@ NMErr NMOpen(NMConfigRef Config,
 		return(kNMInvalidConfigErr);
 
 	//make sure we've inited winsock (doing this duringDllMain causes problems)
-	#if (windows_build)
+	#ifdef OP_API_NETWORK_WINSOCK
 		initWinsock();
 	#endif
 
@@ -1154,13 +1145,7 @@ NMAcceptConnection(
 		
    		// create the sockets..
 		sockaddr_in	remote_address;
-		#if (os_darwin)
-			int                 remote_length  = sizeof(remote_address);
-		#elif (windows_build)
-			int					remote_length = sizeof(remote_address);
-		#else
-			unsigned int        remote_length  = sizeof(remote_address);
-		#endif	
+		posix_size_type	remote_length  = sizeof(remote_address);
 
  		// make the accept call...
 		DEBUG_PRINT("calling accept()");
@@ -1172,13 +1157,7 @@ NMAcceptConnection(
 		{
 			sockaddr_in	address;
 			NMUInt16	required_port;
-			#if (os_darwin)
-				int                 size  = sizeof(address);
-			#elif (windows_build)
-				int					size = sizeof(address);
-			#else
-				unsigned int        size  = sizeof(address);
-			#endif	
+			posix_size_type     size  = sizeof(address);
 
 			err = getpeername(new_endpoint->sockets[_stream_socket], (sockaddr*) &address, &size);
 
@@ -1263,6 +1242,7 @@ NMErr NMRejectConnection(NMEndpointRef Endpoint, void *Cookie)
 {
 	int    closing_socket;
 	struct sockaddr_in remote_address;
+	posix_size_type remote_length = sizeof(remote_address);
 	
 	DEBUG_ENTRY_EXIT("NMRejectConnection");
 	
@@ -1271,13 +1251,6 @@ NMErr NMRejectConnection(NMEndpointRef Endpoint, void *Cookie)
 	if (module_inited < 1)
 		return kNMInternalErr;
 	
-	#if (os_darwin)
-	int    remote_length = sizeof(remote_address);
-	#elif (windows_build)
-	int		remote_length = sizeof(remote_address);
-	#else
-	unsigned int    remote_length = sizeof(remote_address);
-	#endif		
 	
 	if (!Endpoint)
 		return(kNMParameterErr);
@@ -1769,12 +1742,68 @@ NMBoolean NMStopAdvertising(NMEndpointRef Endpoint)
 
 } /* NMStopAdvertising */
 
+int createWakeSocket(void)
+{
+	struct sockaddr_in Server_Address;
+	int result;
+	posix_size_type nameLen;
+	
+		
+	wakeSocket = 0;
+	wakeHostSocket = 0;
+	
+	machine_mem_zero((char *) &Server_Address, sizeof(Server_Address));	
+	Server_Address.sin_family = AF_INET;
+	Server_Address.sin_addr.s_addr = INADDR_ANY;
+	Server_Address.sin_port = 0;
+	
+	wakeHostSocket = socket(AF_INET, SOCK_DGRAM, 0);
+	if (!wakeHostSocket)	return false;
+	result = bind(wakeHostSocket, (struct sockaddr *)&Server_Address, sizeof(Server_Address));
+	if (result == -1)	return false;
+	wakeSocket = socket(AF_INET, SOCK_DGRAM, 0);
+	if (!wakeSocket)	return false;
+	result = bind(wakeSocket, (struct sockaddr *)&Server_Address, sizeof(Server_Address));
+	if (result == -1)	return false;
+	
+	result = getsockname(wakeHostSocket, (struct sockaddr *)&Server_Address, &nameLen);
+	if (result == -1)	return false;
+	result = connect(wakeSocket,(sockaddr*)&Server_Address,sizeof(Server_Address));
+	if (result == -1)	return false;
+	
+//	result = send(wakeSocket,buffer,1,0);
+//	if (result == -1)	return false;
+		
+//	long amountIn = recv(wakeHostSocket,buffer,sizeof(buffer),0);
+//	printf("in buffer: %d\n",amountIn);
+	return true;
+}
+
+void disposeWakeSocket(void)
+{
+	if (wakeSocket)
+		close(wakeSocket);
+	if (wakeHostSocket)
+		close(wakeHostSocket);
+}
+
+
+//sends a small datagram to our "wake" socket to try and break out of a select() call
+void sendWakeMessage(void)
+{
+	char buffer[10];
+	//DEBUG_PRINT("sending wake message");
+	int result = send(wakeSocket,buffer,1,0);
+	//DEBUG_PRINT("sendWakeMessage result: %d",result);
+}
+
+
 void SetNonBlockingMode(int fd)
 {
 
 	DEBUG_ENTRY_EXIT("SetNonBlockingMode");
 
-#if (posix_build)
+#ifdef OP_API_NETWORK_SOCKETS
 	int val = fcntl(fd, F_GETFL,0); //get current file descriptor flags
 	if (val < 0)
 	{
@@ -1787,7 +1816,7 @@ void SetNonBlockingMode(int fd)
 	{
 		DEBUG_PRINT("error: fcntl() failed to set flags for fd %d: err %d",fd,op_errno);
 	}
-#elif (windows_build)
+#elif defined(OP_API_NETWORK_WINSOCK)
 	unsigned long DataVal = 1;
 	long result = ioctlsocket(fd,FIONBIO,&DataVal);
 	op_assert(result == 0);
@@ -1806,11 +1835,18 @@ NMBoolean processEndpoints(NMBoolean block)
 	fd_set input_set, output_set, exc_set; //create input,output,and error sets for the select function
 	NMUInt32 listStartState;
 			
-	//if block is true, we wait one second - otherwise not at all
-	//we wait a max of one second because we have to check every once in a while to see if we need to terminate our thread
+	// if block is true, we wait one second - otherwise not at all
+	// we wait a max of one second because we have to check every once in a while to see if we need to terminate our thread
+	// or add new endpoints to watch
+	// ECF - changed this to 10 seconds in the debug version so as to identify unnecessary delays
+	// (sufficient machinery is in place now so we never should need to spin waiting for the duration of a select() call)
 	if (block)
 	{
-		timeout.tv_sec = 1;
+		#if (DEBUG)
+			timeout.tv_sec = 10;
+		#else
+			timeout.tv_sec = 1;
+		#endif
 		timeout.tv_usec = 0;
 	}
 	else
@@ -1828,13 +1864,28 @@ NMBoolean processEndpoints(NMBoolean block)
 	listStartState = endpointListState;
 	
 	//dont hog the proc if we cant get the list right now
-	if (TRY_LOCK_ENDPOINT_LIST() == false)
+	if (TRY_LOCK_ENDPOINT_WAITING_LIST() == false)
 	{
 		if (!block)
 			return false;
 		usleep(10000); //sleep for 10 millisecs
 		return false;
 	}
+
+	if (TRY_LOCK_ENDPOINT_LIST() == false)
+	{
+		UNLOCK_ENDPOINT_WAITING_LIST();
+		if (!block)
+			return false;
+		usleep(10000); //sleep for 10 millisecs
+		return false;
+	}
+	else
+		UNLOCK_ENDPOINT_WAITING_LIST();
+	
+	//if we have a wake endpoint, add it
+	if (wakeHostSocket)
+		FD_SET(wakeHostSocket,&input_set);
 	
 	//add all endpoints to our lists to check
 	theEndPoint = endpointList;
@@ -1863,9 +1914,10 @@ NMBoolean processEndpoints(NMBoolean block)
 			return true;
 		}
 		
+		//we always check for waiting input and errors
+		//we only look for output ability if our flow is blocked and we therefore need to see when we can send again
 		if (theEndPoint->connectionMode & (1 << _datagram_socket)){
 			FD_SET(theEndPoint->sockets[_datagram_socket],&input_set);
-			//only look for output if our flow is blocked
 			if (theEndPoint->flowBlocked[_datagram_socket])
 				FD_SET(theEndPoint->sockets[_datagram_socket],&output_set);
 			FD_SET(theEndPoint->sockets[_datagram_socket],&exc_set);
@@ -1884,17 +1936,26 @@ NMBoolean processEndpoints(NMBoolean block)
 		theEndPoint = theEndPoint->next;
 	}
 	
+	//check for events
 	if (endpointList)
 		numEvents = select(nfds,&input_set,&output_set,&exc_set,&timeout);
 	else
 		numEvents = 0; //save ourselves some time with good ol' common sense!
 
-	if (numEvents > 0)
 	// Look Through all the endpoints to see which ones have news for us
+	if (numEvents > 0)
     {
     	gotEvent = true; //something came in
 		theEndPoint = endpointList;
 		
+		//first check our wake socket
+		if (wakeHostSocket){
+			char buffer[64];
+			if (FD_ISSET(wakeHostSocket,&input_set)){
+				long amountIn = recv(wakeHostSocket,buffer,sizeof(buffer),0);
+				DEBUG_PRINT("wakeHostSocket amountIn: %d",amountIn);
+			}
+		}
 		while (theEndPoint)
 		{
 			//this endpoint has a datagram socket
@@ -1960,7 +2021,7 @@ void processEndPointSocket(NMEndpointPriv *theEndPoint, long socketType, fd_set 
 					return;
 				}
 			}
-			else//if the endpoint is being created, it must die!
+			else//if the endpoint is just being created, set it up to return an error.
 			{
 				theEndPoint->opening_error = kNMOpenFailedErr;
 				theEndPoint->needToDie = true;
@@ -2010,7 +2071,7 @@ void processEndPointSocket(NMEndpointPriv *theEndPoint, long socketType, fd_set 
 					
 					//first off we check the data to see if its of zero length - this implies
 					//that the endpoint has died, in which case we deliver that news instead of the new-data
-					if ( readResult == 0)
+					if ( readResult <= 0)
 					{
 						if (theEndPoint->dying == false) //if we havn't delivered the news, do it
 						{
@@ -2025,11 +2086,6 @@ void processEndPointSocket(NMEndpointPriv *theEndPoint, long socketType, fd_set 
 							LEAVE_NOTIFIER();
 							return;
 						}					
-					}
-					else if (readResult == -1)
-					{
-						LEAVE_NOTIFIER();
-						return;
 					}
 					
 					//we only tell them of new data once until they retrieve it
@@ -2108,14 +2164,9 @@ void processEndPointSocket(NMEndpointPriv *theEndPoint, long socketType, fd_set 
 				{
 					{
 						NMErr err;
+						posix_size_type	size  = sizeof(theEndPoint->remoteAddress);
+
 						DEBUG_PRINT("setting remote datagram address");
-						#if (os_darwin)
-							int                 size  = sizeof(theEndPoint->remoteAddress);
-						#elif (windows_build)
-							int					size = sizeof(theEndPoint->remoteAddress);
-						#else
-							unsigned int        size  = sizeof(theEndPoint->remoteAddress);
-						#endif	
 						err = getpeername(theEndPoint->sockets[_stream_socket], (sockaddr*) &theEndPoint->remoteAddress, &size);
 						
 						//if we got a not-connected error, it means they dumped us real quick. we die.
@@ -2146,13 +2197,7 @@ void processEndPointSocket(NMEndpointPriv *theEndPoint, long socketType, fd_set 
 					{
 						NMErr result;
 						sockaddr_in address;
-						#if (os_darwin)
-							int			address_size= sizeof (address);
-						#elif (windows_build)
-							int			address_size = sizeof(address);
-						#else
-							unsigned int address_size = sizeof(address);
-						#endif
+						posix_size_type	address_size= sizeof (address);
 					
 						getpeername(theEndPoint->sockets[_stream_socket], (sockaddr*) &address, &address_size);
 						DEBUG_PRINT("connecting datagram socket to port %d",ntohs(address.sin_port));						
@@ -2194,7 +2239,7 @@ void processEndPointSocket(NMEndpointPriv *theEndPoint, long socketType, fd_set 
 	return;
 }
 
-#if (USE_WORKER_THREAD)
+#ifdef USE_WORKER_THREAD
 void createWorkerThread(void)
 {
 	dieWorkerThread = false;
@@ -2203,10 +2248,10 @@ void createWorkerThread(void)
 	if (workerThreadAlive)
 		return;
 		
-	#if (posix_build)
+	#ifdef OP_API_NETWORK_SOCKETS
 		long pThreadResult = pthread_create(&worker_thread,NULL,worker_thread_func,NULL);
 		op_assert(pThreadResult == 0);
-	#elif (windows_build)
+	#elif defined(OP_API_NETWORK_WINSOCK)
 		worker_thread_handle = CreateThread((_SECURITY_ATTRIBUTES*)NULL,
 								0,
 								worker_thread_func,
@@ -2229,7 +2274,7 @@ void killWorkerThread(void)
 	// on windows, we simply annihilate the thread in its tracks,
 	// as it seems unable to execute, and thus shut itself down, during DllMain().
 	// this is a rather unelegant way to do it...
-	#if (windows_build)
+	#ifdef OP_API_NETWORK_WINSOCK
 		BOOL result = 	TerminateThread(worker_thread_handle,0);
 		op_assert(result != 0);
 		dieWorkerThread = true;
@@ -2238,6 +2283,9 @@ void killWorkerThread(void)
 	#endif
 			
 	dieWorkerThread = true;
+	
+	//snap the worker thread out of its select() call
+	sendWakeMessage();
 	
 	//wait while it dies
 	while (workerThreadAlive == true)
@@ -2248,10 +2296,9 @@ void killWorkerThread(void)
 }
 
 // the main function for our worker thread, which just sits and waits for socket events to happen
-
-#if (posix_build)
+#ifdef OP_API_NETWORK_SOCKETS
 	void* worker_thread_func(void *arg)
-#elif (windows_build)
+#elif defined(OP_API_NETWORK_WINSOCK)
 	DWORD WINAPI worker_thread_func(LPVOID arg)
 #endif
 {
@@ -2270,7 +2317,7 @@ void killWorkerThread(void)
 			done = true;
 	}
 	
-	DEBUG_PRINT("worker_thread shutting down");	
+	DEBUG_PRINT("worker-thread shutting down");	
 	workerThreadAlive = false;
     pthread_exit(0);
 	return NULL;
@@ -2304,14 +2351,7 @@ receive_udp_port(NMEndpointRef endpoint)
 	{
 		NMSInt16 	old_port;
 		sockaddr_in address;
-		
-		#if (os_darwin)
-			int			address_size= sizeof (address);
-		#elif (windows_build)
-			int			address_size = sizeof(address);
-		#else
-			unsigned int address_size = sizeof(address);
-		#endif
+		posix_size_type	address_size= sizeof (address);
 
 		op_assert(size==sizeof (port_data)); // or else
 		
@@ -2365,7 +2405,7 @@ long socketReadResult(NMEndpointRef endpoint, int socketType)
 	return result;
 }
 
-#if (windows_build)
+#ifdef OP_API_NETWORK_WINSOCK
 void initWinsock(void)
 {
 	DEBUG_ENTRY_EXIT("initWinsock");
@@ -2407,6 +2447,6 @@ void shutdownWinsock(void)
 		WSACleanup();
 	}
 }
-#endif //windows_build
+#endif
 
 

@@ -198,7 +198,7 @@ NMBoolean	scanning = true;	// %%% yan - please review
 		// We have to be super careful with async open endpoint. The notifier may return even before
 		// we exit OTAsyncOpen, and set fErr to an error. Therefore we can't set the result of 
 		// OTAsyncOpen to fErr directly or we may miss error conditions
-#ifndef carbon_build
+#ifndef OP_PLATFORM_MAC_CARBON_FLAG
 		NMErr err = OTAsyncOpenAppleTalkServices(fConfiguration, 0, ZoneListNotifierProc, this);
 #else
 		NMErr err = OTAsyncOpenAppleTalkServicesInContext(fConfiguration, 0, gZoneListNotifier.fUPP, this, gOTClientContext);

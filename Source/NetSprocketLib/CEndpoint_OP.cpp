@@ -77,12 +77,12 @@ CEndpoint::CEndpoint(NSpGame *inGame)
 	machine_mem_zero(&mStreamSendInfo, sizeof (SendInfo));	
 	machine_mem_zero(&mDatagramSendInfo, sizeof (SendInfo));
 
-	mStreamSendInfo.sendQ = new OTList();
+	mStreamSendInfo.sendQ = new NMList();
 	op_assert(mStreamSendInfo.sendQ);
 	
 	mStreamSendInfo.sendQ->Init();
 	
-	mDatagramSendInfo.sendQ = new OTList();
+	mDatagramSendInfo.sendQ = new NMList();
 	op_assert(mDatagramSendInfo.sendQ);
 	mDatagramSendInfo.sendQ->Init();
 		
@@ -126,11 +126,11 @@ CEndpoint::CEndpoint(NSpGame *inGame, EPCookie *inUnreliableCookie, EPCookie *in
 	machine_mem_zero(&mStreamSendInfo, sizeof (SendInfo));
 	machine_mem_zero(&mDatagramSendInfo, sizeof (SendInfo));
 
-	mStreamSendInfo.sendQ = new OTList();
+	mStreamSendInfo.sendQ = new NMList();
 	op_assert(mStreamSendInfo.sendQ);
 	mStreamSendInfo.sendQ->Init();
 	
-	mDatagramSendInfo.sendQ = new OTList();
+	mDatagramSendInfo.sendQ = new NMList();
 	op_assert(mDatagramSendInfo.sendQ);
 	mDatagramSendInfo.sendQ->Init();
 		

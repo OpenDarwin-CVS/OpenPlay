@@ -93,7 +93,7 @@ typedef struct MessagePacket_t
 
 typedef struct MessageStorageNode
 {
-	OTLink				fNext;
+	NMLink 				fNext;
 	PEndpointRef 		endpoint;
 	void 				*context;
 	void				*cookie;
@@ -136,7 +136,7 @@ extern "C"{
 PEndpointRef					_ourHostEndpoint = NULL;		/* our openplay host endpoint - only used on hosting system */
 PEndpointRef					_ourClientEndpoint = NULL;		/* our client endpoint - all systems will use this (even the hosting system creates a client to itself) */
 
-static OTLIFO _messageList; 				/* our list of messages from openplay */
+static NMLIFO _messageList; 				/* our list of messages from openplay */
 static clientPlayerPtr _clientList = NULL;	/* list of clients if we're host */
 static int _maxPlayers;						/* the max # players for this game*/
 static NMSInt32	  _playerCount;				/* current number of players in-game */
@@ -165,11 +165,11 @@ static char 	_gameName	[128];			/* name of the current hosted game */
 
 static void _interruptSafeDispose(void *data)
 {
-	#if (macintosh_build)
+	#if (OP_PLATFORM_MAC_CFM)
 		OTFreeMem(data);
-	#elif (windows_build)
+	#elif (OP_PLATFORM_WINDOWS)
 		GlobalFree((HGLOBAL)data);
-	#elif (posix_build)
+	#elif (OP_PLATFORM_UNIX)
 		free(data);
 	#endif
 
@@ -185,15 +185,15 @@ static void _interruptSafeDispose(void *data)
 
 static void * _interruptSafeAllocate(long size)
 {
-	#if (macintosh_build)
+	#if (OP_PLATFORM_MAC_CFM)
 		#if (TARGET_API_MAC_CARBON)
 			return OTAllocMemInContext(size,theOTContext);
 		#else
 			return OTAllocMem(size);
 		#endif
-	#elif (windows_build)
+	#elif (OP_PLATFORM_WINDOWS)
 		return GlobalAlloc(GPTR,size);
-	#elif (posix_build)
+	#elif (OP_PLATFORM_UNIX)
 		return malloc(size);
 	#endif
 }
@@ -225,8 +225,6 @@ static MessageStorageNode*  _newMessageStorageNode(long dataSize)
 	theNode = (MessageStorageNode*)_interruptSafeAllocate(dataSize);
 	
 	theNode->fNext.Init();
-	/*add it to our interrupt-safe list*/
-	_messageList.Enqueue(&theNode->fNext);
 
 	return theNode;
 }
@@ -296,6 +294,10 @@ static void _callBack( PEndpointRef inEndpoint, void* inContext,NMCallbackCode i
 				#endif
 				
 				strcpy(theStorageNode->str,((MessagePacketPtr)buffer)->str);
+			
+				/*add it to our interrupt-safe list and try for the next one*/
+				_messageList.Enqueue(&theStorageNode->fNext);	
+				
 				err = ProtocolReceivePacket(inEndpoint,buffer,&dataLength,&flags);					
 			}
 		}
@@ -307,6 +309,10 @@ static void _callBack( PEndpointRef inEndpoint, void* inContext,NMCallbackCode i
 			theStorageNode->context = inContext;
 			theStorageNode->cookie = inCookie;
 			theStorageNode->code = inCode;
+
+			/*add it to our interrupt-safe list*/
+			_messageList.Enqueue(&theStorageNode->fNext);	
+			
 		}
 	}
 }
@@ -319,7 +325,7 @@ static void _callBack( PEndpointRef inEndpoint, void* inContext,NMCallbackCode i
 
 static MessageStorageNode* _getNextNetMessage(void)
 {
-	static OTLink *currentList = NULL;
+	static NMLink *currentList = NULL;
 	
 	/*if theres nothing in our "current" list, steal the incoming list (which is a LIFO)
 	and reverse it to make a nice FIFO */
@@ -327,7 +333,7 @@ static MessageStorageNode* _getNextNetMessage(void)
 	{
 		currentList = _messageList.StealList();
 		if (currentList)
-			currentList = OTReverseList(currentList);
+			currentList = NMReverseList(currentList);
 	}
 	
 	/*if theres still no list, we return empty-handed*/
@@ -337,7 +343,7 @@ static MessageStorageNode* _getNextNetMessage(void)
 	/*now grab the first item off our current list and return it*/
 	else
 	{
-		MessageStorageNode *theNode = OTGetLinkObject(currentList,MessageStorageNode,fNext);
+		MessageStorageNode *theNode = NMGetLinkObject(currentList,MessageStorageNode,fNext);
 		currentList = currentList->fNext;
 		return theNode;
 	}
@@ -963,7 +969,7 @@ NMErr NetworkShutdown( void )
 	printf("-done-\n");
 	fflush(stdout);
 	
-	#if (macintosh_build)
+	#if (OP_PLATFORM_MAC_CFM)
 		#if TARGET_API_MAC_CARBON
 			CloseOpenTransportInContext(theOTContext);
 		#else
@@ -988,7 +994,7 @@ NMErr NetworkStartup( void )
 	_nextPlayerID = 1;
 	
 	/*on mac, we gotta set up OpenTransport, which we use for interrupt-safe allocations (since OpenPlay's messages come in at interrupt time)*/
-	#if (macintosh_build)
+	#if (OP_PLATFORM_MAC_CFM)
 		#if (TARGET_API_MAC_CARBON)
 			err = InitOpenTransportInContext(kInitOTForApplicationMask,&theOTContext);
 		#else

@@ -34,10 +34,13 @@
 	#ifndef __OPENPLAY__
 	#include 			"OpenPlay.h"
 	#endif
+	#ifndef __NETMODULE__
+	#include 			"NetModule.h"
+	#endif
 
 	#include "CEndpoint_OP.h"
 
-	#if macintosh_build
+	#ifdef OP_API_NETWORK_OT
 		#include <OpenTptAppleTalk.h>
 		#include <OpenTptInternet.h>
 	#endif
@@ -45,7 +48,7 @@
 //	------------------------------	Public Types
 
 
-	class ERObject : public OTLink
+	class ERObject : public NMLink
 	{
 	public:
 		ERObject();

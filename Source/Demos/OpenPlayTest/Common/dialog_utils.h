@@ -29,7 +29,7 @@
 #define __DIALOG_UTILS_H__
 
 
-#if defined(macintosh_build)
+#if defined(OP_PLATFORM_MAC_CFM) || defined(OP_PLATFORM_MAC_MACHO)
 
     #define kUP_ARROW     0x1e
     #define kLEFT_ARROW   0x1c
@@ -47,7 +47,7 @@
               (* ((short *) * ((DialogPeek)(dialog))->items) + 1)
 
 
-#elif defined(windows_build)
+#elif defined(OP_PLATFORM_WINDOWS)
 
     #define kUP_ARROW     VK_UP
     #define kLEFT_ARROW   VK_LEFT
@@ -61,7 +61,7 @@
     #define kHOME         VK_HOME
     #define kEND          VK_END
 
-#elif defined(posix_build)
+#elif defined(OP_PLATFORM_UNIX)
 
   /* FIXME - what goes here? */
 
@@ -79,16 +79,16 @@ extern "C" {
 #endif
 
 
-extern void append_item_to_popup(DIALOGPTR dialog, short item, char *cstring);
+extern void append_item_to_popup(NMDialogPtr dialog, short item, char *cstring);
 
-#if defined(windows_build)
+#if defined(OP_PLATFORM_WINDOWS)
 
   extern HINSTANCE application_instance;
   extern HWND screen_window;
 
-  extern long extract_number_from_text_item(DIALOGPTR dialog, short item_number);
+  extern long extract_number_from_text_item(NMDialogPtr dialog, short item_number);
 
-  extern short get_dialog_item_value(DIALOGPTR dialog, short control);
+  extern short get_dialog_item_value(NMDialogPtr dialog, short control);
 
 #endif
 

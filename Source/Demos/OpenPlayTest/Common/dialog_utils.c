@@ -32,27 +32,25 @@
 //#include <assert.h>
 #include "String_Utils.h"
 
-#ifdef windows_build
+#ifdef OP_PLATFORM_WINDOWS
 	#include <windowsx.h>
-#endif //windows_build
+#endif //OP_PLATFORM_WINDOWS
 
-#if defined(macintosh_build)
+#if defined(OP_PLATFORM_MAC_CFM)
 
-#if (!macho_build)
 	#include <ControlDefinitions.h>	// For Universal Headers 3.3+ support
+
+#elif defined(OP_PLATFORM_WINDOWS)
+
+	static NMBoolean dialog_item_class_is(HWND target, char *test_class_name);
+	static char temporary[256];
+
 #endif
+
+
+#if defined(OP_PLATFORM_MAC_CFM) || defined(OP_PLATFORM_MAC_MACHO)
 
 static MenuHandle get_popup_menu_handle(DialogPtr dialog, short item);
-
-#elif defined(windows_build)
-
-static NMBoolean dialog_item_class_is(HWND target, char *test_class_name);
-
-static char temporary[256];
-
-#endif
-
-#if defined(macintosh_build)
 
 void
 append_item_to_popup(
@@ -100,7 +98,7 @@ Rect					bounds;
 	/* Add the maps.. */
 	GetDialogItem(dialog, item, &item_type, (Handle *) &control, &bounds);
 
-#if carbon_build
+#ifdef OP_PLATFORM_MAC_CARBON_FLAG
 	menu = GetControlPopupMenuHandle(control);
 #else
 	{
@@ -119,7 +117,7 @@ Rect					bounds;
 	return menu;
 }
 
-#elif defined(windows_build)
+#elif defined(OP_PLATFORM_WINDOWS)
 
 
 long
@@ -227,7 +225,7 @@ NMBoolean	classes_match = false;
 
 
 
-#elif defined(posix_build)
+#elif defined(OP_PLATFORM_UNIX)
 
  /* FIXME - add code here*/
 
