@@ -48,10 +48,10 @@
 #ifdef OP_API_NETWORK_SOCKETS
 	#include <sys/time.h>
 	#include <pthread.h>
-#endif
 
-// this hacks in minimal support for EAGAIN for asynchronous communications
-#define HACKY_EAGAIN
+	// this hacks in minimal support for EAGAIN for asynchronous communications
+	#define HACKY_EAGAIN
+#endif
 
 // -------------------------------  Private Definitions
 
