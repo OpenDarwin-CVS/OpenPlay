@@ -164,19 +164,6 @@
 	typedef unsigned char 					NMStr31[32];
 	typedef const unsigned char *			NMConstStr31Param;
 
-#if OP_PLATFORM_MAC_CFM
-	typedef NumVersion	NMNumVersion;		/* same as below, but compatible w/MacOS headers & code */
-#else
-	struct NMNumVersion {
-											/* Numeric version part of 'vers' resource */
-		NMUInt8 		majorRev;			/* 1st part of version number in BCD */
-		NMUInt8 		minorAndBugRev;		/* 2nd & 3rd part of version number share a byte */
-		NMUInt8 		stage;				/* stage code: dev, alpha, beta, final */
-		NMUInt8 		nonRelRev;			/* revision level of non-released version */
-	};
-
-	typedef struct NMNumVersion	NMNumVersion;	
-#endif
 	
 /*-------------------------------------------------------------------------------------------
 	Specify any specific platfrom settings.
@@ -207,15 +194,19 @@
 		#include <OpenTransportProviders.h>
 		#endif
 	
-		#define FATAL_EXIT            exit(-1)
+		#define FATAL_EXIT			exit(-1)
 	
-		typedef  EventRecord  NMEvent;
-		typedef  Rect         NMRect;
-		typedef  DialogPtr    NMDialogPtr;
+		/* Platform independent data references */
+		typedef	EventRecord			NMEvent;
+		typedef	Rect				NMRect;
+		typedef	DialogPtr			NMDialogPtr;
+		typedef	WindowRef			NMWindowRef;
+		typedef MenuRef				NMMenuRef;
 
+		typedef	NumVersion			NMNumVersion;
 
-		#define OP_CALLBACK_API CALLBACK_API
-		#define OP_DEFINE_API_C DEFINE_API_C
+		#define OP_CALLBACK_API		CALLBACK_API
+		#define OP_DEFINE_API_C		DEFINE_API_C
 		
 	#elif defined(OP_PLATFORM_WINDOWS)
 	
@@ -223,16 +214,29 @@
 	
 		#include <Windows.h>
 	
+		/* Platform independent data references */
 		#define FATAL_EXIT        	FatalExit(0)
+
 		typedef HWND				NMDialogPtr;
+		typedef HWND				NMWindowRef;
 		typedef RECT				NMRect;
+		typedef MENU				NMMenuRef;
+
+		struct NMNumVersion {
+												/* Numeric version part of 'vers' resource */
+			NMUInt8 		majorRev;			/* 1st part of version number in BCD */
+			NMUInt8 		minorAndBugRev;		/* 2nd & 3rd part of version number share a byte */
+			NMUInt8 		stage;				/* stage code: dev, alpha, beta, final */
+			NMUInt8 		nonRelRev;			/* revision level of non-released version */
+		};
+		typedef struct NMNumVersion	NMNumVersion;	
 
 		typedef struct private_event
 		{
-			HWND        dialog;
-			UINT        message;
-			WPARAM      wParam;
-			LPARAM      lParam;
+			HWND			dialog;
+			UINT			message;
+			WPARAM			wParam;
+			LPARAM			lParam;
 		} NMEvent;
 
 		#ifdef OPENPLAY_DLLEXPORT
@@ -251,10 +255,14 @@
 		#define FATAL_EXIT          exit(EXIT_FAILURE)
 		typedef  unsigned short  	word;
 
-		typedef  EventRecord  		NMEvent;
-		typedef  DialogPtr    		NMDialogPtr;	
-		typedef  Rect         		NMRect;			
+		/* Platform independent data references */
+		typedef	EventRecord  		NMEvent;
+		typedef	DialogPtr    		NMDialogPtr;	
+		typedef	WindowRef			NMWindowRef;
+		typedef	Rect         		NMRect;			
+		typedef MenuRef				NMMenuRef;
 
+		typedef	NumVersion			NMNumVersion;
 
 		#define OP_DEFINE_API_C(_type) _type
 		#define OP_CALLBACK_API(_type, _name) _type (*_name)
@@ -265,6 +273,18 @@
 		typedef	unsigned short  	word;
 
 		typedef	void*  				NMDialogPtr;
+		typedef	void*  				NMWindowRef;
+		typedef void*				NMMenuRef;
+
+		struct NMNumVersion {
+												/* Numeric version part of 'vers' resource */
+			NMUInt8 		majorRev;			/* 1st part of version number in BCD */
+			NMUInt8 		minorAndBugRev;		/* 2nd & 3rd part of version number share a byte */
+			NMUInt8 		stage;				/* stage code: dev, alpha, beta, final */
+			NMUInt8 		nonRelRev;			/* revision level of non-released version */
+		};
+		typedef struct NMNumVersion	NMNumVersion;	
+
 		typedef	struct _event
 			{
 				NMSInt32 unknown;       
