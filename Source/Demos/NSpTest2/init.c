@@ -18,6 +18,7 @@
 #
 #
 ***********************************************************************/
+#include "OpenPlay.h"
 
 #if (!OP_PLATFORM_MAC_MACHO)
 	#include <AppleEvents.h>
@@ -30,6 +31,7 @@
 #endif
 
 #include "NetStuff.h"
+#include "OPUtils.h"
 
 #include "App.h"
 #include "Proto.h"
@@ -114,13 +116,13 @@ OSErr InitApp(void)
 
 	// init AppleEvents
 	err = AEInit();
-	MenuSetup();
+	if( !err )
+		err = MenuSetup();
 
 	// init any globals
 	gWindCount = 1;
 
 	return err;
-	
 }
 
 
@@ -131,12 +133,14 @@ OSErr InitApp(void)
 //
 //----------------------------------------------------------------------
 
-void MenuSetup(void)
+OSErr MenuSetup(void)
 {
 	Handle			menu;
 		
 		
 	menu = GetNewMBar(rMBarID);		//	get our menus from resource
+	if( menu )
+	{
 	SetMenuBar(menu);
 	DisposeHandle(menu);
 	
@@ -145,6 +149,8 @@ void MenuSetup(void)
 	#endif //!OP_PLATFORM_MAC_CARBON_FLAG
 
 	DrawMenuBar();
-
-		
+		return( noErr );
+	}
+	else
+		return( fnfErr );
 }

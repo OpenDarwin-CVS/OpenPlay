@@ -25,6 +25,7 @@
 #		descended from Apple Sample Code, but that you've made changes.
 #
 *************************************************************************************/
+#include "OpenPlay.h"
 
 #if (!OP_PLATFORM_MAC_MACHO)
 	#include <NumberFormatting.h>
@@ -75,13 +76,14 @@ int main(void)
 	}
 		
 	err = Initialize();
-
+	if( !err )
+	{
 	EventLoop();
 
 	ShutdownNetworking();
-	
+	}	
 	AERemove();	
-	ExitToShell();
+//	ExitToShell();
 	return 0;
 }
 

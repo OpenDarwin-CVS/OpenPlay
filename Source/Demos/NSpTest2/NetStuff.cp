@@ -45,6 +45,7 @@
 //¥	------------------------------------------------------------------------------------------	¥
 
 //¥	------------------------------	Includes
+#include "OpenPlay.h"
 
 #if (!OP_PLATFORM_MAC_MACHO)
 	#include <Fonts.h>
@@ -581,7 +582,7 @@ AddHostMenu(void)
 {
 	gHostMenuH = GetMenu(132);
 	if (gHostMenuH == nil)
-		DebugStr("\pCouldn't find menu resource!");
+		DEBUG_PRINT("AddHostMenu: Couldn't find menu resource!");
 	else
 		InsertMenu(gHostMenuH, 0);
 		
